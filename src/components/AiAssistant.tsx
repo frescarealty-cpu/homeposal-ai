@@ -109,20 +109,22 @@ export function AiAssistant() {
   const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
-    if (messages.length > 0) return;
-    setMessages([
-      {
-        id: "assistant-welcome",
-        role: "assistant",
-        parts: [
-          {
-            type: "text",
-            text: "Welcome to HomePosal. How can I help you?",
-          },
-        ],
-      } as unknown as Parameters<typeof setMessages>[0][number],
-    ]);
-  }, [messages.length, setMessages]);
+    setMessages((prev) => {
+      if (prev.length > 0) return prev;
+      return [
+        {
+          id: "assistant-welcome",
+          role: "assistant",
+          parts: [
+            {
+              type: "text",
+              text: "Welcome to HomePosal. How can I help you?",
+            },
+          ],
+        },
+      ];
+    });
+  }, [setMessages]);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -178,10 +180,8 @@ export function AiAssistant() {
       svc.getPlacePredictions(
         {
           input: requestInput,
-          // Use SoCal as a bias, but don't hard-restrict; strict bounds frequently returns
-          // no results for short numeric prefixes like "2365".
+          // Use SoCal as a bias (not a hard restrict) so short numeric prefixes like "2365" still return results.
           bounds,
-          strictBounds: false,
           // Extra bias that helps numeric-only inputs.
           location: socalCenter,
           radius: 400_000,

@@ -167,20 +167,22 @@ export function PlaceOfferForm({
 
   useEffect(() => {
     if (!open) return;
-    if (messages.length > 0) return;
-    setMessages([
-      {
-        id: "concierge-welcome",
-        role: "assistant",
-        parts: [
-          {
-            type: "text",
-            text: "Hi — I’m your Proposal Concierge. I’ll gather a few details step-by-step and verify everything before submitting. First question: what is your legal name?",
-          },
-        ],
-      } as unknown as Parameters<typeof setMessages>[0][number],
-    ]);
-  }, [open, messages.length, setMessages]);
+    setMessages((prev) => {
+      if (prev.length > 0) return prev;
+      return [
+        {
+          id: "concierge-welcome",
+          role: "assistant",
+          parts: [
+            {
+              type: "text",
+              text: "Hi — I’m your Proposal Concierge. I’ll gather a few details step-by-step and verify everything before submitting. First question: what is your legal name?",
+            },
+          ],
+        },
+      ];
+    });
+  }, [open, setMessages]);
 
   const lastAssistantText = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {

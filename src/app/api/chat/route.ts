@@ -179,9 +179,17 @@ export async function POST(req: NextRequest) {
         | { ok?: false; error?: string }
         | null;
 
-      if (!res.ok || !json || (json as { ok?: boolean }).ok !== true) {
+      if (!res.ok || json == null) {
         const msg =
-          json && "error" in json && typeof json.error === "string" ? json.error : "Zestimate lookup failed.";
+          json && typeof json === "object" && "error" in json && typeof json.error === "string"
+            ? json.error
+            : "Zestimate lookup failed.";
+        return textStreamResponse(`I couldn’t fetch a Zestimate for that address. ${msg}`, 200);
+      }
+
+      if (json.ok !== true) {
+        const msg =
+          typeof json.error === "string" && json.error ? json.error : "Zestimate lookup failed.";
         return textStreamResponse(`I couldn’t fetch a Zestimate for that address. ${msg}`, 200);
       }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { convertToModelMessages, streamText, tool } from "ai";
+import { convertToModelMessages, streamText, tool, zodSchema } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -509,7 +509,7 @@ export async function POST(req: NextRequest) {
         submit_proposal: tool({
         description:
           "Final submission gate: validates internal consistency, requires proof of funds, and saves proposal as verified.",
-        parameters: ConciergeProposalSchema,
+        inputSchema: zodSchema(ConciergeProposalSchema),
         execute: async (input) => {
           const reasons = validateGate(input);
           if (reasons.length > 0) {
