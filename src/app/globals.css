@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/* Kalshi-style Fintech Theme */
+:root {
+  --background: #0f172a; /* slate-900 */
+  --background-elevated: #1e293b; /* slate-800 */
+  --foreground: #f1f5f9; /* slate-100 */
+  --foreground-muted: #94a3b8; /* slate-400 */
+  --border: #334155; /* slate-700 */
+  --border-subtle: #1e293b;
+  --success: #10b981; /* emerald-500 */
+  --success-muted: #059669;
+  --danger: #f43f5e; /* rose-500 */
+  --danger-muted: #e11d48;
+  --accent: #3b82f6; /* blue-500 */
+  --card-bg: #1e293b;
+}
+
+[data-theme="light"] {
+  --background: #f8fafc; /* slate-50 */
+  --background-elevated: #ffffff;
+  --foreground: #0f172a; /* slate-900 */
+  --foreground-muted: #64748b; /* slate-500 */
+  --border: #e2e8f0; /* slate-200 */
+  --border-subtle: #f1f5f9;
+  --success: #10b981;
+  --success-muted: #059669;
+  --danger: #f43f5e;
+  --danger-muted: #e11d48;
+  --accent: #3b82f6;
+  --card-bg: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px; /* minimum legible body text on mobile */
+}
+
+/* Mobile: ensure touch targets and readable text */
+@media (max-width: 768px) {
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Monospace for numbers/currency (Kalshi style) */
+.font-tabular {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin borders, compact density */
+.kalshi-border {
+  border: 1px solid var(--border);
+}
+
+.kalshi-border-subtle {
+  border: 1px solid var(--border-subtle);
+}
+
+/* Google Places Autocomplete dropdown - dark theme */
+.pac-container {
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  margin-top: 4px !important;
+  /* Must sit above Sheets/portals/maps controls */
+  z-index: 2147483647 !important;
+  position: absolute !important;
+}
+.pac-item {
+  color: #f1f5f9 !important;
+  padding: 12px 14px !important;
+  cursor: pointer;
+  font-size: 16px !important;
+}
+.pac-item:hover,
+.pac-item-selected {
+  background: #334155 !important;
+}
+.pac-item-query {
+  color: #f1f5f9 !important;
+  font-size: 16px !important;
+}
+
+/* Status badges */
+.badge-open {
+  @apply rounded-md bg-emerald-500/20 px-2 py-0.5 text-xs font-medium text-emerald-500;
+}
+
+.badge-closed {
+  @apply rounded-md bg-rose-500/20 px-2 py-0.5 text-xs font-medium text-rose-500;
+}
+
+.badge-pending {
+  @apply rounded-md bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-500;
+}
