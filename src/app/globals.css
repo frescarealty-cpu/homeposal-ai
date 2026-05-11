@@ -105,3 +105,12 @@ body {
 .badge-pending {
   @apply rounded-md bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-500;
 }
+
+/* Google Maps: clip subpixel seams / default chrome that can read as a hairline at the top edge */
+.homeposal-gmap .gm-style {
+  border: none !important;
+  outline: none !important;
+}
+.homeposal-gmap .gm-style > div:first-child {
+  border: none !important;
+}

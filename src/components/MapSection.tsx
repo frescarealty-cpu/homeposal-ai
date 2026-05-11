@@ -131,6 +131,15 @@ export function MapSection({
       scrollwheel: true,
       gestureHandling: "greedy",
       mapTypeControl: false,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_CENTER,
+      },
+      streetViewControl: false,
+      fullscreenControl: true,
+      fullscreenControlOptions: {
+        position: google.maps.ControlPosition.TOP_RIGHT,
+      },
       mapTypeId: mapStyle === "satellite" ? "hybrid" : "roadmap",
       restriction: {
         latLngBounds: SOCAL_BOUNDS,
@@ -436,8 +445,11 @@ export function MapSection({
   }
 
   return (
-    <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full bg-[var(--background-elevated)]" />
+    <div className="homeposal-gmap relative h-full w-full min-w-0 overflow-hidden bg-[var(--background-elevated)]">
+      <div
+        ref={containerRef}
+        className="absolute inset-0 min-h-0 min-w-0 overflow-hidden bg-[var(--background-elevated)] leading-[0]"
+      />
       <div className="absolute left-3 top-3 z-10 flex gap-1 rounded-md border border-[var(--border)] bg-[var(--card-bg)] p-1 shadow-sm">
         <button
           type="button"

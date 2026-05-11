@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Megaphone, Search } from "lucide-react";
 
 export type HowItWorksSection = {
   id: string;
@@ -12,7 +13,7 @@ const sections: HowItWorksSection[] = [
     title: null,
     content: (
       <p className="text-base leading-relaxed text-[var(--foreground)]">
-        HomePosal is a decentralized, transparent marketplace. We’ve replaced the high-pressure sales tactics of
+        HomePosal is a decentralized, transparent marketplace. We&apos;ve replaced the high-pressure sales tactics of
         traditional real estate with a public bulletin board where real interest meets real ownership.
       </p>
     ),
@@ -22,38 +23,61 @@ const sections: HowItWorksSection[] = [
     title: "The Concept",
     content: (
       <p className="mt-3 text-base leading-relaxed text-[var(--foreground-muted)]">
-        Traditional real estate is reactive—you wait for someone to sell. HomePosal is proactive. We allow “Suitors” to
-        express interest in any property they’ve always wanted, and we allow Owners to discover that interest before they
+        Traditional real estate is reactive—you wait for someone to sell. HomePosal is proactive. We allow &ldquo;Suitors&rdquo; to
+        express interest in any property they&apos;ve always wanted, and we allow Owners to discover that interest before they
         ever deal with the stress of the MLS.
       </p>
     ),
   },
   {
     id: "how-it-works",
-    title: "How it works",
+    title: "How it Works",
     content: (
-      <ol className="mt-4 space-y-4">
-        <li className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
-          <p className="text-sm font-semibold text-[var(--foreground)]">1. Browse the Board</p>
-          <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
+      <ol className="mt-8 list-none space-y-6 p-0">
+        <li className="rounded-2xl border border-gray-200/90 bg-gray-50 p-8 md:p-10">
+          <p className="text-[15px] font-medium tracking-tight text-gray-900">1. Browse the Board</p>
+          <p className="mt-4 max-w-prose text-[15px] leading-[1.6] text-gray-600">
             Our bulletin board is public. Anyone can see the current proposals being made on properties across Southern
-            California. It’s a real-time map of market demand.
+            California. It&apos;s a real-time map of market demand.
           </p>
         </li>
-        <li className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
-          <p className="text-sm font-semibold text-[var(--foreground)]">2. Make a Proposal (Suitors)</p>
-          <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
-            Found a home you’ve always wanted? Don&apos;t wait for a “For Sale” sign. Submit a bona fide proposal. To
+        <li className="rounded-2xl border border-gray-200/90 bg-gray-50 p-8 md:p-10">
+          <p className="text-[15px] font-medium tracking-tight text-gray-900">2. Make a Proposal (Suitors)</p>
+          <p className="mt-4 max-w-prose text-[15px] leading-[1.6] text-gray-600">
+            Found a home you&apos;ve always wanted? Don&apos;t wait for a &ldquo;For Sale&rdquo; sign. Submit a bona fide proposal. To
             keep the board high-quality, we verify your Proof of Funds so owners know you are a serious, qualified Suitor.
           </p>
         </li>
-        <li className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
-          <p className="text-sm font-semibold text-[var(--foreground)]">3. Check Your Address (Owners)</p>
-          <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
-            Before you hire a photographer, stage your home, or sign a listing agreement, check HomePosal. See if there is
-            already a proposal waiting for you. There is zero pressure; you only reach out to us if a proposal meets your
-            terms.
+        <li className="rounded-2xl border border-gray-200/90 bg-white p-8 md:p-10">
+          <p className="text-[15px] font-medium tracking-tight text-gray-900">3. Choose Your Path (Owners)</p>
+          <p className="mt-4 max-w-prose text-[15px] leading-[1.6] text-gray-600">
+            Two ways to engage—both are optional, discreet, and entirely at your pace.
           </p>
+          <div className="mt-10 grid gap-6 md:grid-cols-2 md:gap-8">
+            <div className="flex flex-col rounded-2xl border border-gray-200/80 bg-gray-50 p-8">
+              <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700">
+                <Search className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+              </div>
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-gray-500">Option A</p>
+              <p className="mt-2 text-[17px] font-medium tracking-tight text-gray-900">Passive Discovery</p>
+              <p className="mt-6 text-[15px] leading-[1.65] text-gray-600">
+                <span className="font-medium text-gray-900">Check Your Address.</span> Search the board to see if there is
+                already a proposal waiting for you. Entirely silent—browse interest on your own schedule. Zero pressure.
+              </p>
+            </div>
+            <div className="flex flex-col rounded-2xl border border-gray-200/80 bg-gray-50 p-8">
+              <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700">
+                <Megaphone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+              </div>
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-gray-500">Option B</p>
+              <p className="mt-2 text-[17px] font-medium tracking-tight text-gray-900">Active Invitation</p>
+              <p className="mt-6 text-[15px] leading-[1.65] text-gray-600">
+                <span className="font-medium text-gray-900">Signal the Market.</span> Ask for proposals to &ldquo;test the
+                waters.&rdquo; We notify the public via social media and provide a professional yard sign to alert local suitors.
+                You set the time period; move forward only if the price is right.
+              </p>
+            </div>
+          </div>
         </li>
       </ol>
     ),
@@ -85,17 +109,15 @@ const sections: HowItWorksSection[] = [
                 <td className="px-4 py-3 text-[var(--foreground-muted)]">See real proposals before you ever list.</td>
               </tr>
               <tr>
+                <td className="px-4 py-3 font-medium text-[var(--foreground)]">Market Testing</td>
+                <td className="px-4 py-3 text-[var(--foreground-muted)]">High-cost campaigns.</td>
+                <td className="px-4 py-3 text-[var(--foreground-muted)]">Proposal Windows with yard signs.</td>
+              </tr>
+              <tr>
                 <td className="px-4 py-3 font-medium text-[var(--foreground)]">Involvement</td>
                 <td className="px-4 py-3 text-[var(--foreground-muted)]">Showings, open houses, and disruptions.</td>
                 <td className="px-4 py-3 text-[var(--foreground-muted)]">
-                  Silent. Check proposals from your phone, on your schedule.
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-3 font-medium text-[var(--foreground)]">Opportunity</td>
-                <td className="px-4 py-3 text-[var(--foreground-muted)]">Limited to what is currently “For Sale.”</td>
-                <td className="px-4 py-3 text-[var(--foreground-muted)]">
-                  Any property in SoCal is open for a proposal.
+                  Silent or scheduled. Check proposals on your phone.
                 </td>
               </tr>
               <tr>
@@ -130,17 +152,17 @@ const sections: HowItWorksSection[] = [
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
-          <p className="text-sm font-semibold text-[var(--foreground)]">What is the “Pre-MLS” advantage?</p>
+          <p className="text-sm font-semibold text-[var(--foreground)]">What is the &ldquo;Pre-MLS&rdquo; advantage?</p>
           <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
             For owners, HomePosal acts as a safety net. Why go through the expense of a public listing if a qualified
-            Suitor is already offering your “dream price” on our board? Check HomePosal first to save time and stress.
+            Suitor is already offering your &ldquo;dream price&rdquo; on our board? Check HomePosal first to save time and stress.
           </p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
           <p className="text-sm font-semibold text-[var(--foreground)]">As a Suitor, what properties can I propose on?</p>
           <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
-            Anything in Southern California. If you’ve driven by a house for years and wished it was yours, HomePosal gives
+            Anything in Southern California. If you&apos;ve driven by a house for years and wished it was yours, HomePosal gives
             you a formal way to let the owner know you are a serious buyer with verified funds.
           </p>
         </div>
@@ -148,8 +170,18 @@ const sections: HowItWorksSection[] = [
         <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
           <p className="text-sm font-semibold text-[var(--foreground)]">What happens if an owner is interested?</p>
           <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
-            The ball is in the owner&apos;s court. If they see a proposal they like, they reach out to us. We then
-            facilitate the connection and help move the transaction forward.
+            The ball is in the owner&apos;s court. If they see a proposal they like—whether it was already there or arrived during
+            their &ldquo;Proposal Window&rdquo;—they reach out to us. We then facilitate the connection and help move the transaction
+            forward.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4">
+          <p className="text-sm font-semibold text-[var(--foreground)]">Can an owner ask for proposals?</p>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
+            Yes. If you aren&apos;t ready to list on the MLS but want to see bona fide purchase interest, HomePosal can signal
+            that for you. We provide a yard sign and measured social promotion so local Suitors can find your address on the
+            bulletin board. You choose the window, and you are never obligated to accept an offer.
           </p>
         </div>
       </div>
@@ -159,8 +191,11 @@ const sections: HowItWorksSection[] = [
     id: "closing",
     title: null,
     content: (
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--background-elevated)] p-5">
-        <p className="text-base font-semibold text-[var(--foreground)]">Don&apos;t list it until you check it.</p>
+      <div className="rounded-2xl border border-gray-200/90 bg-gray-50 p-8 md:p-10">
+        <p className="text-[15px] leading-[1.6] text-gray-600">
+          Many owners browse the board first—no commitment, no listing required. When you are ready, we are here to help you
+          understand your options clearly.
+        </p>
       </div>
     ),
   },

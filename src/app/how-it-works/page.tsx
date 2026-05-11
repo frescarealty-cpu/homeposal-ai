@@ -20,33 +20,33 @@ export default function HowItWorksPage() {
         aria-label="On this page"
         className="mb-8 rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4"
       >
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--foreground-muted)]">On this page</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <a
-            href="#the-concept"
-            className="inline-flex min-h-[36px] items-center rounded-full border border-[var(--border)] bg-white px-3 text-sm text-[var(--foreground)] hover:bg-[var(--border-subtle)]"
-          >
+        <p className="text-sm leading-relaxed text-[var(--foreground)]">
+          <span className="font-semibold text-[var(--foreground)]">On this page:</span>{" "}
+          <a href="#the-concept" className="text-[var(--success)] underline-offset-2 hover:underline">
             The Concept
           </a>
-          <a
-            href="#how-it-works"
-            className="inline-flex min-h-[36px] items-center rounded-full border border-[var(--border)] bg-white px-3 text-sm text-[var(--foreground)] hover:bg-[var(--border-subtle)]"
-          >
+          <span className="text-[var(--foreground-muted)]" aria-hidden>
+            {" "}
+            |{" "}
+          </span>
+          <a href="#how-it-works" className="text-[var(--success)] underline-offset-2 hover:underline">
             How it Works
           </a>
-          <a
-            href="#why-homeposal"
-            className="inline-flex min-h-[36px] items-center rounded-full border border-[var(--border)] bg-white px-3 text-sm text-[var(--foreground)] hover:bg-[var(--border-subtle)]"
-          >
+          <span className="text-[var(--foreground-muted)]" aria-hidden>
+            {" "}
+            |{" "}
+          </span>
+          <a href="#why-homeposal" className="text-[var(--success)] underline-offset-2 hover:underline">
             Why HomePosal?
           </a>
-          <a
-            href="#faq"
-            className="inline-flex min-h-[36px] items-center rounded-full border border-[var(--border)] bg-white px-3 text-sm text-[var(--foreground)] hover:bg-[var(--border-subtle)]"
-          >
+          <span className="text-[var(--foreground-muted)]" aria-hidden>
+            {" "}
+            |{" "}
+          </span>
+          <a href="#faq" className="text-[var(--success)] underline-offset-2 hover:underline">
             FAQ
           </a>
-        </div>
+        </p>
       </nav>
 
       <HowItWorks />

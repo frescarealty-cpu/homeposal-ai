@@ -14,7 +14,17 @@ import { filterPropertiesByQuery } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/client";
 import type { PropertyListing } from "@/data/properties";
-import { Eye, Sparkles, ShieldCheck, ArrowRightLeft, MapPin, Handshake, MousePointerClick } from "lucide-react";
+import {
+  Eye,
+  Sparkles,
+  ShieldCheck,
+  ArrowRightLeft,
+  MapPin,
+  Handshake,
+  MousePointerClick,
+  Megaphone,
+  AlertCircle,
+} from "lucide-react";
 
 type HomeContentProps = {
   properties: PropertyListing[];
@@ -145,7 +155,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               isLoaded={isMapsLoaded}
             />
           </div>
-          <div className="relative hidden flex-1 min-h-[50vh] pb-4 md:block">
+          <div className="relative hidden min-h-[50vh] min-w-0 flex-1 overflow-hidden pb-4 md:block">
             <MapSection
               properties={filteredProperties}
               allProperties={properties}
@@ -261,6 +271,28 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                   <AiAssistant />
 
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
+                    <div
+                      role="note"
+                      aria-label="Owner Alert"
+                      className="mb-4 rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-2.5 shadow-sm sm:px-3.5 sm:py-3"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <AlertCircle
+                          className="h-3.5 w-3.5 shrink-0 text-[#2C56A3]"
+                          strokeWidth={2}
+                          aria-hidden
+                        />
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#2C56A3]">
+                          Owner Alert
+                        </p>
+                      </div>
+                      <p className="mt-1 text-sm font-semibold tracking-tight text-[var(--foreground)]">
+                        Don&apos;t List Yet.
+                      </p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-[var(--foreground-muted)]">
+                        See bona fide proposals from verified suitors before you deal with the stress of the MLS.
+                      </p>
+                    </div>
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h2 className="text-lg font-semibold text-[var(--foreground)]">What is HomePosal?</h2>
                       {aboutCanCollapse && (
@@ -302,6 +334,20 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                           <p>
                             <strong className="text-[var(--foreground)]">Verified Interest:</strong> See real,
                             unsolicited proposals from independent parties even if you aren&apos;t listed for sale.
+                          </p>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Megaphone className="mt-[2px] h-4 w-4 shrink-0 text-[var(--foreground-muted)]" />
+                          <p>
+                            <strong className="text-[var(--foreground)]">Invite Proposals:</strong> Want to test the
+                            market? Request a &ldquo;Proposal Window.&rdquo; We&apos;ll notify the public via social media and a
+                            professional yard sign while you stay in control.{" "}
+                            <Link
+                              href="/how-it-works"
+                              className="font-medium text-[var(--foreground-muted)] underline decoration-[var(--border)] underline-offset-[3px] transition-colors hover:text-[var(--foreground)]"
+                            >
+                              Learn more
+                            </Link>
                           </p>
                         </li>
                         <li className="flex items-start gap-2">
