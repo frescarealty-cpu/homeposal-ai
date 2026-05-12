@@ -59,8 +59,12 @@ export default function AcceptableUsePolicyPage() {
           2. Interaction with Property Owners
         </h2>
         <p className="text-base leading-relaxed text-[var(--foreground-muted)]">
-          HomePosal is a &quot;Passive Discovery&quot; platform. Owners are in the driver&apos;s
-          seat.
+          HomePosal is built around two optional owner paths—Browse Proposals and Invite
+          Proposals—described on our{" "}
+          <Link href="/how-it-works" className="text-[var(--accent)] hover:underline">
+            How it Works
+          </Link>{" "}
+          page. Owners are in the driver&apos;s seat.
         </p>
         <p className="text-base leading-relaxed text-[var(--foreground-muted)]">
           No Direct Solicitation: You are strictly prohibited from using information found on

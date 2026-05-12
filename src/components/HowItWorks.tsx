@@ -48,7 +48,10 @@ const sections: HowItWorksSection[] = [
             keep the board high-quality, we verify your Proof of Funds so owners know you are a serious, qualified Suitor.
           </p>
         </li>
-        <li className="rounded-2xl border border-gray-200/90 bg-white p-8 md:p-10">
+        <li
+          id="choose-your-path-owners"
+          className="scroll-mt-24 rounded-2xl border border-gray-200/90 bg-white p-8 md:p-10"
+        >
           <p className="text-[15px] font-medium tracking-tight text-gray-900">3. Choose Your Path (Owners)</p>
           <p className="mt-4 max-w-prose text-[15px] leading-[1.6] text-gray-600">
             Two ways to engage—both are optional, discreet, and entirely at your pace.
@@ -59,21 +62,18 @@ const sections: HowItWorksSection[] = [
                 <Search className="h-5 w-5" strokeWidth={1.75} aria-hidden />
               </div>
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-gray-500">Option A</p>
-              <p className="mt-2 text-[17px] font-medium tracking-tight text-gray-900">Passive Discovery</p>
+              <p className="mt-2 text-[17px] font-medium tracking-tight text-gray-900">Browse Proposals</p>
               <p className="mt-6 text-[15px] leading-[1.65] text-gray-600">
                 <span className="font-medium text-gray-900">Check Your Address.</span> Search the board to see if there is
                 already a proposal waiting for you. Entirely silent—browse interest on your own schedule. Zero pressure.
               </p>
             </div>
-            <div
-              id="option-b-active-invitation"
-              className="scroll-mt-24 flex flex-col rounded-2xl border border-gray-200/80 bg-gray-50 p-8"
-            >
+            <div className="flex flex-col rounded-2xl border border-gray-200/80 bg-gray-50 p-8">
               <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700">
                 <Megaphone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
               </div>
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-gray-500">Option B</p>
-              <p className="mt-2 text-[17px] font-medium tracking-tight text-gray-900">Active Invitation</p>
+              <p className="mt-2 text-[17px] font-medium tracking-tight text-gray-900">Invite Proposals</p>
               <p className="mt-6 text-[15px] leading-[1.65] text-gray-600">
                 <span className="font-medium text-gray-900">Signal the Market.</span> Ask for proposals to &ldquo;test the
                 waters.&rdquo; We notify the public via social media and provide a professional yard sign to alert local suitors.

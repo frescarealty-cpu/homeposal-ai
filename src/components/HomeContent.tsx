@@ -343,7 +343,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                             market? Request a &ldquo;Proposal Window.&rdquo; We&apos;ll notify the public via social media and a
                             professional yard sign while you stay in control.{" "}
                             <Link
-                              href="/how-it-works#option-b-active-invitation"
+                              href="/how-it-works#choose-your-path-owners"
                               className="whitespace-nowrap font-semibold text-[var(--success)] underline-offset-2 transition-colors hover:text-[var(--foreground)] hover:underline"
                             >
                               Learn more

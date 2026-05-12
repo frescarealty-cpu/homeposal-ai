@@ -37,10 +37,10 @@ export default function HowItWorksPage() {
             |{" "}
           </span>
           <a
-            href="#option-b-active-invitation"
+            href="#choose-your-path-owners"
             className="text-[var(--success)] underline-offset-2 hover:underline"
           >
-            Option B
+            Choose Your Path (Owners)
           </a>
           <span className="text-[var(--foreground-muted)]" aria-hidden>
             {" "}
