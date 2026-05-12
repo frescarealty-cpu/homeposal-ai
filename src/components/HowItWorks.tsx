@@ -82,7 +82,7 @@ const sections: HowItWorksSection[] = [
               </p>
               <p className="mt-5 text-[15px] leading-snug text-gray-600">
                 <ContactInviteLink className="font-semibold text-[#2C56A3] underline-offset-2 transition-colors hover:text-[#234a8a] hover:underline">
-                  Request a Proposal Window — contact HomePosal to get started
+                  Start Your Invite— contact HomePosal
                 </ContactInviteLink>
               </p>
             </div>
