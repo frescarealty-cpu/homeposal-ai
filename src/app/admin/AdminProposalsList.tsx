@@ -31,6 +31,8 @@ type Proposal = {
 type PlaceProposal = {
   id: string;
   place_address: string;
+  place_lat?: number | null;
+  place_lng?: number | null;
   user_id: string;
   status: string;
   offer_amount_cents: number;
@@ -185,6 +187,15 @@ export function AdminProposalsList({
 
   function formatRole(role: string) {
     return role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  function publicPlacePageHref(p: PlaceProposal): string | null {
+    const lat = p.place_lat;
+    const lng = p.place_lng;
+    if (typeof lat !== "number" || typeof lng !== "number" || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null;
+    }
+    return `/place?address=${encodeURIComponent(p.place_address)}&lat=${lat}&lng=${lng}`;
   }
 
   function daysToCloseDisplay(p: Proposal | PlaceProposal) {
@@ -407,7 +418,13 @@ export function AdminProposalsList({
                     </span>
                   </div>
                   <div className="text-xs text-[var(--foreground-muted)]">
-                    Closing {p.closing_date} · Property {p.property_id.slice(0, 8)}…
+                    Closing {p.closing_date} ·{" "}
+                    <Link
+                      href={`/property/${p.property_id}`}
+                      className="font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                    >
+                      Property {p.property_id.slice(0, 8)}…
+                    </Link>
                   </div>
                   <div className="mt-3 rounded border border-[var(--border-subtle)] bg-[var(--background)] p-2">
                     <div className="text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wide">User</div>
@@ -468,7 +485,9 @@ export function AdminProposalsList({
             Place proposals (address-only)
           </h2>
           <div className="space-y-2">
-            {filteredPlaceProposals.map((p) => (
+            {filteredPlaceProposals.map((p) => {
+              const placeHref = publicPlacePageHref(p);
+              return (
               <div
                 key={p.id}
                 className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--background-elevated)] p-4"
@@ -479,7 +498,16 @@ export function AdminProposalsList({
                       {statusLabel(p.status)}
                     </span>
                     <span className="text-sm font-medium text-[var(--foreground)]">
-                      {p.place_address}
+                      {placeHref ? (
+                        <Link
+                          href={placeHref}
+                          className="text-[var(--foreground)] underline-offset-2 hover:text-[var(--accent)] hover:underline"
+                        >
+                          {p.place_address}
+                        </Link>
+                      ) : (
+                        p.place_address
+                      )}
                     </span>
                   </div>
                   <div className="text-xs text-[var(--foreground-muted)]">
@@ -527,7 +555,8 @@ export function AdminProposalsList({
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

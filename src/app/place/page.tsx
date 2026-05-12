@@ -3,7 +3,6 @@ import { ArrowLeft, MapPin } from "lucide-react";
 import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
-import { AiAssistant } from "@/components/AiAssistant";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { getPlaceProposals } from "@/lib/placeProposals";
@@ -86,28 +85,24 @@ export default async function PlacePage({
 
       {/* Right: Proposals + Place offer form */}
       <aside id="make-proposal" className="kalshi-border flex w-full flex-col border-t lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto">
-        <div className="px-4 pt-4">
-          <AiAssistant />
-        </div>
-        <div className="p-4">
-          <ZillowZestimatePanel address={address} lat={latNum} lng={lngNum} variant="collapsible" />
-        </div>
-        <div className="border-t border-[var(--border)]" />
         <ProposalsPublicView
           proposals={proposals}
           bestOfferCents={bestOfferCents}
           enableInquiry
           inquiryAddressLabel={address}
         />
-        <div className="border-t border-[var(--border)]">
-          <PlaceOfferForm
-            placeAddress={address}
-            placeLat={latNum}
-            placeLng={lngNum}
-            isLoggedIn={isLoggedIn}
-            redirectPath={redirectPath}
-          />
+        <div className="border-t border-[var(--border)]" />
+        <div className="p-4">
+          <ZillowZestimatePanel address={address} lat={latNum} lng={lngNum} variant="collapsible" />
         </div>
+        <div className="border-t border-[var(--border)]" />
+        <PlaceOfferForm
+          placeAddress={address}
+          placeLat={latNum}
+          placeLng={lngNum}
+          isLoggedIn={isLoggedIn}
+          redirectPath={redirectPath}
+        />
         <div className="flex flex-col gap-3 border-t border-[var(--border)] p-4">
           <Link
             href="/"

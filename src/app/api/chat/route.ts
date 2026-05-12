@@ -114,12 +114,51 @@ function addressVariants(address: string): string[] {
 
 function proposalsSummaryByPropertyId(propertyId: string) {
   const proposals = getMockProposalsPublic(propertyId);
-  if (proposals.length === 0) return { count: 0, best: null as number | null, range: null as string | null };
+  if (proposals.length === 0) return { count: 0, best: null as number | null };
   const best = Math.max(...proposals.map((p) => p.priceCents));
-  const min = Math.min(...proposals.map((p) => p.priceCents));
-  const max = Math.max(...proposals.map((p) => p.priceCents));
-  const range = min === max ? formatCurrency(min) : `${formatCurrency(min)}–${formatCurrency(max)}`;
-  return { count: proposals.length, best, range };
+  return { count: proposals.length, best };
+}
+
+/**
+ * Plain-text + markdown link for the home assistant (UI only linkifies [label](url), not **bold**).
+ */
+function proposalBoardAssistantReply(input: {
+  addressLine: string;
+  verifiedCount: number;
+  highestOfferCents: number | null;
+  link: string | null;
+  linkLabelWhenLinked: string;
+  noLinkNote?: string;
+}): string {
+  const { addressLine, verifiedCount, highestOfferCents, link, linkLabelWhenLinked, noLinkNote } = input;
+
+  if (verifiedCount === 0) {
+    const tail = link
+      ? `\n\n[${linkLabelWhenLinked}](${link})`
+      : noLinkNote
+        ? `\n\n${noLinkNote}`
+        : "";
+    return (
+      `Thanks for asking about ${addressLine}.\n\n` +
+      `There are no verified proposals on the board for that address yet. Suitors can add one anytime, so it is worth checking back.` +
+      tail
+    );
+  }
+
+  const noun = verifiedCount === 1 ? "proposal" : "proposals";
+  const verb = verifiedCount === 1 ? "is" : "are";
+  const amountOk = typeof highestOfferCents === "number" && highestOfferCents > 0;
+  const body = amountOk
+    ? `There ${verb} ${verifiedCount} verified ${noun} on the board from Suitors (with verified funds), with the highest proposal at ${formatCurrency(highestOfferCents)}.`
+    : `There ${verb} ${verifiedCount} verified ${noun} on the board from Suitors (with verified funds).`;
+
+  const tail = link
+    ? `\n\n[${linkLabelWhenLinked}](${link})`
+    : noLinkNote
+      ? `\n\n${noLinkNote}`
+      : "";
+
+  return `Thanks for asking about ${addressLine}.\n\n${body}${tail}`;
 }
 
 function looksLikeZestimateQuestion(text: string) {
@@ -220,13 +259,18 @@ export async function POST(req: NextRequest) {
 
     if (exactProperty) {
       const sum = proposalsSummaryByPropertyId(exactProperty.id);
-      const header = `${exactProperty.address}, ${exactProperty.city}, ${exactProperty.state} ${exactProperty.zipCode}`;
-      const countLine =
-        sum.count === 0
-          ? "Current proposals: none yet."
-          : `Current proposals: ${sum.count} (range ${sum.range}).`;
+      const addressLine = `${exactProperty.address}, ${exactProperty.city}, ${exactProperty.state} ${exactProperty.zipCode}`;
       const link = `/property/${exactProperty.id}`;
-      return textStreamResponse(`${header}\n${countLine}\n\n[Click here to see or make proposal(s)](${link})`, 200);
+      return textStreamResponse(
+        proposalBoardAssistantReply({
+          addressLine,
+          verifiedCount: sum.count,
+          highestOfferCents: sum.count > 0 && sum.best != null ? sum.best : null,
+          link,
+          linkLabelWhenLinked: "View this property and its proposals",
+        }),
+        200
+      );
     }
 
     // 2) Real "place" proposals lookup from Supabase by address (no guessing).
@@ -308,12 +352,16 @@ export async function POST(req: NextRequest) {
             const prices = (rpcRes.data as Array<{ price_cents: number }>).map((r) => r.price_cents).filter((n) => n > 0);
             const verifiedCount = prices.length;
             if (verifiedCount > 0) {
-              const min = Math.min(...prices);
               const max = Math.max(...prices);
-              const range = min === max ? formatCurrency(min) : `${formatCurrency(min)}–${formatCurrency(max)}`;
               const link = `/place?address=${encodeURIComponent(addressLabel)}&lat=${lat}&lng=${lng}`;
               return textStreamResponse(
-                `${addressLabel}\nVerified proposals: ${verifiedCount} (range ${range}).\n\n[Click here to see or make proposal(s)](${link})`,
+                proposalBoardAssistantReply({
+                  addressLine: addressLabel,
+                  verifiedCount,
+                  highestOfferCents: max,
+                  link,
+                  linkLabelWhenLinked: "View proposals or submit your own for this address",
+                }),
                 200
               );
             }
@@ -323,7 +371,8 @@ export async function POST(req: NextRequest) {
 
       if (rows.length === 0) {
         return textStreamResponse(
-          `No verified proposals found for:\n${addressCandidate}\n\nTip: open the address from the map search first, then paste the exact address shown on the place page.`,
+          `I could not find any verified proposals for:\n${addressCandidate}\n\n` +
+            `Tip: choose the address from the map search first, then use the exact address line shown on the place page — that helps the lookup match.`,
           200
         );
       }
@@ -331,24 +380,25 @@ export async function POST(req: NextRequest) {
       // Fallback: use direct rows (verified only).
       const prices = rows.map((r) => r.offer_amount_cents ?? 0).filter((n) => n > 0);
       const verifiedCount = prices.length;
-      const min = verifiedCount ? Math.min(...prices) : 0;
       const max = verifiedCount ? Math.max(...prices) : 0;
-      const range = verifiedCount ? (min === max ? formatCurrency(min) : `${formatCurrency(min)}–${formatCurrency(max)}`) : "—";
       const link =
         lat != null && lng != null
           ? `/place?address=${encodeURIComponent(addressLabel)}&lat=${lat}&lng=${lng}`
           : null;
       return textStreamResponse(
-        `${addressLabel}\nVerified proposals: ${verifiedCount} (range ${range}).\n\n${
-          link
-            ? `[Click here to see or make proposal(s)](${link})`
-            : "Open this address from the map search to get a direct proposals link."
-        }`,
+        proposalBoardAssistantReply({
+          addressLine: addressLabel,
+          verifiedCount,
+          highestOfferCents: verifiedCount > 0 ? max : null,
+          link,
+          linkLabelWhenLinked: "View proposals or submit your own for this address",
+          noLinkNote: "Open this address from the map search to get a direct link to its place page.",
+        }),
         200
       );
     } catch {
       return textStreamResponse(
-        `I couldn’t check proposals for that address right now (database not available).`,
+        `I couldn’t check proposals for that address just now — the connection to our database did not go through. Please try again in a moment.`,
         200
       );
     }
