@@ -65,7 +65,10 @@ const sections: HowItWorksSection[] = [
                 already a proposal waiting for you. Entirely silent—browse interest on your own schedule. Zero pressure.
               </p>
             </div>
-            <div className="flex flex-col rounded-2xl border border-gray-200/80 bg-gray-50 p-8">
+            <div
+              id="option-b-active-invitation"
+              className="scroll-mt-24 flex flex-col rounded-2xl border border-gray-200/80 bg-gray-50 p-8"
+            >
               <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700">
                 <Megaphone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
               </div>

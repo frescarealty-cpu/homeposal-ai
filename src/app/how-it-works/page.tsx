@@ -36,6 +36,16 @@ export default function HowItWorksPage() {
             {" "}
             |{" "}
           </span>
+          <a
+            href="#option-b-active-invitation"
+            className="text-[var(--success)] underline-offset-2 hover:underline"
+          >
+            Option B
+          </a>
+          <span className="text-[var(--foreground-muted)]" aria-hidden>
+            {" "}
+            |{" "}
+          </span>
           <a href="#why-homeposal" className="text-[var(--success)] underline-offset-2 hover:underline">
             Why HomePosal?
           </a>
