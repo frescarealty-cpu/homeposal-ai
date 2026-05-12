@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, X, Mail } from "lucide-react";
 import { ContactModal } from "@/components/ContactModal";
+import { CONTACT_INVITE_PREFILL_MESSAGE } from "@/lib/contactInviteDefaults";
 import { LOGO_PUBLIC_URL } from "@/lib/siteAssets";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -14,9 +15,12 @@ const TOUCH_MIN = "min-h-[44px] min-w-[44px]";
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [contactInitialMessage, setContactInitialMessage] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +39,18 @@ export function Header() {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const contact = searchParams.get("contact");
+    if (contact !== "invite") return;
+    setContactInitialMessage(CONTACT_INVITE_PREFILL_MESSAGE);
+    setContactOpen(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("contact");
+    const qs = params.toString();
+    const next = qs ? `${pathname}?${qs}` : pathname;
+    router.replace(next, { scroll: false });
+  }, [searchParams, pathname, router]);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -127,7 +143,10 @@ export function Header() {
         <div className="hidden md:flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setContactOpen(true)}
+            onClick={() => {
+              setContactInitialMessage(null);
+              setContactOpen(true);
+            }}
             className="rounded-lg p-2.5 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] transition-colors"
             aria-label="Contact HomePosal"
             title="Contact"
@@ -162,7 +181,10 @@ export function Header() {
         <div className="absolute right-2 top-3 flex md:hidden items-center gap-1 md:relative md:right-0 md:top-0" ref={menuRef}>
           <button
             type="button"
-            onClick={() => setContactOpen(true)}
+            onClick={() => {
+              setContactInitialMessage(null);
+              setContactOpen(true);
+            }}
             className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
             aria-label="Contact HomePosal"
           >
@@ -187,7 +209,15 @@ export function Header() {
         </div>
       </div>
 
-      {contactOpen && <ContactModal onClose={() => setContactOpen(false)} />}
+      {contactOpen && (
+        <ContactModal
+          initialMessage={contactInitialMessage}
+          onClose={() => {
+            setContactOpen(false);
+            setContactInitialMessage(null);
+          }}
+        />
+      )}
     </header>
   );
 }

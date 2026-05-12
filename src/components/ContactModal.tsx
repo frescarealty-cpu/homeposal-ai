@@ -6,7 +6,13 @@ import { sendContactForm } from "@/lib/actions/sendContactForm";
 
 const TOUCH_MIN = "min-h-[44px]";
 
-export function ContactModal({ onClose }: { onClose: () => void }) {
+export function ContactModal({
+  onClose,
+  initialMessage,
+}: {
+  onClose: () => void;
+  initialMessage?: string | null;
+}) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -28,6 +34,12 @@ export function ContactModal({ onClose }: { onClose: () => void }) {
       document.body.style.overflow = "";
     };
   }, [onClose]);
+
+  useEffect(() => {
+    if (initialMessage && initialMessage.trim()) {
+      setMessage(initialMessage);
+    }
+  }, [initialMessage]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {

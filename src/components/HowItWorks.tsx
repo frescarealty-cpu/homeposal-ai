@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Megaphone, Search } from "lucide-react";
+import { ContactInviteLink } from "@/components/ContactInviteLink";
 
 export type HowItWorksSection = {
   id: string;
@@ -78,6 +79,11 @@ const sections: HowItWorksSection[] = [
                 <span className="font-medium text-gray-900">Signal the Market.</span> Ask for proposals to &ldquo;test the
                 waters.&rdquo; We notify the public via social media and provide a professional yard sign to alert local suitors.
                 You set the time period; move forward only if the price is right.
+              </p>
+              <p className="mt-5 text-[15px] leading-snug text-gray-600">
+                <ContactInviteLink className="font-semibold text-emerald-700 underline-offset-2 hover:text-emerald-800 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300">
+                  Request a Proposal Window — contact HomePosal to get started
+                </ContactInviteLink>
               </p>
             </div>
           </div>
