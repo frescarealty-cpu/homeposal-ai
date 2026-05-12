@@ -81,7 +81,7 @@ const sections: HowItWorksSection[] = [
                 You set the time period; move forward only if the price is right.
               </p>
               <p className="mt-5 text-[15px] leading-snug text-gray-600">
-                <ContactInviteLink className="font-semibold text-emerald-700 underline-offset-2 hover:text-emerald-800 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300">
+                <ContactInviteLink className="font-semibold text-[#2C56A3] underline-offset-2 transition-colors hover:text-[#234a8a] hover:underline">
                   Request a Proposal Window — contact HomePosal to get started
                 </ContactInviteLink>
               </p>
