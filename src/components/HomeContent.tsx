@@ -10,7 +10,6 @@ import { MapSection } from "./MapSection";
 import { ProposalsPublicView } from "./ProposalsPublicView";
 import { PlaceOfferForm } from "./PlaceOfferForm";
 import { AiAssistant } from "./AiAssistant";
-import { ContactInviteLink } from "./ContactInviteLink";
 import { filterPropertiesByQuery } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/client";
@@ -349,10 +348,6 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                             >
                               Learn more
                             </Link>
-                            {" · "}
-                            <ContactInviteLink className="whitespace-nowrap font-semibold text-[var(--success)] underline-offset-2 transition-colors hover:text-[var(--foreground)] hover:underline">
-                              Contact us to set up Invite Proposals
-                            </ContactInviteLink>
                           </p>
                         </li>
                         <li className="flex items-start gap-2">
