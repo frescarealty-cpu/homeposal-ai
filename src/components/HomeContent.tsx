@@ -268,31 +268,32 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
             ) : (
               <>
                 <div className="space-y-4">
+                  <div
+                    role="note"
+                    aria-label="Owner Alert"
+                    className="rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-2.5 shadow-sm sm:px-3.5 sm:py-3"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle
+                        className="h-3.5 w-3.5 shrink-0 text-[#2C56A3]"
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#2C56A3]">
+                        Owner Alert
+                      </p>
+                    </div>
+                    <p className="mt-1 text-sm font-semibold tracking-tight text-[var(--foreground)]">
+                      Don&apos;t List Yet.
+                    </p>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[var(--foreground-muted)]">
+                      See bona fide proposals from verified suitors before you deal with the stress of the MLS.
+                    </p>
+                  </div>
+
                   <AiAssistant />
 
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
-                    <div
-                      role="note"
-                      aria-label="Owner Alert"
-                      className="mb-4 rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-2.5 shadow-sm sm:px-3.5 sm:py-3"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <AlertCircle
-                          className="h-3.5 w-3.5 shrink-0 text-[#2C56A3]"
-                          strokeWidth={2}
-                          aria-hidden
-                        />
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#2C56A3]">
-                          Owner Alert
-                        </p>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold tracking-tight text-[var(--foreground)]">
-                        Don&apos;t List Yet.
-                      </p>
-                      <p className="mt-1.5 text-xs leading-relaxed text-[var(--foreground-muted)]">
-                        See bona fide proposals from verified suitors before you deal with the stress of the MLS.
-                      </p>
-                    </div>
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h2 className="text-lg font-semibold text-[var(--foreground)]">What is HomePosal?</h2>
                       {aboutCanCollapse && (
