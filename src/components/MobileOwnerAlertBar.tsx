@@ -13,14 +13,10 @@ export function MobileOwnerAlertBar() {
   const [isMounted, setIsMounted] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [barHeight, setBarHeight] = useState(0);
-  const hideOnDetailPage = pathname === "/place" || pathname.startsWith("/property/");
-
-  if (hideOnDetailPage) {
-    return null;
-  }
+  const hideOnDetailPage = pathname === "/place" || pathname?.startsWith("/property/") === true;
 
   useLayoutEffect(() => {
-    if (!isMounted || !barRef.current) return;
+    if (hideOnDetailPage || !isMounted || !barRef.current) return;
 
     const element = barRef.current;
     const updateHeight = () => setBarHeight(element.getBoundingClientRect().height);
@@ -31,9 +27,11 @@ export function MobileOwnerAlertBar() {
     resizeObserver.observe(element);
 
     return () => resizeObserver.disconnect();
-  }, [isMounted]);
+  }, [hideOnDetailPage, isMounted]);
 
   useEffect(() => {
+    if (hideOnDetailPage) return;
+
     const enterFrame = window.requestAnimationFrame(() => {
       setIsVisible(true);
     });
@@ -49,7 +47,11 @@ export function MobileOwnerAlertBar() {
       window.clearTimeout(hideTimer);
       window.clearTimeout(unmountTimer);
     };
-  }, []);
+  }, [hideOnDetailPage]);
+
+  if (hideOnDetailPage) {
+    return null;
+  }
 
   return (
     <>
