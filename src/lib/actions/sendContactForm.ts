@@ -17,7 +17,7 @@ export async function sendContactForm(params: {
   name: string;
   email: string;
   phone?: string;
-  preferredContactMethod?: "email" | "phone";
+  preferredContactMethod?: "email" | "text" | "phone";
   message: string;
   honeypot?: string;
 }): Promise<SendContactResult> {
@@ -31,7 +31,7 @@ export async function sendContactForm(params: {
   if (honeypot) return { success: false, error: "Something went wrong. Please try again." };
   if (!name) return { success: false, error: "Please enter your name." };
   if (!email) return { success: false, error: "Please enter your email." };
-  if (preferredContactMethod === "phone" && !phone) {
+  if ((preferredContactMethod === "phone" || preferredContactMethod === "text") && !phone) {
     return { success: false, error: "Please enter your phone number (or choose Email)." };
   }
   if (!message) return { success: false, error: "Please enter a message." };
@@ -43,6 +43,8 @@ export async function sendContactForm(params: {
   }
 
   const from = process.env.RESEND_FROM_EMAIL ?? "HomePosal <onboarding@resend.dev>";
+  const preferredContactLabel =
+    preferredContactMethod === "phone" ? "Phone" : preferredContactMethod === "text" ? "Text" : "Email";
 
   try {
     const { error } = await resend.emails.send({
@@ -54,7 +56,7 @@ export async function sendContactForm(params: {
         <div style="font-family: sans-serif; max-width: 560px;">
           <h2>Contact form submission</h2>
           <p><strong>From:</strong> ${name} &lt;${email}&gt;</p>
-          <p><strong>Preferred contact:</strong> ${preferredContactMethod === "phone" ? "Phone" : "Email"}</p>
+          <p><strong>Preferred contact:</strong> ${preferredContactLabel}</p>
           ${phone ? `<p><strong>Phone:</strong> ${phone.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>` : ""}
           <p><strong>Message:</strong></p>
           <div style="white-space: pre-wrap; padding: 12px; background: #f1f5f9; border-radius: 6px;">${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>

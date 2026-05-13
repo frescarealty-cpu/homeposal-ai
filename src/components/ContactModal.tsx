@@ -16,7 +16,7 @@ export function ContactModal({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [preferredContactMethod, setPreferredContactMethod] = useState<"email" | "phone">("email");
+  const [preferredContactMethod, setPreferredContactMethod] = useState<"email" | "text" | "phone">("email");
   const [message, setMessage] = useState("");
   const [humanChecked, setHumanChecked] = useState(false);
   const [honeypot, setHoneypot] = useState("");
@@ -49,7 +49,7 @@ export function ContactModal({
         setStatus("error");
         return;
       }
-      if (preferredContactMethod === "phone" && !phone.trim()) {
+      if ((preferredContactMethod === "phone" || preferredContactMethod === "text") && !phone.trim()) {
         setErrorMessage("Please enter your phone number (or choose Email).");
         setStatus("error");
         return;
@@ -170,9 +170,9 @@ export function ContactModal({
                 autoComplete="tel"
                 inputMode="tel"
               />
-              {preferredContactMethod === "phone" && (
+              {(preferredContactMethod === "phone" || preferredContactMethod === "text") && (
                 <p className="mt-1 text-xs text-[var(--foreground-muted)]">
-                  Phone is required when “Phone” is selected above.
+                  Phone is required when “Phone” or “Text” is selected above.
                 </p>
               )}
             </div>
@@ -186,11 +186,12 @@ export function ContactModal({
               <select
                 id="contact-preferred"
                 value={preferredContactMethod}
-                onChange={(e) => setPreferredContactMethod(e.target.value as "email" | "phone")}
+                onChange={(e) => setPreferredContactMethod(e.target.value as "email" | "text" | "phone")}
                 disabled={status === "sending"}
                 className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-base text-[var(--foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
               >
                 <option value="email">Email</option>
+                <option value="text">Text</option>
                 <option value="phone">Phone</option>
               </select>
             </div>
