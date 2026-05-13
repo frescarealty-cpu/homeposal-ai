@@ -271,7 +271,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                   <div
                     role="note"
                     aria-label="Owner Alert"
-                    className="rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-2.5 shadow-sm sm:px-3.5 sm:py-3"
+                    className="hidden rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-2.5 shadow-sm sm:px-3.5 sm:py-3 md:block"
                   >
                     <div className="flex items-center gap-1.5">
                       <AlertCircle

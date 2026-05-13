@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { GpcOptOutSignal } from "@/components/GpcOptOutSignal";
 import { CookieConsent } from "@/components/CookieConsent";
+import { MobileOwnerAlertBar } from "@/components/MobileOwnerAlertBar";
 import "./globals.css";
 
 const inter = Inter({
@@ -40,6 +41,7 @@ export default function RootLayout({
           <GoogleMapsProvider>
             <div className="flex min-h-screen flex-col overflow-x-hidden">
               <div className="mx-auto flex min-h-screen w-full max-w-[95%] flex-col bg-white md:max-w-7xl md:min-w-0">
+                <MobileOwnerAlertBar />
                 <Suspense fallback={<div className="kalshi-border min-h-[80px] border-x-0 border-t-0 bg-[var(--background-elevated)] md:min-h-[120px]" aria-hidden />}>
                   <Header />
                 </Suspense>
