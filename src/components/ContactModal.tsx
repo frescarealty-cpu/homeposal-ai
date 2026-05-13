@@ -83,7 +83,7 @@ export function ContactModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-4 sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="contact-modal-title"
@@ -93,8 +93,8 @@ export function ContactModal({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-md rounded-lg border border-[var(--border)] bg-[var(--background)] shadow-xl kalshi-border p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="relative my-auto max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-lg border border-[var(--border)] bg-[var(--background)] p-4 shadow-xl kalshi-border sm:p-6">
+        <div className="sticky top-0 z-10 -mx-4 mb-4 flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-4 pb-3 pt-1 sm:-mx-6 sm:px-6">
           <h2 id="contact-modal-title" className="text-lg font-semibold text-[var(--foreground)]">
             {status === "success" ? "HomePosal Got It!" : "Contact HomePosal"}
           </h2>
