@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Info, Mail, Phone } from "lucide-react";
+import { AlertCircle, Info, Mail, Phone } from "lucide-react";
+import { ContactInviteLink } from "@/components/ContactInviteLink";
 import type { ProposalPublic } from "@/types/proposals";
 import { createClient } from "@/lib/supabase/client";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 type ProposalsPublicViewProps = {
   proposals: ProposalPublic[];
@@ -13,6 +14,8 @@ type ProposalsPublicViewProps = {
   offerDeadline?: string;
   enableInquiry?: boolean;
   inquiryAddressLabel?: string;
+  showOwnerAlertBanner?: boolean;
+  ownerInquiryPhone?: string;
 };
 
 function formatCurrency(cents: number) {
@@ -84,6 +87,8 @@ export function ProposalsPublicView({
   offerDeadline,
   enableInquiry = false,
   inquiryAddressLabel,
+  showOwnerAlertBanner = false,
+  ownerInquiryPhone = "760-123-4560",
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
   const [priceSort, setPriceSort] = useState<"none" | "high" | "low">("high");
@@ -94,7 +99,6 @@ export function ProposalsPublicView({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const [authLoading, setAuthLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
@@ -115,20 +119,17 @@ export function ProposalsPublicView({
   useEffect(() => {
     if (!enableInquiry) return;
     const supabase = createClient();
-    setAuthLoading(true);
     supabase.auth
       .getUser()
       .then(({ data: { user } }) => {
         setIsLoggedIn(!!user);
         setUserEmail(user?.email ?? "");
         setInquiryEmail(user?.email ?? "");
-        setAuthLoading(false);
       })
       .catch(() => {
         setIsLoggedIn(false);
         setUserEmail("");
         setInquiryEmail("");
-        setAuthLoading(false);
       });
 
     const {
@@ -333,6 +334,42 @@ export function ProposalsPublicView({
 
   return (
     <div className="flex flex-col p-4">
+      {showOwnerAlertBanner && enableInquiry && pendingProposals.length > 0 && (
+        <div
+          role="note"
+          aria-label="Owner Alert"
+          className="mb-4 rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-3 shadow-sm"
+        >
+          <div className="flex items-center gap-1.5">
+            <AlertCircle
+              className="h-3.5 w-3.5 shrink-0 text-[#1C4482]"
+              strokeWidth={2}
+              aria-hidden
+            />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1C4482]">
+              Owner Alert
+            </p>
+          </div>
+          <p className="mt-1 text-sm font-semibold tracking-tight text-[var(--foreground)]">
+            Are you the owner and want more information on a proposal?
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <ContactInviteLink
+              contactType="owner-proposal"
+              className="inline-flex min-h-[40px] items-center justify-center rounded-md bg-[#1C4482] px-3 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
+            >
+              Get More Info
+            </ContactInviteLink>
+            <a
+              href={`tel:${ownerInquiryPhone}`}
+              className="inline-flex min-h-[40px] items-center justify-center rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--border-subtle)]"
+            >
+              Call {ownerInquiryPhone}
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-[var(--foreground)]">
           Proposals (public view)

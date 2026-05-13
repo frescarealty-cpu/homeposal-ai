@@ -469,7 +469,7 @@ export function MapSection({
           onClick={() => setMapStyle("satellite")}
           className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-medium transition-colors ${
             mapStyle === "satellite"
-              ? "bg-[#2C56A3] text-white"
+              ? "bg-[#1C4482] text-white"
               : "text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]"
           }`}
           aria-pressed={mapStyle === "satellite"}

@@ -90,6 +90,8 @@ export default async function PlacePage({
           bestOfferCents={bestOfferCents}
           enableInquiry
           inquiryAddressLabel={address}
+          showOwnerAlertBanner
+          ownerInquiryPhone="760-123-4560"
         />
         <div className="border-t border-[var(--border)]" />
         <div className="p-4">

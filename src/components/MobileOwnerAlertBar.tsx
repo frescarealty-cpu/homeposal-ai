@@ -69,11 +69,11 @@ export function MobileOwnerAlertBar() {
               >
                 <div className="flex items-center gap-1.5">
                   <AlertCircle
-                    className="h-3.5 w-3.5 shrink-0 text-[#2C56A3]"
+                    className="h-3.5 w-3.5 shrink-0 text-[#1C4482]"
                     strokeWidth={2}
                     aria-hidden
                   />
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#2C56A3]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1C4482]">
                     Owner Alert
                   </p>
                 </div>

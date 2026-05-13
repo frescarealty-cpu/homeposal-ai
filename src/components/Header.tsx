@@ -6,7 +6,10 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, X, Mail } from "lucide-react";
 import { ContactModal } from "@/components/ContactModal";
-import { CONTACT_INVITE_PREFILL_MESSAGE } from "@/lib/contactInviteDefaults";
+import {
+  CONTACT_INVITE_PREFILL_MESSAGE,
+  CONTACT_OWNER_PROPOSAL_PREFILL_MESSAGE,
+} from "@/lib/contactInviteDefaults";
 import { LOGO_PUBLIC_URL } from "@/lib/siteAssets";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -42,8 +45,13 @@ export function Header() {
 
   useEffect(() => {
     const contact = searchParams.get("contact");
-    if (contact !== "invite") return;
-    setContactInitialMessage(CONTACT_INVITE_PREFILL_MESSAGE);
+    const contactPrefillMap: Record<string, string> = {
+      invite: CONTACT_INVITE_PREFILL_MESSAGE,
+      "owner-proposal": CONTACT_OWNER_PROPOSAL_PREFILL_MESSAGE,
+    };
+    const prefill = contact ? contactPrefillMap[contact] : undefined;
+    if (!prefill) return;
+    setContactInitialMessage(prefill);
     setContactOpen(true);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("contact");

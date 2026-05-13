@@ -129,7 +129,7 @@ export function StreetViewPanel({ latitude, longitude, address }: StreetViewPane
               onClick={() => setViewMode("aerial")}
               className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
                 viewMode === "aerial"
-                  ? "bg-[#2C56A3] text-white"
+                  ? "bg-[#1C4482] text-white"
                   : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
               }`}
               aria-pressed={viewMode === "aerial"}

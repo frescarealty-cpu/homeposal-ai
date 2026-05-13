@@ -149,6 +149,8 @@ export default async function PropertyPage({
           offerDeadline={property.offerDeadline}
           enableInquiry
           inquiryAddressLabel={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
+          showOwnerAlertBanner
+          ownerInquiryPhone="760-123-4560"
         />
         {property.status === "open" && (
           <div className="border-t border-[var(--border)]">
