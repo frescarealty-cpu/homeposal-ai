@@ -2,15 +2,22 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AlertCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const DISPLAY_MS = 6000;
 const EXIT_MS = 300;
 
 export function MobileOwnerAlertBar() {
+  const pathname = usePathname();
   const barRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [barHeight, setBarHeight] = useState(0);
+  const hideOnDetailPage = pathname === "/place" || pathname.startsWith("/property/");
+
+  if (hideOnDetailPage) {
+    return null;
+  }
 
   useLayoutEffect(() => {
     if (!isMounted || !barRef.current) return;
