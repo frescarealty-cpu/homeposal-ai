@@ -309,10 +309,9 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                     </div>
 
                     <p className="mb-4 text-sm leading-relaxed text-[var(--foreground-muted)]">
-                      <strong className="text-[var(--foreground)]">HomePosal:</strong> We are a bulletin board that
-                      hosts purchase proposals for Southern California owners who want to see the market&apos;s
-                      interest without the pressure of a listing. We simply facilitate the connection between owners
-                      and the Interested Party.
+                      <strong className="text-[var(--foreground)]">HomePosal:</strong> HomePosal is a public bulletin
+                      board where Southern California owners view market interest and suitors submit proposals on
+                      any property. We connect owners and the Interested Party so they can find each other.
                     </p>
 
                     <div
