@@ -65,7 +65,13 @@ type MapSectionProps = {
   onPropertySelect?: (property: PropertyListing) => void;
   onPlaceSelect?: (place: { address: string; lat: number; lng: number }) => void;
   onPopupClose?: () => void;
-  addressToShow?: { address: string; lat: number; lng: number } | null;
+  addressToShow?: {
+    address: string;
+    lat: number;
+    lng: number;
+    zoom?: number;
+    bounds?: { north: number; south: number; east: number; west: number };
+  } | null;
   isLoaded?: boolean;
   loadError?: Error | undefined;
   countySlug?: string;
@@ -277,7 +283,7 @@ export function MapSection({
       strokeWeight: 2,
     };
 
-    properties.forEach((property) => {
+    lookupList.forEach((property) => {
       const lat = property.latitude;
       const lng = property.longitude;
       if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng)) return;
@@ -310,7 +316,7 @@ export function MapSection({
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
     };
-  }, [properties, isLoaded]);
+  }, [lookupList, isLoaded]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -361,7 +367,7 @@ export function MapSection({
       return;
     }
 
-    const { address, lat, lng } = addressToShow;
+    const { address, lat, lng, zoom, bounds } = addressToShow;
     const position = { lat, lng };
     // Offset pin ~2m north so it doesn't cover the address number on the map
     const OFFSET_DEG = 0.000018;
@@ -371,10 +377,19 @@ export function MapSection({
     let rafId = 0;
     let timeoutId = 0;
     rafId = requestAnimationFrame(() => {
-      map.panTo(position);
-      map.setZoom(21);
-      timeoutId = window.setTimeout(() => {
+      if (bounds) {
+        map.fitBounds(bounds);
+      } else {
         map.panTo(position);
+        map.setZoom(zoom ?? 21);
+      }
+      timeoutId = window.setTimeout(() => {
+        if (bounds) {
+          map.fitBounds(bounds);
+        } else {
+          map.panTo(position);
+          map.setZoom(zoom ?? 21);
+        }
       }, 120);
     });
 

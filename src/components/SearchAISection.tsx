@@ -18,7 +18,45 @@ export type PlaceResult = {
   address: string;
   lat: number;
   lng: number;
+  /** Preferred map zoom when no bounds are available (street-level vs exact address). */
+  zoom?: number;
+  /** When geocoding returns a street or area, fit the map to this viewport. */
+  bounds?: {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  };
 };
+
+function placeResultFromGeocoderResult(result: google.maps.GeocoderResult): PlaceResult | null {
+  const loc = result.geometry?.location;
+  const addr = result.formatted_address;
+  if (!loc || !addr) return null;
+
+  const lat = loc.lat();
+  const lng = loc.lng();
+  const types = result.types ?? [];
+  const isStreetLevel = types.some((t) =>
+    ["route", "locality", "neighborhood", "sublocality", "sublocality_level_1"].includes(t)
+  );
+  const viewport = result.geometry?.viewport;
+
+  return {
+    address: addr,
+    lat,
+    lng,
+    zoom: isStreetLevel ? 16 : 21,
+    bounds: viewport
+      ? {
+          north: viewport.getNorthEast().lat(),
+          south: viewport.getSouthWest().lat(),
+          east: viewport.getNorthEast().lng(),
+          west: viewport.getSouthWest().lng(),
+        }
+      : undefined,
+  };
+}
 
 type SearchAISectionProps = {
   value?: string;
@@ -112,27 +150,33 @@ function locateAndSelect(
   if (!address.trim() || !window.google?.maps) return;
 
   const geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: address.trim(), bounds: new google.maps.LatLngBounds(
-    new google.maps.LatLng(SOCAL_BOUNDS.south, SOCAL_BOUNDS.west),
-    new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
-  ) }, (results, status) => {
-    if (status !== "OK" || !results?.[0]) return;
-    const loc = results[0].geometry?.location;
-    const addr = results[0].formatted_address;
-    if (!loc || !addr) return;
-    const lat = loc.lat();
-    const lng = loc.lng();
-    // Only accept addresses within Southern California bounds
-    if (lat < SOCAL_BOUNDS.south || lat > SOCAL_BOUNDS.north || lng < SOCAL_BOUNDS.west || lng > SOCAL_BOUNDS.east) return;
-    const match = findPropertyByLocation(properties, lat, lng) ?? findPropertyByAddress(properties, addr);
-    if (match) {
-      onPropertySelect?.(match);
-      onNavigateToProperty?.(match);
-      window.dispatchEvent(new CustomEvent("homeposal-select-property", { detail: { property: match } }));
-    } else {
-      onPlaceSelect?.({ address: addr, lat, lng });
+  geocoder.geocode(
+    {
+      address: address.trim(),
+      bounds: new google.maps.LatLngBounds(
+        new google.maps.LatLng(SOCAL_BOUNDS.south, SOCAL_BOUNDS.west),
+        new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
+      ),
+    },
+    (results, status) => {
+      if (status !== "OK" || !results?.[0]) return;
+      const place = placeResultFromGeocoderResult(results[0]);
+      if (!place) return;
+      const { lat, lng, address: addr } = place;
+      // Only accept addresses within Southern California bounds
+      if (lat < SOCAL_BOUNDS.south || lat > SOCAL_BOUNDS.north || lng < SOCAL_BOUNDS.west || lng > SOCAL_BOUNDS.east) {
+        return;
+      }
+      const match = findPropertyByLocation(properties, lat, lng) ?? findPropertyByAddress(properties, addr);
+      if (match) {
+        onPropertySelect?.(match);
+        onNavigateToProperty?.(match);
+        window.dispatchEvent(new CustomEvent("homeposal-select-property", { detail: { property: match } }));
+      } else {
+        onPlaceSelect?.(place);
+      }
     }
-  });
+  );
 }
 
 export function SearchAISection({
@@ -181,12 +225,12 @@ export function SearchAISection({
       new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
     );
 
-    // Restrict to address type only (street addresses); avoids establishments/POI in dropdown.
+    // Geocode includes street names/routes as well as specific addresses.
     const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
       bounds,
       strictBounds: true,
       componentRestrictions: { country: "us" },
-      types: ["address"],
+      types: ["geocode"],
       fields: ["formatted_address", "geometry", "address_components", "name", "place_id", "types"],
     });
 

@@ -60,6 +60,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   const [addressToShow, setAddressToShow] = useState<PlaceResult | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
   const aboutContentRef = useRef<HTMLDivElement>(null);
   const [aboutCanCollapse, setAboutCanCollapse] = useState(false);
   const [aboutCollapsed, setAboutCollapsed] = useState(false);
@@ -101,18 +102,18 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
     };
   }, []);
 
-  const handlePlaceSelect = useCallback(
-    (place: PlaceResult) => {
-      if (typeof window !== "undefined" && window.innerWidth < 768) {
-        router.push(`/place?address=${encodeURIComponent(place.address)}&lat=${place.lat}&lng=${place.lng}`);
-        return;
-      }
-      setSearchQuery(place.address);
-      setAddressToShow(place);
-      setSelectedPropertyId(null);
-    },
-    [router]
-  );
+  const handlePlaceSelect = useCallback((place: PlaceResult) => {
+    setSearchQuery(place.address);
+    setAddressToShow(place);
+    setSelectedPropertyId(null);
+  }, []);
+
+  useEffect(() => {
+    if (!addressToShow || typeof window === "undefined" || window.innerWidth >= 768) return;
+    requestAnimationFrame(() => {
+      mapContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [addressToShow]);
 
   const handlePropertySelect = useCallback((property: PropertyListing) => {
     setSelectedPropertyId(property.id);
@@ -135,6 +136,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   }, [router]);
 
   const filteredProperties = filterPropertiesByQuery(searchQuery, properties);
+  const showMobileMap = !!addressToShow || !!selectedPropertyId;
   const selectedProperty = selectedPropertyId ? properties.find((p) => p.id === selectedPropertyId) ?? null : null;
   const proposals = selectedPropertyId ? getMockProposalsPublic(selectedPropertyId) : [];
   const bestOfferCents = proposals.length > 0 ? Math.max(...proposals.map((p) => p.priceCents)) : 0;
@@ -155,7 +157,10 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               isLoaded={isMapsLoaded}
             />
           </div>
-          <div className="relative hidden min-h-[50vh] min-w-0 flex-1 overflow-hidden pb-4 md:block">
+          <div
+            ref={mapContainerRef}
+            className={`relative min-h-[50vh] min-w-0 flex-1 overflow-hidden pb-4 ${showMobileMap ? "block" : "hidden md:block"}`}
+          >
             <MapSection
               properties={filteredProperties}
               allProperties={properties}
@@ -169,6 +174,12 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               countySlug={countySlug}
             />
           </div>
+          {showMobileMap && (
+            <p className="px-3 pb-3 text-xs leading-relaxed text-[var(--foreground-muted)] md:hidden">
+              Tap a blue marker for a listed property, or tap anywhere on the map to choose an address and view
+              proposals.
+            </p>
+          )}
         </div>
 
         <div
