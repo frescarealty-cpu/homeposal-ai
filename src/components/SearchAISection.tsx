@@ -30,13 +30,25 @@ export type PlaceResult = {
   isStreetSearch?: boolean;
 };
 
+const STREET_SUFFIX =
+  /\b(st|street|ste|ave|avenue|av|rd|road|dr|drive|ln|lane|blvd|boulevard|way|ct|court|trl|trail|cir|circle|pkwy|parkway|pl|place)\b/i;
+
 /** Street-name searches (route) vs full addresses (street number / premise). */
-function isStreetNameOnlyGeocodeResult(result: google.maps.GeocoderResult): boolean {
-  const types = result.types ?? [];
-  const hasStreetNumber = (result.address_components ?? []).some((c) =>
-    c.types.includes("street_number")
-  );
+function isStreetNameOnlyGeocodeResult(
+  result: google.maps.GeocoderResult,
+  query: string
+): boolean {
+  const q = query.trim();
+  if (!q) return false;
+
+  // User typed a leading street number → specific address, not a street browse
+  if (/^\d{1,6}\s/.test(q)) return false;
+
+  const components = result.address_components ?? [];
+  const hasStreetNumber = components.some((c) => c.types.includes("street_number"));
   if (hasStreetNumber) return false;
+
+  const types = result.types ?? [];
   if (
     types.includes("street_address") ||
     types.includes("premise") ||
@@ -44,7 +56,18 @@ function isStreetNameOnlyGeocodeResult(result: google.maps.GeocoderResult): bool
   ) {
     return false;
   }
-  return types.includes("route") || types.includes("intersection");
+
+  const hasRoute = components.some((c) => c.types.includes("route"));
+  if (types.includes("route") || types.includes("intersection") || hasRoute) {
+    return true;
+  }
+
+  // e.g. "Buena Creek Trail, Vista" — no number in query, common street suffix
+  if (STREET_SUFFIX.test(q)) {
+    return true;
+  }
+
+  return false;
 }
 
 type SearchAISectionProps = {
@@ -158,7 +181,7 @@ function locateAndSelect(
       window.dispatchEvent(new CustomEvent("homeposal-select-property", { detail: { property: match } }));
     } else {
       const viewport = results[0].geometry?.viewport;
-      const isStreetSearch = isStreetNameOnlyGeocodeResult(results[0]);
+      const isStreetSearch = isStreetNameOnlyGeocodeResult(results[0], address.trim());
       onPlaceSelect?.({
         address: addr,
         lat,

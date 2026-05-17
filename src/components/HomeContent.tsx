@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useGoogleMaps } from "./GoogleMapsProvider";
 import { SearchAISection, type PlaceResult } from "./SearchAISection";
 import { MapSection } from "./MapSection";
+import { StreetViewPanel } from "./StreetViewPanel";
 import { ProposalsPublicView } from "./ProposalsPublicView";
 import { PlaceOfferForm } from "./PlaceOfferForm";
 import { AiAssistant } from "./AiAssistant";
@@ -232,6 +233,13 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                 <p className="mb-3 text-sm text-[var(--foreground-muted)]">
                   {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zipCode}
                 </p>
+                <div className="mb-4">
+                  <StreetViewPanel
+                    latitude={selectedProperty.latitude}
+                    longitude={selectedProperty.longitude}
+                    address={`${selectedProperty.address}, ${selectedProperty.city}, ${selectedProperty.state}`}
+                  />
+                </div>
                 <div className="mb-3 grid grid-cols-2 gap-2">
                   <div className="kalshi-border rounded p-2">
                     <p className="text-xs text-[var(--foreground-muted)]">List Price</p>
@@ -279,7 +287,20 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                   ← Back
                 </button>
                 <h2 className="mb-2 text-lg font-semibold text-[var(--foreground)]">{addressToShow.address}</h2>
-                <p className="mb-4 text-base text-[var(--foreground-muted)]">This address was selected from the map search.</p>
+                <p className="mb-4 text-base text-[var(--foreground-muted)]">
+                  {addressToShow.isStreetSearch
+                    ? "Browse the map for properties on this street, or tap the map for an unlisted address."
+                    : "This address was selected from the map search."}
+                </p>
+                {!addressToShow.isStreetSearch && (
+                  <div className="mb-4">
+                    <StreetViewPanel
+                      latitude={addressToShow.lat}
+                      longitude={addressToShow.lng}
+                      address={addressToShow.address}
+                    />
+                  </div>
+                )}
                 <div className="mb-4">{NOTICE}</div>
                 <div className="flex flex-col gap-2">
                   <Link
