@@ -9,6 +9,7 @@ import { SearchAISection, type PlaceResult } from "./SearchAISection";
 import { MapSection } from "./MapSection";
 import { ProposalsPublicView } from "./ProposalsPublicView";
 import { PlaceOfferForm } from "./PlaceOfferForm";
+import { ZillowZestimatePanel } from "./ZillowZestimatePanel";
 import { AiAssistant } from "./AiAssistant";
 import { filterPropertiesByQuery, filterPropertiesNearLocation } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
@@ -320,6 +321,13 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                 </button>
                 <h2 className="mb-2 text-lg font-semibold text-[var(--foreground)]">{addressToShow.address}</h2>
                 <p className="mb-4 text-base text-[var(--foreground-muted)]">This address was selected from the map search.</p>
+                <ZillowZestimatePanel
+                  address={addressToShow.address}
+                  lat={addressToShow.lat}
+                  lng={addressToShow.lng}
+                  variant="collapsible"
+                  className="mb-4"
+                />
                 <div className="mb-4">{NOTICE}</div>
                 <div className="flex flex-col gap-2">
                   <Link
