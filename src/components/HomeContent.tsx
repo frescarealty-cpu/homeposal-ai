@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import { MapSection } from "./MapSection";
 import { ProposalsPublicView } from "./ProposalsPublicView";
 import { PlaceOfferForm } from "./PlaceOfferForm";
 import { AiAssistant } from "./AiAssistant";
-import { filterPropertiesByQuery } from "@/lib/searchProperties";
+import { filterPropertiesByQuery, filterPropertiesNearLocation } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/client";
 import type { PropertyListing } from "@/data/properties";
@@ -60,9 +60,19 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   const [addressToShow, setAddressToShow] = useState<PlaceResult | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const mobileMapRef = useRef<HTMLDivElement>(null);
   const aboutContentRef = useRef<HTMLDivElement>(null);
   const [aboutCanCollapse, setAboutCanCollapse] = useState(false);
   const [aboutCollapsed, setAboutCollapsed] = useState(false);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobileLayout(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     setSearchQuery(initialSearch);
@@ -103,7 +113,16 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
 
   const handlePlaceSelect = useCallback(
     (place: PlaceResult) => {
-      if (typeof window !== "undefined" && window.innerWidth < 768) {
+      if (isMobileLayout) {
+        if (place.isStreetSearch) {
+          setSearchQuery(place.address);
+          setAddressToShow(place);
+          setSelectedPropertyId(null);
+          requestAnimationFrame(() => {
+            mobileMapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+          return;
+        }
         router.push(`/place?address=${encodeURIComponent(place.address)}&lat=${place.lat}&lng=${place.lng}`);
         return;
       }
@@ -111,7 +130,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
       setAddressToShow(place);
       setSelectedPropertyId(null);
     },
-    [router]
+    [router, isMobileLayout]
   );
 
   const handlePropertySelect = useCallback((property: PropertyListing) => {
@@ -119,11 +138,17 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
     setAddressToShow(null);
     const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`;
     setSearchQuery(fullAddress);
-    // Scroll right panel into view when selecting from map (e.g. on mobile)
     requestAnimationFrame(() => {
       rightPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
   }, []);
+
+  const handleMobileStreetMapPropertySelect = useCallback(
+    (property: PropertyListing) => {
+      router.push(`/property/${property.id}`);
+    },
+    [router]
+  );
 
   const handlePopupClose = () => {
     setSelectedPropertyId(null);
@@ -135,6 +160,16 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   }, [router]);
 
   const filteredProperties = filterPropertiesByQuery(searchQuery, properties);
+  const showMobileStreetMap = isMobileLayout && Boolean(addressToShow?.isStreetSearch);
+  const mobileMapProperties = useMemo(() => {
+    if (!addressToShow?.isStreetSearch) return filteredProperties;
+    const nearby = filterPropertiesNearLocation(
+      properties,
+      addressToShow.lat,
+      addressToShow.lng
+    );
+    return nearby.length > 0 ? nearby : filteredProperties;
+  }, [addressToShow, properties, filteredProperties]);
   const selectedProperty = selectedPropertyId ? properties.find((p) => p.id === selectedPropertyId) ?? null : null;
   const proposals = selectedPropertyId ? getMockProposalsPublic(selectedPropertyId) : [];
   const bestOfferCents = proposals.length > 0 ? Math.max(...proposals.map((p) => p.priceCents)) : 0;
@@ -156,19 +191,44 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
             />
           </div>
           <div className="relative hidden min-h-[50vh] min-w-0 flex-1 overflow-hidden pb-4 md:block">
-            <MapSection
-              properties={filteredProperties}
-              allProperties={properties}
-              selectedPropertyId={selectedPropertyId}
-              onPropertySelect={handlePropertySelect}
-              onPlaceSelect={handlePlaceSelect}
-              onPopupClose={handlePopupClose}
-              addressToShow={addressToShow}
-              isLoaded={isMapsLoaded}
-              loadError={mapsLoadError}
-              countySlug={countySlug}
-            />
+            {!isMobileLayout && (
+              <MapSection
+                properties={filteredProperties}
+                allProperties={properties}
+                selectedPropertyId={selectedPropertyId}
+                onPropertySelect={handlePropertySelect}
+                onPlaceSelect={handlePlaceSelect}
+                onPopupClose={handlePopupClose}
+                addressToShow={addressToShow}
+                isLoaded={isMapsLoaded}
+                loadError={mapsLoadError}
+                countySlug={countySlug}
+              />
+            )}
           </div>
+
+          {showMobileStreetMap && (
+            <div
+              ref={mobileMapRef}
+              className="relative min-h-[50vh] max-h-[min(60vh,520px)] min-w-0 overflow-hidden border-b border-[var(--border)] md:hidden"
+            >
+              <MapSection
+                properties={mobileMapProperties}
+                allProperties={properties}
+                selectedPropertyId={null}
+                onPropertySelect={handleMobileStreetMapPropertySelect}
+                onPlaceSelect={handlePlaceSelect}
+                onPopupClose={handlePopupClose}
+                addressToShow={addressToShow}
+                isLoaded={isMapsLoaded}
+                loadError={mapsLoadError}
+                countySlug={countySlug}
+              />
+              <p className="pointer-events-none absolute bottom-2 left-0 right-0 z-10 px-3 text-center text-xs text-[var(--foreground-muted)]">
+                Tap a blue pin to open that property. Pinch and drag to explore the street.
+              </p>
+            </div>
+          )}
         </div>
 
         <div
