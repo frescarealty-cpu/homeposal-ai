@@ -1,5 +1,20 @@
 import type { PropertyListing } from "@/data/properties";
 
+/** Properties within ~maxDegrees of a map point (default ≈ 1 mile). */
+export function filterPropertiesNearLocation(
+  properties: PropertyListing[],
+  lat: number,
+  lng: number,
+  maxDegrees = 0.015
+): PropertyListing[] {
+  return properties.filter((p) => {
+    if (typeof p.latitude !== "number" || typeof p.longitude !== "number") return false;
+    return (
+      Math.abs(p.latitude - lat) <= maxDegrees && Math.abs(p.longitude - lng) <= maxDegrees
+    );
+  });
+}
+
 /**
  * Parses natural language search and filters properties.
  * Examples: "3 bed in San Diego", "under $600k", "condo with pool"

@@ -69,8 +69,7 @@ type MapSectionProps = {
     address: string;
     lat: number;
     lng: number;
-    zoom?: number;
-    bounds?: { north: number; south: number; east: number; west: number };
+    viewport?: { north: number; south: number; east: number; west: number };
   } | null;
   isLoaded?: boolean;
   loadError?: Error | undefined;
@@ -283,7 +282,7 @@ export function MapSection({
       strokeWeight: 2,
     };
 
-    lookupList.forEach((property) => {
+    properties.forEach((property) => {
       const lat = property.latitude;
       const lng = property.longitude;
       if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng)) return;
@@ -298,16 +297,23 @@ export function MapSection({
       markerData.push({ position, property });
       markersRef.current.push(marker);
 
-      marker.addListener("mouseover", () => {
+      const openPropertyPopup = () => {
         infoWindow.setContent(buildPopupHTML(property));
         infoWindow.setPosition(position);
         infoWindow.open(map);
-      });
-      marker.addListener("mouseout", () => infoWindow.close());
+      };
+
+      const supportsHover =
+        typeof window !== "undefined" &&
+        window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+      if (supportsHover) {
+        marker.addListener("mouseover", openPropertyPopup);
+        marker.addListener("mouseout", () => infoWindow.close());
+      }
+
       marker.addListener("click", () => {
-        infoWindow.setContent(buildPopupHTML(property));
-        infoWindow.setPosition(position);
-        infoWindow.open(map);
+        openPropertyPopup();
         onPropertySelectRef.current?.(property);
       });
     });
@@ -316,7 +322,7 @@ export function MapSection({
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
     };
-  }, [lookupList, isLoaded]);
+  }, [properties, isLoaded]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -367,7 +373,7 @@ export function MapSection({
       return;
     }
 
-    const { address, lat, lng, zoom, bounds } = addressToShow;
+    const { address, lat, lng, viewport } = addressToShow;
     const position = { lat, lng };
     // Offset pin ~2m north so it doesn't cover the address number on the map
     const OFFSET_DEG = 0.000018;
@@ -377,20 +383,15 @@ export function MapSection({
     let rafId = 0;
     let timeoutId = 0;
     rafId = requestAnimationFrame(() => {
-      if (bounds) {
-        map.fitBounds(bounds);
+      if (viewport) {
+        map.fitBounds(viewport, { top: 48, right: 48, bottom: 48, left: 48 });
       } else {
         map.panTo(position);
-        map.setZoom(zoom ?? 21);
-      }
-      timeoutId = window.setTimeout(() => {
-        if (bounds) {
-          map.fitBounds(bounds);
-        } else {
+        map.setZoom(21);
+        timeoutId = window.setTimeout(() => {
           map.panTo(position);
-          map.setZoom(zoom ?? 21);
-        }
-      }, 120);
+        }, 120);
+      }
     });
 
     clickMarkerRef.current?.setMap(null);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import { MapSection } from "./MapSection";
 import { ProposalsPublicView } from "./ProposalsPublicView";
 import { PlaceOfferForm } from "./PlaceOfferForm";
 import { AiAssistant } from "./AiAssistant";
-import { filterPropertiesByQuery } from "@/lib/searchProperties";
+import { filterPropertiesByQuery, filterPropertiesNearLocation } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/client";
 import type { PropertyListing } from "@/data/properties";
@@ -106,21 +106,22 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
     setSearchQuery(place.address);
     setAddressToShow(place);
     setSelectedPropertyId(null);
+    if (place.isStreetSearch) {
+      requestAnimationFrame(() => {
+        mapContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    } else {
+      requestAnimationFrame(() => {
+        rightPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    }
   }, []);
-
-  useEffect(() => {
-    if (!addressToShow || typeof window === "undefined" || window.innerWidth >= 768) return;
-    requestAnimationFrame(() => {
-      mapContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }, [addressToShow]);
 
   const handlePropertySelect = useCallback((property: PropertyListing) => {
     setSelectedPropertyId(property.id);
     setAddressToShow(null);
     const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`;
     setSearchQuery(fullAddress);
-    // Scroll right panel into view when selecting from map (e.g. on mobile)
     requestAnimationFrame(() => {
       rightPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
@@ -131,12 +132,30 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
     setAddressToShow(null);
   };
 
-  const handleNavigateToProperty = useCallback((property: PropertyListing) => {
-    router.push(`/property/${property.id}`);
-  }, [router]);
+  const handleNavigateToProperty = useCallback(
+    (property: PropertyListing) => {
+      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        handlePropertySelect(property);
+        return;
+      }
+      router.push(`/property/${property.id}`);
+    },
+    [router, handlePropertySelect]
+  );
 
   const filteredProperties = filterPropertiesByQuery(searchQuery, properties);
-  const showMobileMap = !!addressToShow || !!selectedPropertyId;
+  const showMobileMap = Boolean(addressToShow?.isStreetSearch);
+  const mapProperties = useMemo(() => {
+    if (addressToShow?.isStreetSearch) {
+      const nearby = filterPropertiesNearLocation(
+        properties,
+        addressToShow.lat,
+        addressToShow.lng
+      );
+      if (nearby.length > 0) return nearby;
+    }
+    return filteredProperties;
+  }, [addressToShow, properties, filteredProperties]);
   const selectedProperty = selectedPropertyId ? properties.find((p) => p.id === selectedPropertyId) ?? null : null;
   const proposals = selectedPropertyId ? getMockProposalsPublic(selectedPropertyId) : [];
   const bestOfferCents = proposals.length > 0 ? Math.max(...proposals.map((p) => p.priceCents)) : 0;
@@ -159,10 +178,12 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           </div>
           <div
             ref={mapContainerRef}
-            className={`relative min-h-[50vh] min-w-0 flex-1 overflow-hidden pb-4 ${showMobileMap ? "block" : "hidden md:block"}`}
+            className={`relative min-h-[45vh] min-w-0 flex-1 overflow-hidden pb-2 md:min-h-[50vh] md:pb-4 ${
+              showMobileMap ? "block" : "hidden md:block"
+            }`}
           >
             <MapSection
-              properties={filteredProperties}
+              properties={mapProperties}
               allProperties={properties}
               selectedPropertyId={selectedPropertyId}
               onPropertySelect={handlePropertySelect}
@@ -173,13 +194,12 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               loadError={mapsLoadError}
               countySlug={countySlug}
             />
+            {showMobileMap && (
+              <p className="pointer-events-none absolute bottom-2 left-0 right-0 z-10 px-3 text-center text-xs text-[var(--foreground-muted)] md:hidden">
+                Tap a blue pin for property details, or tap the map for an unlisted address.
+              </p>
+            )}
           </div>
-          {showMobileMap && (
-            <p className="px-3 pb-3 text-xs leading-relaxed text-[var(--foreground-muted)] md:hidden">
-              Tap a blue marker for a listed property, or tap anywhere on the map to choose an address and view
-              proposals.
-            </p>
-          )}
         </div>
 
         <div
