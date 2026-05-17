@@ -210,20 +210,31 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           {showMobileStreetMap && (
             <div
               ref={mobileMapRef}
-              className="relative min-h-[50vh] max-h-[min(60vh,520px)] min-w-0 overflow-hidden border-b border-[var(--border)] md:hidden"
+              className="relative h-[50vh] w-full min-w-0 overflow-hidden border-b border-[var(--border)] md:hidden"
             >
-              <MapSection
-                properties={mobileMapProperties}
-                allProperties={properties}
-                selectedPropertyId={null}
-                onPropertySelect={handleMobileStreetMapPropertySelect}
-                onPlaceSelect={handlePlaceSelect}
-                onPopupClose={handlePopupClose}
-                addressToShow={addressToShow}
-                isLoaded={isMapsLoaded}
-                loadError={mapsLoadError}
-                countySlug={countySlug}
-              />
+              {!isMapsLoaded ? (
+                <div className="flex h-full items-center justify-center bg-[var(--background-elevated)]">
+                  <p className="text-sm text-[var(--foreground-muted)]">Loading map…</p>
+                </div>
+              ) : mapsLoadError ? (
+                <div className="flex h-full items-center justify-center bg-[var(--background-elevated)] p-4 text-center">
+                  <p className="text-sm text-[var(--foreground-muted)]">Failed to load map</p>
+                </div>
+              ) : (
+                <MapSection
+                  key={addressToShow?.address ?? "mobile-street-map"}
+                  properties={mobileMapProperties}
+                  allProperties={properties}
+                  selectedPropertyId={null}
+                  onPropertySelect={handleMobileStreetMapPropertySelect}
+                  onPlaceSelect={handlePlaceSelect}
+                  onPopupClose={handlePopupClose}
+                  addressToShow={addressToShow}
+                  isLoaded={isMapsLoaded}
+                  loadError={mapsLoadError}
+                  countySlug={countySlug}
+                />
+              )}
               <p className="pointer-events-none absolute bottom-2 left-0 right-0 z-10 px-3 text-center text-xs text-[var(--foreground-muted)]">
                 Tap a blue pin to open that property. Pinch and drag to explore the street.
               </p>

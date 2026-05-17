@@ -163,6 +163,22 @@ export function MapSection({
     mapRef.current = map;
     setMapReady((r) => r + 1);
 
+    const triggerResize = () => {
+      if (!mapRef.current) return;
+      google.maps.event.trigger(mapRef.current, "resize");
+    };
+    requestAnimationFrame(triggerResize);
+    const resizeTimeouts = [120, 350].map((ms) => window.setTimeout(triggerResize, ms));
+
+    const resizeObserver =
+      containerRef.current &&
+      new ResizeObserver(() => {
+        triggerResize();
+      });
+    if (resizeObserver && containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
     const infoWindow = new google.maps.InfoWindow({ maxWidth: 340 });
     infoWindow.addListener("closeclick", () => onPopupClose?.());
     infoWindowRef.current = infoWindow;
@@ -219,6 +235,8 @@ export function MapSection({
     container?.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
+      resizeTimeouts.forEach((id) => window.clearTimeout(id));
+      resizeObserver?.disconnect();
       container?.removeEventListener("wheel", handleWheel);
       mapClickListenerRef.current?.remove();
       clickMarkerRef.current?.setMap(null);
@@ -383,12 +401,14 @@ export function MapSection({
     let rafId = 0;
     let timeoutId = 0;
     rafId = requestAnimationFrame(() => {
+      google.maps.event.trigger(map, "resize");
       if (viewport) {
         map.fitBounds(viewport, { top: 48, right: 48, bottom: 48, left: 48 });
       } else {
         map.panTo(position);
         map.setZoom(21);
         timeoutId = window.setTimeout(() => {
+          google.maps.event.trigger(map, "resize");
           map.panTo(position);
         }, 120);
       }
