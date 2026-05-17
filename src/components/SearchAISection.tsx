@@ -14,61 +14,11 @@ const SOCAL_BOUNDS = {
   west: -120.5,  // Ventura / Santa Barbara
 };
 
-export type PlaceViewport = {
-  north: number;
-  south: number;
-  east: number;
-  west: number;
-};
-
 export type PlaceResult = {
   address: string;
   lat: number;
   lng: number;
-  viewport?: PlaceViewport;
-  /** True when the search is a street/route only (no specific street number). */
-  isStreetSearch?: boolean;
 };
-
-const STREET_SUFFIX =
-  /\b(st|street|ste|ave|avenue|av|rd|road|dr|drive|ln|lane|blvd|boulevard|way|ct|court|trl|trail|cir|circle|pkwy|parkway|pl|place)\b/i;
-
-/** Street-name searches (route) vs full addresses (street number / premise). */
-function isStreetNameOnlyGeocodeResult(
-  result: google.maps.GeocoderResult,
-  query: string
-): boolean {
-  const q = query.trim();
-  if (!q) return false;
-
-  // User typed a leading street number → specific address, not a street browse
-  if (/^\d{1,6}\s/.test(q)) return false;
-
-  const components = result.address_components ?? [];
-  const hasStreetNumber = components.some((c) => c.types.includes("street_number"));
-  if (hasStreetNumber) return false;
-
-  const types = result.types ?? [];
-  if (
-    types.includes("street_address") ||
-    types.includes("premise") ||
-    types.includes("subpremise")
-  ) {
-    return false;
-  }
-
-  const hasRoute = components.some((c) => c.types.includes("route"));
-  if (types.includes("route") || types.includes("intersection") || hasRoute) {
-    return true;
-  }
-
-  // e.g. "Buena Creek Trail, Vista" — no number in query, common street suffix
-  if (STREET_SUFFIX.test(q)) {
-    return true;
-  }
-
-  return false;
-}
 
 type SearchAISectionProps = {
   value?: string;
@@ -180,22 +130,7 @@ function locateAndSelect(
       onNavigateToProperty?.(match);
       window.dispatchEvent(new CustomEvent("homeposal-select-property", { detail: { property: match } }));
     } else {
-      const viewport = results[0].geometry?.viewport;
-      const isStreetSearch = isStreetNameOnlyGeocodeResult(results[0], address.trim());
-      onPlaceSelect?.({
-        address: addr,
-        lat,
-        lng,
-        isStreetSearch,
-        viewport: viewport
-          ? {
-              north: viewport.getNorthEast().lat(),
-              south: viewport.getSouthWest().lat(),
-              east: viewport.getNorthEast().lng(),
-              west: viewport.getSouthWest().lng(),
-            }
-          : undefined,
-      });
+      onPlaceSelect?.({ address: addr, lat, lng });
     }
   });
 }

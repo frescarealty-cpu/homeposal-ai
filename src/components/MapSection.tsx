@@ -65,12 +65,7 @@ type MapSectionProps = {
   onPropertySelect?: (property: PropertyListing) => void;
   onPlaceSelect?: (place: { address: string; lat: number; lng: number }) => void;
   onPopupClose?: () => void;
-  addressToShow?: {
-    address: string;
-    lat: number;
-    lng: number;
-    viewport?: { north: number; south: number; east: number; west: number };
-  } | null;
+  addressToShow?: { address: string; lat: number; lng: number } | null;
   isLoaded?: boolean;
   loadError?: Error | undefined;
   countySlug?: string;
@@ -297,23 +292,16 @@ export function MapSection({
       markerData.push({ position, property });
       markersRef.current.push(marker);
 
-      const openPropertyPopup = () => {
+      marker.addListener("mouseover", () => {
         infoWindow.setContent(buildPopupHTML(property));
         infoWindow.setPosition(position);
         infoWindow.open(map);
-      };
-
-      const supportsHover =
-        typeof window !== "undefined" &&
-        window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-      if (supportsHover) {
-        marker.addListener("mouseover", openPropertyPopup);
-        marker.addListener("mouseout", () => infoWindow.close());
-      }
-
+      });
+      marker.addListener("mouseout", () => infoWindow.close());
       marker.addListener("click", () => {
-        openPropertyPopup();
+        infoWindow.setContent(buildPopupHTML(property));
+        infoWindow.setPosition(position);
+        infoWindow.open(map);
         onPropertySelectRef.current?.(property);
       });
     });
@@ -373,7 +361,7 @@ export function MapSection({
       return;
     }
 
-    const { address, lat, lng, viewport } = addressToShow;
+    const { address, lat, lng } = addressToShow;
     const position = { lat, lng };
     // Offset pin ~2m north so it doesn't cover the address number on the map
     const OFFSET_DEG = 0.000018;
@@ -383,15 +371,11 @@ export function MapSection({
     let rafId = 0;
     let timeoutId = 0;
     rafId = requestAnimationFrame(() => {
-      if (viewport) {
-        map.fitBounds(viewport, { top: 48, right: 48, bottom: 48, left: 48 });
-      } else {
+      map.panTo(position);
+      map.setZoom(21);
+      timeoutId = window.setTimeout(() => {
         map.panTo(position);
-        map.setZoom(21);
-        timeoutId = window.setTimeout(() => {
-          map.panTo(position);
-        }, 120);
-      }
+      }, 120);
     });
 
     clickMarkerRef.current?.setMap(null);
