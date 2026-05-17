@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { Map as MapIcon, Satellite } from "lucide-react";
 import type { PropertyListing } from "@/data/properties";
 import { SOCAL_COUNTIES } from "@/data/socalCounties";
-import { buildPropertyPopupHTML } from "@/lib/propertyPopupHtml";
-
 const GOOGLE_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+
+/** Close enough to read street names on satellite/hybrid (see mobile street search). */
+const STREET_SEARCH_ZOOM = 18;
 
 // Southern California bounds
 const SOCAL_BOUNDS = {
@@ -17,46 +18,6 @@ const SOCAL_BOUNDS = {
 };
 
 type MapStyleKey = "streets" | "satellite";
-
-function streetViewImageUrl(lat: number, lng: number): string {
-  if (!GOOGLE_MAPS_KEY) return "";
-  return `https://maps.googleapis.com/maps/api/streetview?size=320x180&location=${lat},${lng}&key=${GOOGLE_MAPS_KEY}`;
-}
-
-function aerialImageUrl(lat: number, lng: number): string {
-  if (!GOOGLE_MAPS_KEY) return "";
-  return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=19&size=320x180&scale=2&maptype=satellite&key=${GOOGLE_MAPS_KEY}`;
-}
-
-function buildAddressOnlyPopupHTML(address: string, lat: number, lng: number): string {
-  const streetViewUrl = streetViewImageUrl(lat, lng);
-  return `
-    <div class="map-popup" style="
-      font-family: system-ui, sans-serif;
-      min-width: 260px;
-      max-width: 320px;
-      background: #1e293b;
-      color: #f1f5f9;
-      padding: 16px;
-      border-radius: 8px;
-    ">
-      ${streetViewUrl ? `
-      <div style="width:100%;aspect-ratio:16/9;background:#0f172a;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <img src="${streetViewUrl}" alt="Street View" style="width:100%;height:100%;object-fit:cover" />
-      </div>
-      ` : ""}
-      <p style="margin:0 0 4px 0;font-size:11px;color:#94a3b8">Address</p>
-      <p class="popup-address-text" style="margin:0 0 8px 0;font-weight:600;font-size:14px;color:#f1f5f9;line-height:1.4">${address.replace(/"/g, "&quot;")}</p>
-      <button type="button" onclick="var p=this.previousElementSibling;navigator.clipboard.writeText(p.innerText).then(function(){this.textContent='Copied!'}.bind(this));setTimeout(function(){this.textContent='Copy address'}.bind(this),1500)" style="margin-bottom:12px;padding:4px 8px;font-size:11px;color:#94a3b8;background:transparent;border:1px solid #334155;border-radius:4px;cursor:pointer">Copy address</button>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <a href="/place?address=${encodeURIComponent(address)}&lat=${lat}&lng=${lng}#make-proposal" onclick="event.preventDefault();event.stopPropagation();window.location.href=this.getAttribute('href');return false" style="display:block;text-align:center;padding:10px 16px;background:#10b981;color:white;font-size:13px;font-weight:600;text-decoration:none;border-radius:6px;cursor:pointer">Make Proposal</a>
-        <a href="/place?address=${encodeURIComponent(address)}&lat=${lat}&lng=${lng}" onclick="event.preventDefault();event.stopPropagation();window.location.href=this.getAttribute('href');return false" style="display:block;text-align:center;padding:10px 16px;background:#3b82f6;color:white;font-size:13px;font-weight:600;text-decoration:none;border-radius:6px;cursor:pointer">View Proposals</a>
-      </div>
-    </div>
-  `;
-}
-
-const buildPopupHTML = buildPropertyPopupHTML;
 
 type MapSectionProps = {
   properties: PropertyListing[];
@@ -70,6 +31,8 @@ type MapSectionProps = {
     lat: number;
     lng: number;
     viewport?: { north: number; south: number; east: number; west: number };
+    /** When true, fit the street viewport; otherwise use the standard close-up zoom. */
+    isStreetSearch?: boolean;
   } | null;
   isLoaded?: boolean;
   loadError?: Error | undefined;
@@ -190,34 +153,12 @@ export function MapSection({
       const lng = e.latLng?.lng();
       if (lat == null || lng == null) return;
 
+      infoWindow.close();
+
       geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-        if (status !== "OK" || !results?.[0]) {
-          infoWindow.setContent(`
-            <div style="padding:16px;background:#1e293b;color:#f1f5f9;border-radius:8px">
-              <p style="margin:0;font-size:14px">No address found for this location.</p>
-              <p style="margin:8px 0 0 0;font-size:12px;color:#94a3b8">${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
-            </div>
-          `);
-        } else {
-          const addr = results[0].formatted_address ?? "";
-          infoWindow.setContent(buildAddressOnlyPopupHTML(addr, lat, lng));
-          onPlaceSelectRef.current?.({ address: addr, lat, lng });
-        }
-        clickMarkerRef.current?.setMap(null);
-        const tempMarker = new google.maps.Marker({
-          map,
-          position: { lat, lng },
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: "#3b82f6",
-            fillOpacity: 1,
-            strokeColor: "#ffffff",
-            strokeWeight: 2,
-          },
-        });
-        clickMarkerRef.current = tempMarker;
-        infoWindow.open(map, tempMarker);
+        if (status !== "OK" || !results?.[0]) return;
+        const addr = results[0].formatted_address ?? "";
+        onPlaceSelectRef.current?.({ address: addr, lat, lng });
       });
     });
     mapClickListenerRef.current = mapClickListener;
@@ -290,7 +231,6 @@ export function MapSection({
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    const markerData: { position: google.maps.LatLng; property: PropertyListing }[] = [];
     const blueCircleIcon = {
       path: google.maps.SymbolPath.CIRCLE,
       scale: 10,
@@ -311,27 +251,11 @@ export function MapSection({
         icon: blueCircleIcon,
       });
 
-      const position = new google.maps.LatLng(lat, lng);
-      markerData.push({ position, property });
       markersRef.current.push(marker);
 
-      const openPropertyPopup = () => {
-        infoWindow.setContent(buildPopupHTML(property));
-        infoWindow.setPosition(position);
-        infoWindow.open(map);
-      };
-
-      const supportsHover =
-        typeof window !== "undefined" &&
-        window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-      if (supportsHover) {
-        marker.addListener("mouseover", openPropertyPopup);
-        marker.addListener("mouseout", () => infoWindow.close());
-      }
-
-      marker.addListener("click", () => {
-        openPropertyPopup();
+      marker.addListener("click", (e: google.maps.MapMouseEvent) => {
+        e.stop();
+        infoWindow.close();
         onPropertySelectRef.current?.(property);
       });
     });
@@ -391,8 +315,9 @@ export function MapSection({
       return;
     }
 
-    const { address, lat, lng, viewport } = addressToShow;
+    const { lat, lng, isStreetSearch } = addressToShow;
     const position = { lat, lng };
+    const targetZoom = isStreetSearch ? STREET_SEARCH_ZOOM : 21;
     // Offset pin ~2m north so it doesn't cover the address number on the map
     const OFFSET_DEG = 0.000018;
     const markerPosition = { lat: lat + OFFSET_DEG, lng };
@@ -400,18 +325,14 @@ export function MapSection({
     // Defer pan so Chrome (and other browsers) have map ready; then re-pan after a short delay so the map settles on the correct location (fixes Chrome first-select going to wrong place)
     let rafId = 0;
     let timeoutId = 0;
-    rafId = requestAnimationFrame(() => {
+    const applyView = () => {
       google.maps.event.trigger(map, "resize");
-      if (viewport) {
-        map.fitBounds(viewport, { top: 48, right: 48, bottom: 48, left: 48 });
-      } else {
-        map.panTo(position);
-        map.setZoom(21);
-        timeoutId = window.setTimeout(() => {
-          google.maps.event.trigger(map, "resize");
-          map.panTo(position);
-        }, 120);
-      }
+      map.panTo(position);
+      map.setZoom(targetZoom);
+    };
+    rafId = requestAnimationFrame(() => {
+      applyView();
+      timeoutId = window.setTimeout(applyView, 120);
     });
 
     clickMarkerRef.current?.setMap(null);
@@ -430,13 +351,6 @@ export function MapSection({
       },
     });
     clickMarkerRef.current = pin;
-
-    if (infoWindow) {
-      pin.addListener("click", () => {
-        infoWindow.setContent(buildAddressOnlyPopupHTML(address, lat, lng));
-        infoWindow.open(map, pin);
-      });
-    }
 
     return () => {
       cancelAnimationFrame(rafId);
