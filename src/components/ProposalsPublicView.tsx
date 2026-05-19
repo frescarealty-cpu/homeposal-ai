@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, Info, Mail, Phone } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Info, Mail, Phone } from "lucide-react";
 import { ContactInviteLink } from "@/components/ContactInviteLink";
+import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
 import type { ProposalPublic } from "@/types/proposals";
 import { createClient } from "@/lib/supabase/client";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -16,6 +17,10 @@ type ProposalsPublicViewProps = {
   inquiryAddressLabel?: string;
   showOwnerAlertBanner?: boolean;
   ownerInquiryPhone?: string;
+  /** Extra class on the inline Owner Alert (e.g. `hidden lg:block` when shown at top on mobile). */
+  ownerAlertClassName?: string;
+  /** Rendered after Owner Alert, before the proposals heading (e.g. mobile Zestimate). */
+  beforeProposalsContent?: ReactNode;
 };
 
 function formatCurrency(cents: number) {
@@ -89,6 +94,8 @@ export function ProposalsPublicView({
   inquiryAddressLabel,
   showOwnerAlertBanner = false,
   ownerInquiryPhone = "760-123-4560",
+  ownerAlertClassName = "",
+  beforeProposalsContent,
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
   const [priceSort, setPriceSort] = useState<"none" | "high" | "low">("high");
@@ -335,40 +342,13 @@ export function ProposalsPublicView({
   return (
     <div className="flex flex-col p-4">
       {showOwnerAlertBanner && enableInquiry && pendingProposals.length > 0 && (
-        <div
-          role="note"
-          aria-label="Owner Alert"
-          className="mb-4 rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-3 shadow-sm"
-        >
-          <div className="flex items-center gap-1.5">
-            <AlertCircle
-              className="h-3.5 w-3.5 shrink-0 text-[#1C4482]"
-              strokeWidth={2}
-              aria-hidden
-            />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1C4482]">
-              Owner Alert
-            </p>
-          </div>
-          <p className="mt-1 text-sm font-semibold tracking-tight text-[var(--foreground)]">
-            Are you the owner and want more information on a proposal?
-          </p>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <ContactInviteLink
-              contactType="owner-proposal"
-              className="inline-flex min-h-[40px] items-center justify-center rounded-md bg-[#1C4482] px-3 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
-            >
-              Get More Info
-            </ContactInviteLink>
-            <a
-              href={`tel:${ownerInquiryPhone}`}
-              className="inline-flex min-h-[40px] items-center justify-center rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--border-subtle)]"
-            >
-              Call {ownerInquiryPhone}
-            </a>
-          </div>
-        </div>
+        <OwnerAlertBanner
+          ownerInquiryPhone={ownerInquiryPhone}
+          className={["mb-4", ownerAlertClassName].filter(Boolean).join(" ")}
+        />
       )}
+
+      {beforeProposalsContent}
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-[var(--foreground)]">
