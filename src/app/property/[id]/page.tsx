@@ -5,7 +5,6 @@ import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
-import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { MOCK_PROPERTIES } from "@/data/properties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
@@ -62,7 +61,6 @@ export default async function PropertyPage({
         : "badge-pending";
 
   const zillowAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`;
-  const showOwnerAlert = proposals.length > 0;
   const zestimatePanel = (
     <ZillowZestimatePanel
       address={zillowAddress}
@@ -147,14 +145,6 @@ export default async function PropertyPage({
       <aside id="make-proposal" className="kalshi-border flex w-full flex-col border-t lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto">
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
-        {showOwnerAlert && (
-          <>
-            <div className="p-4 pb-0 lg:hidden">
-              <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
-            </div>
-            <div className="border-t border-[var(--border)] lg:hidden" />
-          </>
-        )}
         <ProposalsPublicView
           proposals={proposals}
           listPriceCents={property.listPriceCents}
@@ -164,7 +154,7 @@ export default async function PropertyPage({
           inquiryAddressLabel={zillowAddress}
           showOwnerAlertBanner
           ownerInquiryPhone="760-123-4560"
-          ownerAlertClassName="hidden lg:block"
+          ownerAlertMobileBelowTable
           beforeProposalsContent={<div className="mb-4 lg:hidden">{zestimatePanel}</div>}
         />
         {property.status === "open" && (

@@ -17,9 +17,9 @@ type ProposalsPublicViewProps = {
   inquiryAddressLabel?: string;
   showOwnerAlertBanner?: boolean;
   ownerInquiryPhone?: string;
-  /** Extra class on the inline Owner Alert (e.g. `hidden lg:block` when shown at top on mobile). */
-  ownerAlertClassName?: string;
-  /** Rendered after Owner Alert, before the proposals heading (e.g. mobile Zestimate). */
+  /** On mobile, show Owner Alert below the proposals table instead of above the heading. */
+  ownerAlertMobileBelowTable?: boolean;
+  /** Rendered after Owner Alert (desktop) and before the proposals heading — e.g. mobile Zestimate. */
   beforeProposalsContent?: ReactNode;
 };
 
@@ -94,7 +94,7 @@ export function ProposalsPublicView({
   inquiryAddressLabel,
   showOwnerAlertBanner = false,
   ownerInquiryPhone = "760-123-4560",
-  ownerAlertClassName = "",
+  ownerAlertMobileBelowTable = false,
   beforeProposalsContent,
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
@@ -339,12 +339,20 @@ export function ProposalsPublicView({
     };
   }, [filtersOpen]);
 
+  const showOwnerAlert =
+    showOwnerAlertBanner && enableInquiry && pendingProposals.length > 0;
+
   return (
     <div className="flex flex-col p-4">
-      {showOwnerAlertBanner && enableInquiry && pendingProposals.length > 0 && (
+      {showOwnerAlert && (
         <OwnerAlertBanner
           ownerInquiryPhone={ownerInquiryPhone}
-          className={["mb-4", ownerAlertClassName].filter(Boolean).join(" ")}
+          className={[
+            "mb-4",
+            ownerAlertMobileBelowTable ? "hidden lg:block" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
         />
       )}
 
@@ -619,6 +627,13 @@ export function ProposalsPublicView({
           </>
         )}
       </div>
+
+      {showOwnerAlert && ownerAlertMobileBelowTable && (
+        <OwnerAlertBanner
+          ownerInquiryPhone={ownerInquiryPhone}
+          className="mt-4 lg:hidden"
+        />
+      )}
 
       {listPriceCents > 0 && (
         <p className="mt-2 text-xs text-[var(--foreground-muted)]">
