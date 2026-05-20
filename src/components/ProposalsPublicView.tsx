@@ -19,6 +19,8 @@ type ProposalsPublicViewProps = {
   ownerInquiryPhone?: string;
   /** Mobile: Owner Alert below proposals block; desktop: above heading (unchanged). */
   ownerAlertMobileBelowProposals?: boolean;
+  /** Extra classes on the desktop Owner Alert (e.g. `hidden lg:block`). */
+  ownerAlertClassName?: string;
   /** Rendered before the "Proposals (public view)" heading (e.g. mobile Zestimate). */
   beforeProposalsHeading?: ReactNode;
 };
@@ -95,6 +97,7 @@ export function ProposalsPublicView({
   showOwnerAlertBanner = false,
   ownerInquiryPhone = "760-123-4560",
   ownerAlertMobileBelowProposals = false,
+  ownerAlertClassName = "",
   beforeProposalsHeading,
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
@@ -350,6 +353,7 @@ export function ProposalsPublicView({
           className={[
             "mb-4",
             ownerAlertMobileBelowProposals ? "hidden lg:block" : "",
+            ownerAlertClassName,
           ]
             .filter(Boolean)
             .join(" ")}

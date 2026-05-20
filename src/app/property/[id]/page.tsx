@@ -5,6 +5,7 @@ import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
+import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { MOCK_PROPERTIES } from "@/data/properties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
@@ -127,7 +128,7 @@ export default async function PropertyPage({
           </p>
         )}
 
-        <div className="mb-6">
+        <div className="mb-6 hidden lg:block">
           <StreetViewPanel
             latitude={property.latitude}
             longitude={property.longitude}
@@ -154,9 +155,19 @@ export default async function PropertyPage({
           inquiryAddressLabel={zillowAddress}
           showOwnerAlertBanner
           ownerInquiryPhone="760-123-4560"
-          ownerAlertMobileBelowProposals
+          ownerAlertClassName="hidden lg:block"
           beforeProposalsHeading={<div className="mb-4 lg:hidden">{zestimatePanel}</div>}
         />
+        <div className="flex flex-col gap-4 border-t border-[var(--border)] p-4 lg:hidden">
+          <StreetViewPanel
+            latitude={property.latitude}
+            longitude={property.longitude}
+            address={`${property.address}, ${property.city}, ${property.state}`}
+          />
+          {proposals.length > 0 && (
+            <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
+          )}
+        </div>
         {property.status === "open" && (
           <div className="border-t border-[var(--border)]">
             <PlaceOfferForm
