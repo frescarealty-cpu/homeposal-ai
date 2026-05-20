@@ -4,7 +4,7 @@ import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
-import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
+import { PlaceOwnerHelloBanner } from "@/components/PlaceOwnerHelloBanner";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { getPlaceProposals } from "@/lib/placeProposals";
 import { createClient } from "@/lib/supabase/server";
@@ -93,6 +93,9 @@ export default async function PlacePage({
         id="make-proposal"
         className="kalshi-border order-1 flex w-full flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto"
       >
+        {proposals.length > 0 && (
+          <PlaceOwnerHelloBanner ownerInquiryPhone="760-123-4560" className="lg:hidden" />
+        )}
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
@@ -110,11 +113,6 @@ export default async function PlacePage({
             </div>
           }
         />
-        {proposals.length > 0 && (
-          <div className="border-t border-[var(--border)] p-4 lg:hidden">
-            <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
-          </div>
-        )}
         <div className="border-t border-[var(--border)]" />
         <PlaceOfferForm
           placeAddress={address}
