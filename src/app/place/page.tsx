@@ -103,14 +103,18 @@ export default async function PlacePage({
           showOwnerAlertBanner
           ownerInquiryPhone="760-123-4560"
           ownerAlertClassName="hidden lg:block"
-          beforeProposalsHeading={<div className="mb-4 lg:hidden">{zestimatePanel}</div>}
+          beforeProposalsHeading={
+            <div className="mb-4 flex flex-col gap-4 lg:hidden">
+              <StreetViewPanel latitude={latNum} longitude={lngNum} address={address} />
+              {zestimatePanel}
+            </div>
+          }
         />
-        <div className="flex flex-col gap-4 border-t border-[var(--border)] p-4 lg:hidden">
-          <StreetViewPanel latitude={latNum} longitude={lngNum} address={address} />
-          {proposals.length > 0 && (
+        {proposals.length > 0 && (
+          <div className="border-t border-[var(--border)] p-4 lg:hidden">
             <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
-          )}
-        </div>
+          </div>
+        )}
         <div className="border-t border-[var(--border)]" />
         <PlaceOfferForm
           placeAddress={address}
