@@ -4,7 +4,6 @@ import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
-import { PlaceOwnerHelloBanner } from "@/components/PlaceOwnerHelloBanner";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { getPlaceProposals } from "@/lib/placeProposals";
 import { createClient } from "@/lib/supabase/server";
@@ -56,11 +55,7 @@ export default async function PlacePage({
   );
 
   return (
-    <>
-      {proposals.length > 0 && (
-        <PlaceOwnerHelloBanner ownerInquiryPhone="760-123-4560" className="lg:hidden" />
-      )}
-      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
+    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Place details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <Link
@@ -132,6 +127,5 @@ export default async function PlacePage({
         </div>
       </aside>
     </div>
-    </>
   );
 }

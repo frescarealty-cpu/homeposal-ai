@@ -32,7 +32,7 @@ export function PlaceOwnerHelloBanner({
       role="region"
       aria-label="Owner hello banner"
       className={[
-        "sticky top-0 z-[100] w-full shrink-0 border-b border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--background)] px-4 py-3 shadow-sm",
+        "w-full shrink-0 border-b border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--background)] px-4 py-3 shadow-sm",
         className,
       ].join(" ")}
     >
