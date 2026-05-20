@@ -4,6 +4,7 @@ import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
+import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { getPlaceProposals } from "@/lib/placeProposals";
 import { createClient } from "@/lib/supabase/server";
@@ -50,10 +51,14 @@ export default async function PlacePage({
     );
   }
 
+  const zestimatePanel = (
+    <ZillowZestimatePanel address={address} lat={latNum} lng={lngNum} variant="collapsible" />
+  );
+
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
-      {/* Left: Place details */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:max-w-[60%]">
+      {/* Left: Place details (below sidebar on mobile) */}
+      <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <Link
           href="/"
           className="mb-6 inline-flex min-h-[44px] items-center gap-2 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
@@ -70,7 +75,7 @@ export default async function PlacePage({
           This address was selected from the map search.
         </p>
 
-        <div className="mb-6">
+        <div className="mb-6 hidden lg:block">
           <StreetViewPanel
             latitude={latNum}
             longitude={lngNum}
@@ -83,8 +88,13 @@ export default async function PlacePage({
         </div>
       </div>
 
-      {/* Right: Proposals + Place offer form */}
-      <aside id="make-proposal" className="kalshi-border flex w-full flex-col border-t lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto">
+      {/* Sidebar: proposals + Zestimate + offer (first on mobile) */}
+      <aside
+        id="make-proposal"
+        className="kalshi-border order-1 flex w-full flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto"
+      >
+        <div className="hidden p-4 lg:block">{zestimatePanel}</div>
+        <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
           proposals={proposals}
           bestOfferCents={bestOfferCents}
@@ -92,10 +102,14 @@ export default async function PlacePage({
           inquiryAddressLabel={address}
           showOwnerAlertBanner
           ownerInquiryPhone="760-123-4560"
+          ownerAlertClassName="hidden lg:block"
+          beforeProposalsHeading={<div className="mb-4 lg:hidden">{zestimatePanel}</div>}
         />
-        <div className="border-t border-[var(--border)]" />
-        <div className="p-4">
-          <ZillowZestimatePanel address={address} lat={latNum} lng={lngNum} variant="collapsible" />
+        <div className="flex flex-col gap-4 border-t border-[var(--border)] p-4 lg:hidden">
+          <StreetViewPanel latitude={latNum} longitude={lngNum} address={address} />
+          {proposals.length > 0 && (
+            <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
+          )}
         </div>
         <div className="border-t border-[var(--border)]" />
         <PlaceOfferForm
