@@ -60,6 +60,16 @@ export default async function PropertyPage({
         ? "badge-closed"
         : "badge-pending";
 
+  const zillowAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`;
+  const zestimatePanel = (
+    <ZillowZestimatePanel
+      address={zillowAddress}
+      lat={property.latitude}
+      lng={property.longitude}
+      variant="collapsible"
+    />
+  );
+
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Property details */}
@@ -133,24 +143,19 @@ export default async function PropertyPage({
 
       {/* Right: Public proposals list + Place offer (requires login) */}
       <aside id="make-proposal" className="kalshi-border flex w-full flex-col border-t lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto">
-        <div className="p-4">
-          <ZillowZestimatePanel
-            address={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
-            lat={property.latitude}
-            lng={property.longitude}
-            variant="collapsible"
-          />
-        </div>
-        <div className="border-t border-[var(--border)]" />
+        <div className="hidden p-4 lg:block">{zestimatePanel}</div>
+        <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
           proposals={proposals}
           listPriceCents={property.listPriceCents}
           bestOfferCents={property.bestOfferCents}
           offerDeadline={property.offerDeadline}
           enableInquiry
-          inquiryAddressLabel={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
+          inquiryAddressLabel={zillowAddress}
           showOwnerAlertBanner
           ownerInquiryPhone="760-123-4560"
+          ownerAlertMobileBelowProposals
+          beforeProposalsHeading={<div className="mb-4 lg:hidden">{zestimatePanel}</div>}
         />
         {property.status === "open" && (
           <div className="border-t border-[var(--border)]">
