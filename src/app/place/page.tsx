@@ -56,7 +56,11 @@ export default async function PlacePage({
   );
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
+    <>
+      {proposals.length > 0 && (
+        <PlaceOwnerHelloBanner ownerInquiryPhone="760-123-4560" className="lg:hidden" />
+      )}
+      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Place details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <Link
@@ -93,9 +97,6 @@ export default async function PlacePage({
         id="make-proposal"
         className="kalshi-border order-1 flex w-full flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto"
       >
-        {proposals.length > 0 && (
-          <PlaceOwnerHelloBanner ownerInquiryPhone="760-123-4560" className="lg:hidden" />
-        )}
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
@@ -131,5 +132,6 @@ export default async function PlacePage({
         </div>
       </aside>
     </div>
+    </>
   );
 }

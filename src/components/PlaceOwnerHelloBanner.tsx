@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { ContactInviteLink } from "@/components/ContactInviteLink";
 
@@ -8,22 +8,31 @@ type PlaceOwnerHelloBannerProps = {
   ownerInquiryPhone?: string;
   className?: string;
   defaultExpanded?: boolean;
+  /** Milliseconds before auto-collapse; 0 disables. */
+  autoCollapseMs?: number;
 };
 
 export function PlaceOwnerHelloBanner({
   ownerInquiryPhone = "760-123-4560",
   className = "",
   defaultExpanded = true,
+  autoCollapseMs = 6000,
 }: PlaceOwnerHelloBannerProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const contentId = "place-owner-hello-content";
+
+  useEffect(() => {
+    if (!autoCollapseMs || autoCollapseMs <= 0) return;
+    const timer = window.setTimeout(() => setExpanded(false), autoCollapseMs);
+    return () => window.clearTimeout(timer);
+  }, [autoCollapseMs]);
 
   return (
     <div
       role="region"
       aria-label="Owner hello banner"
       className={[
-        "border-b border-[var(--border)] bg-[var(--foreground)]/[0.03] px-4 py-3",
+        "sticky top-0 z-[100] w-full shrink-0 border-b border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--background)] px-4 py-3 shadow-sm",
         className,
       ].join(" ")}
     >
