@@ -39,16 +39,16 @@ export default async function DashboardPage({
           <ArrowLeft className="h-4 w-4" />
           Back to home
         </Link>
-        <h1 className="mb-2 text-xl sm:text-2xl font-semibold text-[var(--foreground)]">My proposals</h1>
-        <p className="mb-4 text-base text-[var(--foreground-muted)]">
-          View and manage your property and address proposals.
-        </p>
         <Link
           href="/dashboard/settings"
-          className="mb-6 inline-flex min-h-[44px] items-center text-sm font-medium text-[var(--accent)] hover:underline"
+          className="mb-4 inline-flex min-h-[44px] items-center text-sm font-medium text-[var(--accent)] hover:underline"
         >
           Account settings — change password or email
         </Link>
+        <h1 className="mb-2 text-xl sm:text-2xl font-semibold text-[var(--foreground)]">My proposals</h1>
+        <p className="mb-6 text-base text-[var(--foreground-muted)]">
+          View and manage your property and address proposals.
+        </p>
         {revised === "1" && <RevisedOfferBanner />}
         <MyProposalsDashboard
           proposals={result.proposals}
