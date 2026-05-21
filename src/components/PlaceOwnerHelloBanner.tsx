@@ -49,7 +49,7 @@ export function PlaceOwnerHelloBanner({
             </p>
           </div>
           <p className="mt-1 text-base font-semibold tracking-tight text-[var(--foreground)]">
-            Hello, Owner
+            Don&apos;t List Yet.
           </p>
           {expanded && (
             <div id={contentId} className="mt-2 space-y-3">
