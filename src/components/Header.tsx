@@ -85,6 +85,13 @@ export function Header() {
       >
         Dashboard
       </Link>
+      <Link
+        href="/dashboard/settings"
+        className={`rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] inline-flex items-center ${TOUCH_MIN} md:min-h-0 md:min-w-0`}
+        onClick={() => setMenuOpen(false)}
+      >
+        Account settings
+      </Link>
       <button
         type="button"
         onClick={() => { handleSignOut(); setMenuOpen(false); }}
@@ -168,6 +175,9 @@ export function Header() {
               </span>
               <Link href="/dashboard" className="rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]">
                 Dashboard
+              </Link>
+              <Link href="/dashboard/settings" className="rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]">
+                Account settings
               </Link>
               <button type="button" onClick={handleSignOut} className="rounded-lg bg-[var(--success)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90">
                 Log Off

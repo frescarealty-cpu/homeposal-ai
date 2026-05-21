@@ -16,7 +16,7 @@ export function PlaceOwnerHelloBanner({
   ownerInquiryPhone = "760-123-4560",
   className = "",
   defaultExpanded = true,
-  autoCollapseMs = 6000,
+  autoCollapseMs = 10000,
 }: PlaceOwnerHelloBannerProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const contentId = "place-owner-hello-content";
