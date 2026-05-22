@@ -127,26 +127,41 @@ export function AiAssistant() {
   }, [setMessages]);
 
   const messagesScrollRef = useRef<HTMLDivElement | null>(null);
-  const messageBubbleRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const lastScrolledAssistantIdRef = useRef<string | null>(null);
+  const messageRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const wasLoadingRef = useRef(false);
 
-  // Scroll the chat pane (not the page) so new assistant replies start at the top.
+  // After the agent finishes a reply, align the top of that message with the chat viewport.
   useEffect(() => {
     if (collapsed) return;
-    const last = messages[messages.length - 1];
-    if (!last || last.role !== "assistant" || last.id === lastScrolledAssistantIdRef.current) return;
 
-    lastScrolledAssistantIdRef.current = last.id;
-    const frame = requestAnimationFrame(() => {
+    const responseJustFinished = wasLoadingRef.current && status === "ready";
+    wasLoadingRef.current = status !== "ready";
+
+    if (!responseJustFinished) return;
+
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+
+    const scrollLatestAssistantToTop = () => {
       const container = messagesScrollRef.current;
-      const bubble = messageBubbleRefs.current[last.id];
-      if (!container || !bubble) return;
-      const containerTop = container.getBoundingClientRect().top;
-      const messageTop = bubble.getBoundingClientRect().top;
-      container.scrollTop += messageTop - containerTop;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [messages, collapsed]);
+      const row = messageRowRefs.current[last.id];
+      if (!container || !row) return false;
+      const top =
+        row.getBoundingClientRect().top -
+        container.getBoundingClientRect().top +
+        container.scrollTop;
+      container.scrollTop = Math.max(0, Math.round(top));
+      return true;
+    };
+
+    let attempts = 0;
+    const tryScroll = () => {
+      if (scrollLatestAssistantToTop() || attempts >= 4) return;
+      attempts += 1;
+      requestAnimationFrame(tryScroll);
+    };
+    requestAnimationFrame(tryScroll);
+  }, [messages, status, collapsed]);
 
   // Address autocomplete (Google Places) on the assistant input.
   useEffect(() => {
@@ -289,7 +304,7 @@ export function AiAssistant() {
     <div
       className={[
         "flex flex-col rounded-xl border border-[var(--border)] bg-white",
-        collapsed ? "p-3" : "p-4 h-[460px]",
+        collapsed ? "p-3" : "p-4 lg:h-[460px]",
       ].join(" ")}
     >
       <div className={collapsed ? "" : "mb-3"}>
@@ -316,17 +331,23 @@ export function AiAssistant() {
       </div>
 
       {!collapsed && (
-        <div className="flex-1 overflow-hidden rounded-lg bg-zinc-100 p-3">
-          <div ref={messagesScrollRef} className="h-full overflow-y-auto pr-1">
+        <div className="lg:min-h-0 lg:flex-1 lg:overflow-hidden">
+          <div
+            ref={messagesScrollRef}
+            className="overflow-y-auto overflow-anchor-none rounded-lg bg-zinc-100 p-2 pr-1 max-h-[min(280px,42vh)] lg:max-h-none lg:h-full lg:p-3"
+          >
             <div className="space-y-2">
               {displayMessages.map((m) => {
                 const isUser = m.role === "user";
                 return (
-                  <div key={m.id} className={["flex", isUser ? "justify-end" : "justify-start"].join(" ")}>
+                  <div
+                    key={m.id}
+                    ref={(el) => {
+                      messageRowRefs.current[m.id] = el;
+                    }}
+                    className={["flex", isUser ? "justify-end" : "justify-start"].join(" ")}
+                  >
                     <div
-                      ref={(el) => {
-                        messageBubbleRefs.current[m.id] = el;
-                      }}
                       className={[
                         "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm",
                         isUser ? "bg-black text-white" : "bg-white text-black border border-black/5",
