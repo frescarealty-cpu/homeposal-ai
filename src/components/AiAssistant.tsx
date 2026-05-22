@@ -126,10 +126,27 @@ export function AiAssistant() {
     });
   }, [setMessages]);
 
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
+  const messageBubbleRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const lastScrolledAssistantIdRef = useRef<string | null>(null);
+
+  // Scroll the chat pane (not the page) so new assistant replies start at the top.
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ block: "end" });
-  }, [messages.length, isLoading]);
+    if (collapsed) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant" || last.id === lastScrolledAssistantIdRef.current) return;
+
+    lastScrolledAssistantIdRef.current = last.id;
+    const frame = requestAnimationFrame(() => {
+      const container = messagesScrollRef.current;
+      const bubble = messageBubbleRefs.current[last.id];
+      if (!container || !bubble) return;
+      const containerTop = container.getBoundingClientRect().top;
+      const messageTop = bubble.getBoundingClientRect().top;
+      container.scrollTop += messageTop - containerTop;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [messages, collapsed]);
 
   // Address autocomplete (Google Places) on the assistant input.
   useEffect(() => {
@@ -300,13 +317,16 @@ export function AiAssistant() {
 
       {!collapsed && (
         <div className="flex-1 overflow-hidden rounded-lg bg-zinc-100 p-3">
-          <div className="h-full overflow-y-auto pr-1">
+          <div ref={messagesScrollRef} className="h-full overflow-y-auto pr-1">
             <div className="space-y-2">
               {displayMessages.map((m) => {
                 const isUser = m.role === "user";
                 return (
                   <div key={m.id} className={["flex", isUser ? "justify-end" : "justify-start"].join(" ")}>
                     <div
+                      ref={(el) => {
+                        messageBubbleRefs.current[m.id] = el;
+                      }}
                       className={[
                         "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm",
                         isUser ? "bg-black text-white" : "bg-white text-black border border-black/5",
@@ -342,7 +362,6 @@ export function AiAssistant() {
                   </div>
                 );
               })}
-              <div ref={scrollRef} />
             </div>
           </div>
         </div>
