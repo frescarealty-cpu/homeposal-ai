@@ -323,7 +323,7 @@ export function MyProposalsDashboard({ proposals = [], placeProposals = [] }: Pr
                     disabled={isPending}
                     className="rounded-md border border-red-500/50 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-500/10 disabled:opacity-50 dark:text-red-400"
                   >
-                    Withdraw
+                    Cancel
                   </button>
                 )}
               </div>
