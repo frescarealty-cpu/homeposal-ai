@@ -128,22 +128,40 @@ export function Header() {
         <Link
           href="/"
           onClick={handleLogoClick}
-          className="flex flex-col items-center gap-3 text-center md:flex-row md:items-center md:gap-6 md:text-left font-semibold text-[var(--foreground)] min-w-0 shrink"
+          className={[
+            "flex flex-col items-center gap-3 text-center font-semibold text-[var(--foreground)] md:flex-row md:items-center md:gap-4 md:text-left lg:gap-6",
+            user ? "min-w-0 shrink md:shrink" : "min-w-0 shrink",
+          ].join(" ")}
         >
           <Image
             src={LOGO_PUBLIC_URL}
             alt="HomePosal"
             width={656}
             height={677}
-            className="h-20 w-20 md:h-36 md:w-36 shrink-0 object-contain"
+            className={[
+              "h-20 w-20 shrink-0 object-contain",
+              user ? "md:h-28 md:w-28 lg:h-32 lg:w-32" : "md:h-36 md:w-36",
+            ].join(" ")}
             priority
             unoptimized
           />
           <div className="flex flex-col min-w-0 md:items-start">
-            <span className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight text-[var(--foreground)] break-words">
+            <span
+              className={[
+                "font-bold tracking-tight text-[var(--foreground)]",
+                user
+                  ? "text-base sm:text-lg md:whitespace-nowrap lg:text-xl"
+                  : "text-lg break-words sm:text-xl md:whitespace-nowrap lg:text-2xl",
+              ].join(" ")}
+            >
               SoCal’s Home Proposal Platform
             </span>
-            <span className="mt-1 hidden text-sm font-medium leading-snug text-[var(--foreground-muted)] sm:block md:text-base">
+            <span
+              className={[
+                "mt-1 hidden text-sm font-medium leading-snug text-[var(--foreground-muted)]",
+                user ? "xl:block xl:text-base" : "sm:block md:text-base",
+              ].join(" ")}
+            >
               Where{" "}
               <span className="font-semibold" style={{ color: "#10B981" }}>
                 suitors propose
@@ -155,7 +173,7 @@ export function Header() {
         </Link>
 
         {/* Desktop nav: contact + auth */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden shrink-0 md:flex items-center gap-2">
           <button
             type="button"
             onClick={() => {
@@ -170,14 +188,21 @@ export function Header() {
           </button>
           {user ? (
             <>
-              <span className="text-sm text-[var(--foreground-muted)]">
+              <span
+                className="max-w-[10rem] truncate text-sm text-[var(--foreground-muted)] lg:max-w-[14rem] xl:max-w-none"
+                title={user.email ?? undefined}
+              >
                 Signed in as {user.email}
               </span>
-              <Link href="/dashboard" className="rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]">
+              <Link href="/dashboard" className="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]">
                 Dashboard
               </Link>
-              <Link href="/dashboard/settings" className="rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]">
-                Account settings
+              <Link
+                href="/dashboard/settings"
+                className="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]"
+              >
+                <span className="xl:hidden">Settings</span>
+                <span className="hidden xl:inline">Account settings</span>
               </Link>
               <button type="button" onClick={handleSignOut} className="rounded-lg bg-[var(--success)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90">
                 Log Off
