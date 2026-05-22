@@ -32,19 +32,21 @@ export default async function DashboardPage({
 
     return (
       <div className="mx-auto w-full max-w-[95%] sm:max-w-2xl px-4 py-8">
-        <Link
-          href="/"
-          className="mb-6 inline-flex min-h-[44px] items-center gap-2 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to home
-        </Link>
-        <Link
-          href="/dashboard/settings"
-          className="mb-4 inline-flex min-h-[44px] items-center text-sm font-medium text-[var(--accent)] hover:underline"
-        >
-          Account settings — change password or email
-        </Link>
+        <nav className="mb-6 flex flex-col gap-1">
+          <Link
+            href="/"
+            className="inline-flex min-h-[44px] w-fit items-center gap-2 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to home
+          </Link>
+          <Link
+            href="/dashboard/settings"
+            className="inline-flex min-h-[44px] w-fit items-center text-sm font-medium text-[var(--accent)] hover:underline"
+          >
+            Account settings — change password or email
+          </Link>
+        </nav>
         <h1 className="mb-2 text-xl sm:text-2xl font-semibold text-[var(--foreground)]">My proposals</h1>
         <p className="mb-6 text-base text-[var(--foreground-muted)]">
           View and manage your property and address proposals.
