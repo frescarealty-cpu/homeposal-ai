@@ -130,7 +130,7 @@ export function Header() {
           onClick={handleLogoClick}
           className={[
             "flex flex-col items-center gap-3 text-center font-semibold text-[var(--foreground)] md:flex-row md:items-center md:gap-4 md:text-left lg:gap-6",
-            user ? "min-w-0 shrink md:shrink" : "min-w-0 shrink",
+            user ? "min-w-0 shrink md:shrink-0" : "min-w-0 shrink",
           ].join(" ")}
         >
           <Image
@@ -145,7 +145,12 @@ export function Header() {
             priority
             unoptimized
           />
-          <div className="flex flex-col min-w-0 md:items-start">
+          <div
+            className={[
+              "flex flex-col md:items-start",
+              user ? "min-w-0 md:shrink-0" : "min-w-0",
+            ].join(" ")}
+          >
             <span
               className={[
                 "font-bold tracking-tight text-[var(--foreground)]",
@@ -158,8 +163,10 @@ export function Header() {
             </span>
             <span
               className={[
-                "mt-1 hidden text-sm font-medium leading-snug text-[var(--foreground-muted)]",
-                user ? "xl:block xl:text-base" : "sm:block md:text-base",
+                "mt-1 hidden font-medium leading-snug text-[var(--foreground-muted)]",
+                user
+                  ? "md:block md:whitespace-nowrap md:text-sm lg:text-base"
+                  : "sm:block sm:whitespace-nowrap md:text-base",
               ].join(" ")}
             >
               Where{" "}
