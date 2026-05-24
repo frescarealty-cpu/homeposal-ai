@@ -438,7 +438,7 @@ export function AiAssistant() {
                   void selectPrediction(predictions[activeIdx]);
                 }
               }}
-              placeholder={isLoading ? "Thinking…" : "Ask a question or request a Zestimate…"}
+              placeholder={isLoading ? "Thinking…" : "Ask a question"}
               disabled={isLoading}
               autoComplete="off"
               name="homeposal-ai-address"
