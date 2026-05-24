@@ -118,7 +118,7 @@ export function AiAssistant() {
           parts: [
             {
               type: "text",
-              text: "Welcome to HomePosal. How can I help you? Ask about proposals on an address, or request a Zestimate / property value (pick the address from the dropdown for best results).",
+              text: "How can I help you?",
             },
           ],
         },
