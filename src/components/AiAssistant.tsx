@@ -16,6 +16,13 @@ const SOCAL_BOUNDS = {
   west: -120.5,
 };
 
+/** Words that follow the address in a question — stop treating the tail as address input. */
+const ADDRESS_SUFFIX_WORD =
+  /\s+(worth|value|valued|proposals?|proposal|offers?|offer|zestimate|listed|for\s+sale)\b/i;
+
+/** ZIP then more text (e.g. "92084 worth") means the user is past the address. */
+const ZIP_THEN_MORE_TEXT = /\d{5}(?:\s*,?\s*(?:USA))?\s+\S/i;
+
 function extractAddressSpan(text: string): { start: number; query: string } | null {
   const raw = text;
   const trimmed = raw.trim();
@@ -38,6 +45,48 @@ function extractAddressSpan(text: string): { start: number; query: string } | nu
   }
 
   return null;
+}
+
+type AddressAutocompleteContext =
+  | { enabled: false }
+  | { enabled: true; start: number; query: string; suffix: string };
+
+function getAddressAutocompleteContext(
+  draft: string,
+  selectedPlace: { address: string } | null
+): AddressAutocompleteContext {
+  const span = extractAddressSpan(draft);
+  if (!span) return { enabled: false };
+
+  let query = span.query.trim();
+  if (query.length < 3 || !/^\d/.test(query)) return { enabled: false };
+
+  let suffix = "";
+  const suffixMatch = query.match(ADDRESS_SUFFIX_WORD);
+  if (suffixMatch && suffixMatch.index != null) {
+    suffix = query.slice(suffixMatch.index).trim();
+    query = query.slice(0, suffixMatch.index).trim();
+  } else if (ZIP_THEN_MORE_TEXT.test(query)) {
+    const zipTail = query.match(/(\d{5}(?:\s*,?\s*(?:USA))?)(\s+.+)$/i);
+    if (zipTail && zipTail.index != null) {
+      query = query.slice(0, zipTail.index + zipTail[1].length).trim();
+      suffix = zipTail[2].trim();
+    }
+  }
+
+  if (suffix) return { enabled: false };
+
+  if (!query || query.length < 3) return { enabled: false };
+
+  if (selectedPlace?.address) {
+    const placeIdx = draft.indexOf(selectedPlace.address);
+    if (placeIdx >= 0) {
+      const after = draft.slice(placeIdx + selectedPlace.address.length).trim();
+      if (after.length > 0) return { enabled: false };
+    }
+  }
+
+  return { enabled: true, start: span.start, query, suffix: "" };
 }
 
 function linkify(
@@ -174,28 +223,15 @@ export function AiAssistant() {
     if (!isMapsLoaded) return;
     if (!window.google?.maps?.places) return;
 
-    const span = extractAddressSpan(draft);
-    const q = (span?.query ?? draft).trim();
-    if (q.length < 3) {
+    const ctx = getAddressAutocompleteContext(draft, selectedPlace);
+    if (!ctx.enabled) {
       setPredictions([]);
       setPredictionsOpen(false);
       setActiveIdx(-1);
       return;
     }
 
-    // Only trigger autocomplete when the (address) query starts with a number.
-    // Examples that should trigger:
-    // - "2365 Buena Creek Trail..."
-    // - "are there offers on 2365 Buena..."
-    // Examples that should NOT trigger:
-    // - "arena"
-    // - "what is homeposal"
-    if (!/^\d/.test(q)) {
-      setPredictions([]);
-      setPredictionsOpen(false);
-      setActiveIdx(-1);
-      return;
-    }
+    const q = ctx.query;
 
     const isNumericOnly = /^\d+$/.test(q);
     const requestInput = isNumericOnly ? `${q} ` : q;
@@ -232,7 +268,7 @@ export function AiAssistant() {
     }, 120);
 
     return () => clearTimeout(t);
-  }, [draft, isMapsLoaded]);
+  }, [draft, isMapsLoaded, selectedPlace]);
 
   function closePredictionsSoon() {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
@@ -277,7 +313,18 @@ export function AiAssistant() {
     }
 
     const span = extractAddressSpan(draft);
-    const nextText = span ? `${draft.slice(0, span.start)}${resolved.address}` : resolved.address;
+    const start = span?.start ?? 0;
+    let suffix = "";
+    if (span) {
+      const suffixMatch = span.query.match(ADDRESS_SUFFIX_WORD);
+      if (suffixMatch && suffixMatch.index != null) {
+        suffix = span.query.slice(suffixMatch.index).trim();
+      } else {
+        const zipTail = span.query.match(/(\d{5}(?:\s*,?\s*(?:USA))?)(\s+.+)$/i);
+        if (zipTail?.[2]) suffix = zipTail[2].trim();
+      }
+    }
+    const nextText = `${draft.slice(0, start)}${resolved.address}${suffix ? ` ${suffix}` : ""}`;
     setDraft(nextText);
     if (Number.isFinite(resolved.lat) && Number.isFinite(resolved.lng)) {
       setSelectedPlace({ address: resolved.address, lat: resolved.lat, lng: resolved.lng });
@@ -400,7 +447,8 @@ export function AiAssistant() {
           onSubmit={(e) => {
             e.preventDefault();
             if (isLoading) return;
-            if (predictionsOpen && activeIdx >= 0 && predictions[activeIdx]) {
+            const acCtx = getAddressAutocompleteContext(draft, selectedPlace);
+            if (acCtx.enabled && predictionsOpen && activeIdx >= 0 && predictions[activeIdx]) {
               void selectPrediction(predictions[activeIdx]);
               return;
             }
@@ -423,7 +471,8 @@ export function AiAssistant() {
               }}
               onBlur={() => closePredictionsSoon()}
               onKeyDown={(e) => {
-                if (!predictionsOpen) return;
+                const acCtx = getAddressAutocompleteContext(draft, selectedPlace);
+                if (!predictionsOpen || !acCtx.enabled) return;
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
                   setActiveIdx((i) => Math.min(predictions.length - 1, Math.max(0, i + 1)));
