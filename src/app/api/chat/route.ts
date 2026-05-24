@@ -8,6 +8,7 @@ import {
   fetchZestimatePayload,
   formatZestimateAssistantReply,
   looksLikePropertyValueQuestion,
+  mergeAddressReplyWithZestimate,
 } from "@/lib/zestimate/chat";
 
 export const runtime = "nodejs";
@@ -189,33 +190,28 @@ export async function POST(req: NextRequest) {
       ? { address: body.place.address.trim(), lat: body.place.lat, lng: body.place.lng }
       : null;
 
-  // Zestimate / property value lookup via configured ZESTIMATE_API_URL (deterministic, no model).
-  if (looksLikePropertyValueQuestion(lastUser)) {
-    const address = (place?.address || addressCandidate).trim();
+  const hasAddress = !!(place || looksLikeAddress(addressCandidate));
+  const wantsValue = looksLikePropertyValueQuestion(lastUser, hasAddress);
 
-    if (!address || !looksLikeAddress(address)) {
-      return textStreamResponse(
-        "What address should I look up? Type a full street address, or pick one from the address dropdown for the best match.",
-        200
-      );
+  async function withZestimateIfRequested(
+    addressForApi: string,
+    addressLine: string,
+    proposalText: string,
+    lat?: number,
+    lng?: number
+  ): Promise<string> {
+    if (!wantsValue) return proposalText;
+    const zResult = await fetchZestimatePayload(req, addressForApi, lat, lng);
+    if (zResult.ok) {
+      return mergeAddressReplyWithZestimate(addressLine, proposalText, zResult.data);
     }
-
-    const result = await fetchZestimatePayload(req, address, place?.lat, place?.lng);
-
-    if (!result.ok) {
-      if (result.needsCoordinates) {
-        return textStreamResponse(
-          `${result.error}\n\nTip: pick the address from the dropdown so I have coordinates for a more reliable match.`,
-          200
-        );
-      }
-      return textStreamResponse(`I couldn’t fetch a Zestimate for that address. ${result.error}`, 200);
-    }
-
-    return textStreamResponse(formatZestimateAssistantReply(address, result.data), 200);
+    const note = zResult.needsCoordinates
+      ? `Zestimate: ${zResult.error} (Pick the address from the dropdown for a more reliable match.)`
+      : `Zestimate: ${zResult.error}`;
+    return mergeAddressReplyWithZestimate(addressLine, proposalText, null, note);
   }
 
-  // Address → proposal lookup (deterministic, no model required).
+  // Address → proposal lookup (+ Zestimate when user asks about value/worth).
   // This makes the assistant immediately useful as a "proposal finder".
   if (place || looksLikeAddress(addressCandidate)) {
     // 1) Exact match against known property pages (non-fuzzy).
@@ -230,16 +226,21 @@ export async function POST(req: NextRequest) {
       const sum = proposalsSummaryByPropertyId(exactProperty.id);
       const addressLine = `${exactProperty.address}, ${exactProperty.city}, ${exactProperty.state} ${exactProperty.zipCode}`;
       const link = `/property/${exactProperty.id}`;
-      return textStreamResponse(
-        proposalBoardAssistantReply({
-          addressLine,
-          verifiedCount: sum.count,
-          highestOfferCents: sum.count > 0 && sum.best != null ? sum.best : null,
-          link,
-          linkLabelWhenLinked: "View this property and its proposals",
-        }),
-        200
+      const proposalText = proposalBoardAssistantReply({
+        addressLine,
+        verifiedCount: sum.count,
+        highestOfferCents: sum.count > 0 && sum.best != null ? sum.best : null,
+        link,
+        linkLabelWhenLinked: "View this property and its proposals",
+      });
+      const reply = await withZestimateIfRequested(
+        addressLine,
+        addressLine,
+        proposalText,
+        place?.lat,
+        place?.lng
       );
+      return textStreamResponse(reply, 200);
     }
 
     // 2) Real "place" proposals lookup from Supabase by address (no guessing).
@@ -323,22 +324,34 @@ export async function POST(req: NextRequest) {
             if (verifiedCount > 0) {
               const max = Math.max(...prices);
               const link = `/place?address=${encodeURIComponent(addressLabel)}&lat=${lat}&lng=${lng}`;
-              return textStreamResponse(
-                proposalBoardAssistantReply({
-                  addressLine: addressLabel,
-                  verifiedCount,
-                  highestOfferCents: max,
-                  link,
-                  linkLabelWhenLinked: "View proposals or submit your own for this address",
-                }),
-                200
+              const proposalText = proposalBoardAssistantReply({
+                addressLine: addressLabel,
+                verifiedCount,
+                highestOfferCents: max,
+                link,
+                linkLabelWhenLinked: "View proposals or submit your own for this address",
+              });
+              const reply = await withZestimateIfRequested(
+                addressLabel,
+                addressLabel,
+                proposalText,
+                lat,
+                lng
               );
+              return textStreamResponse(reply, 200);
             }
           }
         }
       }
 
       if (rows.length === 0) {
+        if (wantsValue) {
+          const address = (place?.address || addressCandidate).trim();
+          const zResult = await fetchZestimatePayload(req, address, lat ?? place?.lat, lng ?? place?.lng);
+          if (zResult.ok) {
+            return textStreamResponse(formatZestimateAssistantReply(addressLabel, zResult.data), 200);
+          }
+        }
         return textStreamResponse(
           `I could not find any verified proposals for:\n${addressCandidate}\n\n` +
             `Tip: choose the address from the map search first, then use the exact address line shown on the place page — that helps the lookup match.`,
@@ -354,17 +367,16 @@ export async function POST(req: NextRequest) {
         lat != null && lng != null
           ? `/place?address=${encodeURIComponent(addressLabel)}&lat=${lat}&lng=${lng}`
           : null;
-      return textStreamResponse(
-        proposalBoardAssistantReply({
-          addressLine: addressLabel,
-          verifiedCount,
-          highestOfferCents: verifiedCount > 0 ? max : null,
-          link,
-          linkLabelWhenLinked: "View proposals or submit your own for this address",
-          noLinkNote: "Open this address from the map search to get a direct link to its place page.",
-        }),
-        200
-      );
+      const proposalText = proposalBoardAssistantReply({
+        addressLine: addressLabel,
+        verifiedCount,
+        highestOfferCents: verifiedCount > 0 ? max : null,
+        link,
+        linkLabelWhenLinked: "View proposals or submit your own for this address",
+        noLinkNote: "Open this address from the map search to get a direct link to its place page.",
+      });
+      const reply = await withZestimateIfRequested(addressLabel, addressLabel, proposalText, lat ?? undefined, lng ?? undefined);
+      return textStreamResponse(reply, 200);
     } catch {
       return textStreamResponse(
         `I couldn’t check proposals for that address just now — the connection to our database did not go through. Please try again in a moment.`,

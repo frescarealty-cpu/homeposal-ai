@@ -9,21 +9,23 @@ function formatUsd(n: number) {
   }).format(n);
 }
 
-export function looksLikePropertyValueQuestion(text: string) {
+export function looksLikePropertyValueQuestion(text: string, hasAddress = false) {
   const t = text.toLowerCase();
   if (/\bzestimate\b/.test(t)) return true;
   if (/\bzillow\b/.test(t) && /\b(estimate|value|worth)\b/.test(t)) return true;
   if (/\b(home|house|property)\s+value\b/.test(t)) return true;
   if (/\bmarket\s+value\b/.test(t)) return true;
   if (/\bestimated\s+value\b/.test(t)) return true;
-  if (/\bhow\s+much\s+is\b/.test(t) && /\b(worth|value|house|home|property)\b/.test(t)) return true;
+  if (/\bhow\s+much\s+(is|are|was|were)\b/.test(t) && (hasAddress || /\b(worth|value|house|home|property)\b/.test(t)))
+    return true;
   if (/\bwhat\s+is\b/.test(t) && /\b(worth|valued?\s+at)\b/.test(t)) return true;
   if (/\bwhat('s|s)\s+the\s+(value|worth)\b/.test(t)) return true;
+  if (/\b(worth|value)\s+of\b/.test(t) && hasAddress) return true;
   return false;
 }
 
-export function formatZestimateAssistantReply(address: string, data: ZillowZestimatePayload): string {
-  const lines: string[] = [`Thanks for asking about ${address}.`, ""];
+export function formatZestimateBlock(data: ZillowZestimatePayload): string {
+  const lines: string[] = [];
 
   if (data.zestimateUsd != null) {
     lines.push(`Zestimate (estimated market value): ${formatUsd(data.zestimateUsd)}`);
@@ -37,24 +39,47 @@ export function formatZestimateAssistantReply(address: string, data: ZillowZesti
     lines.push(`Rent Zestimate: ${formatUsd(data.rentZestimateUsd)}/month`);
   }
 
-  if (
-    data.zestimateUsd == null &&
-    data.rentZestimateUsd == null &&
-    data.zestimateRangeLowUsd == null &&
-    data.zestimateRangeHighUsd == null
-  ) {
+  if (lines.length === 0) {
     lines.push("No Zestimate figures are available for this address from our data provider.");
   }
 
   if (data.lastUpdated) {
-    lines.push("", `Last updated: ${data.lastUpdated}`);
+    lines.push(`Last updated: ${data.lastUpdated}`);
   }
 
-  lines.push(
-    "",
-    "Zestimates are automated estimates from Zillow, not an appraisal. Pick the address from the dropdown when possible for the best match."
-  );
   return lines.join("\n");
+}
+
+export function formatZestimateAssistantReply(address: string, data: ZillowZestimatePayload): string {
+  return [
+    `Thanks for asking about ${address}.`,
+    "",
+    formatZestimateBlock(data),
+    "",
+    "Zestimates are automated estimates from Zillow, not an appraisal. Pick the address from the dropdown when possible for the best match.",
+  ].join("\n");
+}
+
+/** Prepend Zestimate block to an existing address reply (e.g. proposal summary). */
+export function mergeAddressReplyWithZestimate(
+  addressLine: string,
+  proposalText: string,
+  zestimate: ZillowZestimatePayload | null,
+  zestimateNote?: string
+): string {
+  const parts: string[] = [`Thanks for asking about ${addressLine}.`, ""];
+
+  if (zestimate) {
+    parts.push(formatZestimateBlock(zestimate));
+    parts.push("");
+  } else if (zestimateNote) {
+    parts.push(zestimateNote);
+    parts.push("");
+  }
+
+  const body = proposalText.replace(/^Thanks for asking about[^\n]*\.\n\n?/i, "").trim();
+  parts.push(body);
+  return parts.join("\n");
 }
 
 export async function fetchZestimatePayload(
