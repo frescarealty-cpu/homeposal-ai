@@ -4,6 +4,11 @@ import { google } from "@ai-sdk/google";
 import { MOCK_PROPERTIES } from "@/data/properties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/server";
+import {
+  fetchZestimatePayload,
+  formatZestimateAssistantReply,
+  looksLikePropertyValueQuestion,
+} from "@/lib/zestimate/chat";
 
 export const runtime = "nodejs";
 
@@ -161,11 +166,6 @@ function proposalBoardAssistantReply(input: {
   return `Thanks for asking about ${addressLine}.\n\n${body}${tail}`;
 }
 
-function looksLikeZestimateQuestion(text: string) {
-  const t = text.toLowerCase();
-  return t.includes("zestimate") || (t.includes("zillow") && (t.includes("estimate") || t.includes("value")));
-}
-
 export async function POST(req: NextRequest) {
   let body: { messages?: unknown[]; place?: { address?: unknown; lat?: unknown; lng?: unknown } };
   try {
@@ -189,61 +189,30 @@ export async function POST(req: NextRequest) {
       ? { address: body.place.address.trim(), lat: body.place.lat, lng: body.place.lng }
       : null;
 
-  // Zestimate lookup (deterministic, no model).
-  if (looksLikeZestimateQuestion(lastUser)) {
+  // Zestimate / property value lookup via configured ZESTIMATE_API_URL (deterministic, no model).
+  if (looksLikePropertyValueQuestion(lastUser)) {
     const address = (place?.address || addressCandidate).trim();
-    const lat = place?.lat;
-    const lng = place?.lng;
 
-    if (!address) {
-      return textStreamResponse("What address should I look up?", 200);
-    }
-
-    if (typeof lat !== "number" || typeof lng !== "number") {
+    if (!address || !looksLikeAddress(address)) {
       return textStreamResponse(
-        `To fetch a Zestimate, please pick the address from the dropdown so I have lat/lng.`,
+        "What address should I look up? Type a full street address, or pick one from the address dropdown for the best match.",
         200
       );
     }
 
-    try {
-      const url = new URL("/api/zillow/zestimate", req.url);
-      url.searchParams.set("address", address.replace(/,?\s*USA\s*$/i, "").trim());
-      url.searchParams.set("lat", String(lat));
-      url.searchParams.set("lng", String(lng));
+    const result = await fetchZestimatePayload(req, address, place?.lat, place?.lng);
 
-      const res = await fetch(url, { cache: "no-store" });
-      const json = (await res.json().catch(() => null)) as
-        | { ok: true; data: { zestimateUsd?: number | null } }
-        | { ok?: false; error?: string }
-        | null;
-
-      if (!res.ok || json == null) {
-        const msg =
-          json && typeof json === "object" && "error" in json && typeof json.error === "string"
-            ? json.error
-            : "Zestimate lookup failed.";
-        return textStreamResponse(`I couldn’t fetch a Zestimate for that address. ${msg}`, 200);
+    if (!result.ok) {
+      if (result.needsCoordinates) {
+        return textStreamResponse(
+          `${result.error}\n\nTip: pick the address from the dropdown so I have coordinates for a more reliable match.`,
+          200
+        );
       }
-
-      if (json.ok !== true) {
-        const msg =
-          typeof json.error === "string" && json.error ? json.error : "Zestimate lookup failed.";
-        return textStreamResponse(`I couldn’t fetch a Zestimate for that address. ${msg}`, 200);
-      }
-
-      const z = json.data?.zestimateUsd ?? null;
-      if (z == null) {
-        return textStreamResponse(`No Zestimate available for:\n${address}`, 200);
-      }
-
-      return textStreamResponse(
-        `${address}\nZestimate: $${Math.round(z).toLocaleString()}`,
-        200
-      );
-    } catch {
-      return textStreamResponse("I couldn’t fetch a Zestimate right now.", 200);
+      return textStreamResponse(`I couldn’t fetch a Zestimate for that address. ${result.error}`, 200);
     }
+
+    return textStreamResponse(formatZestimateAssistantReply(address, result.data), 200);
   }
 
   // Address → proposal lookup (deterministic, no model required).
@@ -417,6 +386,7 @@ export async function POST(req: NextRequest) {
     "- Owners MAY actively invite proposals: this is Option B (Invite Proposals) / a “Proposal Window” in the canonical text. If asked “can I ask for proposals?” or “actively seek proposals?” answer YES using those facts—do not say the platform only supports browsing proposals on the board with no way to invite new interest.",
     "- If the user’s question is NOT about HomePosal specifically, you MAY answer using general knowledge if you are confident. Clearly label it as “General info” and do not present it as HomePosal policy or a verified fact. If unsure, say you’re not sure.",
     "- Never guess numbers, company policies, fees, timelines, or legal outcomes.",
+    "- Property values: Do NOT invent Zestimates or dollar amounts. If the user asks for a Zestimate, home value, or property worth at an address, tell them to include the full Southern California address (or pick it from the chat address dropdown). HomePosal can look up Zillow Zestimates when the Zestimate API is configured.",
     "",
     "CANONICAL PRODUCT DESCRIPTION (use this wording/meaning):",
     "",

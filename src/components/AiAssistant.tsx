@@ -118,7 +118,7 @@ export function AiAssistant() {
           parts: [
             {
               type: "text",
-              text: "Welcome to HomePosal. How can I help you?",
+              text: "Welcome to HomePosal. How can I help you? Ask about proposals on an address, or request a Zestimate / property value (pick the address from the dropdown for best results).",
             },
           ],
         },
@@ -438,7 +438,7 @@ export function AiAssistant() {
                   void selectPrediction(predictions[activeIdx]);
                 }
               }}
-              placeholder={isLoading ? "Thinking…" : "Ask a question…"}
+              placeholder={isLoading ? "Thinking…" : "Ask a question or request a Zestimate…"}
               disabled={isLoading}
               autoComplete="off"
               name="homeposal-ai-address"
