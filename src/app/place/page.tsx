@@ -55,6 +55,18 @@ export default async function PlacePage({
     <ZillowZestimatePanel address={address} lat={latNum} lng={lngNum} variant="collapsible" />
   );
 
+  const addressHeading = (
+    <>
+      <h1 className="mb-2 flex items-center gap-2 text-xl font-semibold text-[var(--foreground)] sm:text-2xl">
+        <MapPin className="h-6 w-6 shrink-0 text-[var(--foreground-muted)]" />
+        {address}
+      </h1>
+      <p className="mb-4 text-base text-[var(--foreground-muted)]">
+        This address was selected from the map search.
+      </p>
+    </>
+  );
+
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Place details (below sidebar on mobile) */}
@@ -67,13 +79,7 @@ export default async function PlacePage({
           Back To Home
         </Link>
 
-        <h1 className="mb-2 flex items-center gap-2 text-xl sm:text-2xl font-semibold text-[var(--foreground)]">
-          <MapPin className="h-6 w-6 shrink-0 text-[var(--foreground-muted)]" />
-          {address}
-        </h1>
-        <p className="mb-4 text-base text-[var(--foreground-muted)]">
-          This address was selected from the map search.
-        </p>
+        <div className="hidden lg:block">{addressHeading}</div>
 
         <div className="mb-6 hidden lg:block">
           <StreetViewPanel
@@ -100,6 +106,7 @@ export default async function PlacePage({
           <ArrowLeft className="h-4 w-4" />
           Back To Home
         </Link>
+        <div className="px-4 lg:hidden">{addressHeading}</div>
         {proposals.length > 0 && (
           <div className="hidden p-4 pb-0 lg:block">
             <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
