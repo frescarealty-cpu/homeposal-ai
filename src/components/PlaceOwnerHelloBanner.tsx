@@ -15,10 +15,15 @@ function BannerTitle({
 }: {
   label: string;
   headline: string;
-  size?: "default" | "large";
+  size?: "small" | "default" | "large";
   multiline?: boolean;
 }) {
-  const isLarge = size === "large";
+  const titleClass =
+    size === "large"
+      ? "text-xl font-bold sm:text-2xl md:text-3xl md:text-[2rem]"
+      : size === "small"
+        ? "text-sm font-semibold sm:text-base"
+        : "text-base font-semibold sm:text-lg";
 
   return (
     <div className="min-w-0 flex-1">
@@ -26,9 +31,7 @@ function BannerTitle({
         className={[
           "font-sans leading-snug text-[var(--foreground)]",
           multiline ? "line-clamp-2 text-pretty" : "truncate",
-          isLarge
-            ? "text-xl font-bold sm:text-2xl md:text-3xl md:text-[2rem]"
-            : "text-base font-semibold sm:text-lg",
+          titleClass,
         ].join(" ")}
       >
         {label}
@@ -78,6 +81,8 @@ type PlaceOwnerHelloBannerProps = {
   pinToBottom?: boolean;
   /** @deprecated Use `pinToViewportMinWidth` */
   pinToBottomMinWidth?: number;
+  /** Shorter banner for property / address detail views. */
+  size?: "default" | "compact";
 };
 
 const BANNER_BG = "#cce7f5";
@@ -105,7 +110,9 @@ export function PlaceOwnerHelloBanner({
   pinToViewportMaxWidth,
   pinToBottom,
   pinToBottomMinWidth,
+  size = "default",
 }: PlaceOwnerHelloBannerProps) {
+  const isSlim = size === "compact";
   const pinnedToViewport = pinToViewport || pinToBottom === true;
   const pinnedMinWidth = pinToViewportMinWidth ?? pinToBottomMinWidth ?? 0;
 
@@ -115,7 +122,7 @@ export function PlaceOwnerHelloBanner({
   const [viewportPinned, setViewportPinned] = useState(() =>
     pinnedToViewport ? matchesViewportPinRange(pinnedMinWidth, pinToViewportMaxWidth) : false
   );
-  const [isCompact, setIsCompact] = useState(false);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentId = "place-owner-hello-content";
 
@@ -135,7 +142,7 @@ export function PlaceOwnerHelloBanner({
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
-    const sync = () => setIsCompact(mq.matches);
+    const sync = () => setIsMobileLayout(mq.matches);
     sync();
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
@@ -191,7 +198,9 @@ export function PlaceOwnerHelloBanner({
       } as const)
     : undefined;
 
-  const safePad = "pb-[max(0.75rem,env(safe-area-inset-bottom))]";
+  const safePad = isSlim
+    ? "pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+    : "pb-[max(0.75rem,env(safe-area-inset-bottom))]";
 
   const shellClass = [
     "w-full shrink-0",
@@ -205,15 +214,31 @@ export function PlaceOwnerHelloBanner({
 
   const innerMaxWidth = "mx-auto w-full max-w-[1920px]";
 
-  const primaryBtnClass =
-    "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-[#1C4482] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90";
-  const secondaryBtnClass =
-    "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8";
-  const iconBtnClass =
-    "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white";
+  const primaryBtnClass = isSlim
+    ? "inline-flex min-h-[36px] items-center justify-center gap-1 rounded-full bg-[#1C4482] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90 sm:min-h-[38px] sm:text-sm sm:px-3.5"
+    : "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-[#1C4482] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90";
+  const secondaryBtnClass = isSlim
+    ? "inline-flex min-h-[36px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8 sm:min-h-[38px] sm:text-sm sm:px-3.5"
+    : "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8";
+  const iconBtnClass = isSlim
+    ? "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white sm:h-9 sm:w-9"
+    : "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white";
+
+  const logoCollapsed = isSlim
+    ? isMobileLayout
+      ? "h-10 w-10 shrink-0"
+      : "h-12 w-12 shrink-0"
+    : isMobileLayout
+      ? "h-14 w-14 shrink-0"
+      : "h-20 w-20 sm:h-24 sm:w-24";
+  const logoExpanded = isSlim ? "h-14 w-14 shrink-0" : "h-28 w-28 sm:h-32 sm:w-32";
+  const rowPad = isSlim
+    ? "px-3 py-2 sm:px-4 sm:py-2.5"
+    : "px-4 py-3 sm:gap-4 sm:px-6 sm:py-4";
+  const titleSize = isSlim ? "small" : "default";
 
   const renderBanner = (collapsed: boolean) => {
-    if (collapsed && isCompact) {
+    if (collapsed && isMobileLayout) {
       return (
         <div
           ref={rootRef}
@@ -222,10 +247,10 @@ export function PlaceOwnerHelloBanner({
           className={shellClass}
           style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
         >
-          <div className={`${innerMaxWidth} flex flex-col gap-3 px-4 py-3`}>
-            <div className="flex items-center gap-3">
-              <BannerLogo className="h-14 w-14 shrink-0" />
-              <BannerTitle label={alertLabel} headline={headline} multiline />
+          <div className={`${innerMaxWidth} flex flex-col gap-2 ${rowPad}`}>
+            <div className={`flex items-center ${isSlim ? "gap-2" : "gap-3"}`}>
+              <BannerLogo className={logoCollapsed} />
+              <BannerTitle label={alertLabel} headline={headline} size={titleSize} multiline />
             </div>
             <div className="grid grid-cols-[1fr_1fr_auto] items-stretch gap-2">
               <ContactInviteLink
@@ -267,10 +292,10 @@ export function PlaceOwnerHelloBanner({
           style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
         >
           <div
-            className={`${innerMaxWidth} flex flex-wrap items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 md:flex-nowrap lg:px-8`}
+            className={`${innerMaxWidth} flex flex-wrap items-center gap-2 md:flex-nowrap lg:px-8 ${rowPad} ${isSlim ? "sm:gap-2" : "sm:gap-4"}`}
           >
-            <BannerLogo />
-            <BannerTitle label={alertLabel} headline={headline} />
+            <BannerLogo className={logoCollapsed} />
+            <BannerTitle label={alertLabel} headline={headline} size={titleSize} />
             <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
               <ContactInviteLink contactType="owner-proposal" className={primaryBtnClass}>
                 {collapsedPrimaryLabel}
@@ -295,19 +320,23 @@ export function PlaceOwnerHelloBanner({
       );
     }
 
-    if (isCompact) {
+    if (isMobileLayout) {
       return (
         <div
           ref={rootRef}
           role="region"
           aria-label={`${alertLabel}: ${headline}`}
-          className={[shellClass, "relative max-h-[min(85vh,560px)] overflow-y-auto"].join(" ")}
+          className={[
+            shellClass,
+            "relative overflow-y-auto",
+            isSlim ? "max-h-[min(70vh,420px)]" : "max-h-[min(85vh,560px)]",
+          ].join(" ")}
           style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
         >
           <button
             type="button"
             onClick={() => setExpanded(false)}
-            className={`absolute right-3 top-3 z-10 ${iconBtnClass}`}
+            className={`absolute right-3 top-2.5 z-10 ${iconBtnClass}`}
             aria-expanded={true}
             aria-controls={contentId}
             aria-label="Collapse owner hello banner"
@@ -315,10 +344,18 @@ export function PlaceOwnerHelloBanner({
             <ChevronDown className="h-4 w-4" aria-hidden />
           </button>
 
-          <div id={contentId} className={`${innerMaxWidth} flex flex-col gap-4 px-4 py-4 pr-14`}>
-            <div className="flex items-start gap-3">
-              <BannerLogo className="h-16 w-16 shrink-0" />
-              <BannerTitle label={alertLabel} headline={headline} size="large" multiline />
+          <div
+            id={contentId}
+            className={`${innerMaxWidth} flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4`}
+          >
+            <div className="flex items-start gap-2.5">
+              <BannerLogo className={logoExpanded} />
+              <BannerTitle
+                label={alertLabel}
+                headline={headline}
+                size={isSlim ? "default" : "large"}
+                multiline
+              />
             </div>
             {body ? (
               <p className="text-sm leading-relaxed text-[var(--foreground-muted)]">{body}</p>
@@ -365,14 +402,20 @@ export function PlaceOwnerHelloBanner({
 
         <div
           id={contentId}
-          className={`${innerMaxWidth} relative flex flex-col gap-4 px-4 py-4 pr-14 sm:px-6 sm:py-5 md:flex-row md:items-start md:gap-6 lg:px-8 lg:py-6`}
+          className={[
+            innerMaxWidth,
+            "relative flex flex-col pr-14 md:flex-row md:items-start lg:px-8",
+            isSlim
+              ? "gap-3 px-3 py-3 sm:px-4 sm:py-4 md:gap-4"
+              : "gap-4 px-4 py-4 sm:px-6 sm:py-5 md:gap-6 lg:py-6",
+          ].join(" ")}
         >
           <div className="shrink-0 bg-transparent">
-            <BannerLogo className="h-28 w-28 sm:h-32 sm:w-32" />
+            <BannerLogo className={logoExpanded} />
           </div>
 
           <div className="min-w-0 flex-1">
-            <BannerTitle label={alertLabel} headline={headline} size="large" />
+            <BannerTitle label={alertLabel} headline={headline} size={isSlim ? "default" : "large"} />
             {body ? (
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--foreground-muted)] sm:text-[0.9375rem]">
                 {body}

@@ -6,4 +6,4 @@ export const BRAND_GREEN = "#10b981";
 export const BANNER_LOGO_GREEN = "#34d399";
 
 /** Transparent banner logo (greens tinted to `BANNER_LOGO_GREEN`); bump `v` when the file changes. */
-export const LOGO_BANNER_URL = "/homeposal-logo-banner.png?v=20260528";
+export const LOGO_BANNER_URL = "/homeposal-logo-banner.png?v=20260528b";

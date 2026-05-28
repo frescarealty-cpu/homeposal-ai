@@ -5,7 +5,7 @@ import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
-import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
+import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { MOCK_PROPERTIES } from "@/data/properties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
@@ -72,7 +72,9 @@ export default async function PropertyPage({
   );
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
+    <>
+      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact />
+      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Property details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <Link
@@ -163,9 +165,7 @@ export default async function PropertyPage({
           offerDeadline={property.offerDeadline}
           enableInquiry
           inquiryAddressLabel={zillowAddress}
-          showOwnerAlertBanner
-          ownerInquiryPhone="760-123-4560"
-          ownerAlertClassName="hidden lg:block"
+          showOwnerAlertBanner={false}
           beforeProposalsHeading={
             <div className="mb-4 flex flex-col gap-4 lg:hidden">
               <StreetViewPanel
@@ -177,11 +177,6 @@ export default async function PropertyPage({
             </div>
           }
         />
-        {proposals.length > 0 && (
-          <div className="border-t border-[var(--border)] p-4 lg:hidden">
-            <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
-          </div>
-        )}
         {property.status === "open" && (
           <div className="border-t border-[var(--border)]">
             <PlaceOfferForm
@@ -198,5 +193,6 @@ export default async function PropertyPage({
         )}
       </aside>
     </div>
+    </>
   );
 }

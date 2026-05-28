@@ -11,7 +11,7 @@ import { ProposalsPublicView } from "./ProposalsPublicView";
 import { PlaceOfferForm } from "./PlaceOfferForm";
 import { ZillowZestimatePanel } from "./ZillowZestimatePanel";
 import { AiAssistant } from "./AiAssistant";
-import { PlaceOwnerHelloBanner } from "./PlaceOwnerHelloBanner";
+import { OwnerHelloBannerStack } from "./OwnerHelloBannerStack";
 import { filterPropertiesByQuery, filterPropertiesNearLocation } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/client";
@@ -175,31 +175,15 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   const proposals = selectedPropertyId ? getMockProposalsPublic(selectedPropertyId) : [];
   const bestOfferCents = proposals.length > 0 ? Math.max(...proposals.map((p) => p.priceCents)) : 0;
 
-  const showOwnerHello = !selectedProperty && !addressToShow;
-  const ownerHelloBody =
-    "See bona fide proposals from verified suitors before you deal with the stress of the MLS.";
+  const showOwnerHello = !selectedProperty;
 
   return (
     <>
       {showOwnerHello && (
-        <>
-          <PlaceOwnerHelloBanner
-            pinToViewport
-            pinToViewportMinWidth={768}
-            defaultExpanded
-            autoCollapseMs={12000}
-            body={ownerHelloBody}
-          />
-          <PlaceOwnerHelloBanner
-            pinToViewport
-            pinToViewportMinWidth={0}
-            pinToViewportMaxWidth={768}
-            defaultExpanded={false}
-            autoCollapseMs={10000}
-            body={ownerHelloBody}
-            className="md:hidden"
-          />
-        </>
+        <OwnerHelloBannerStack
+          defaultExpandedDesktop={!addressToShow}
+          compact={Boolean(addressToShow)}
+        />
       )}
       <div className="flex min-w-0 min-h-0 flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row">
         <div className="flex min-w-0 h-auto w-full shrink-0 flex-col md:h-[70vh] lg:h-full lg:w-[60%]">

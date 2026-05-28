@@ -4,7 +4,7 @@ import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
-import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
+import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { getPlaceProposals } from "@/lib/placeProposals";
 import { createClient } from "@/lib/supabase/server";
@@ -68,7 +68,9 @@ export default async function PlacePage({
   );
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
+    <>
+      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact />
+      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Place details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <Link
@@ -107,13 +109,7 @@ export default async function PlacePage({
           Back To Home
         </Link>
         <div className="px-4 lg:hidden">{addressHeading}</div>
-        {proposals.length > 0 && (
-          <div className="hidden p-4 pb-0 lg:block">
-            <OwnerAlertBanner ownerInquiryPhone="760-123-4560" />
-          </div>
-        )}
-        <div className="hidden border-t border-[var(--border)] lg:block" />
-        <div className="hidden p-4 lg:block">{zestimatePanel}</div>
+        <div className="hidden p-4 pb-0 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
           proposals={proposals}
@@ -146,5 +142,6 @@ export default async function PlacePage({
         </div>
       </aside>
     </div>
+    </>
   );
 }
