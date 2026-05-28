@@ -71,7 +71,7 @@ type PlaceOwnerHelloBannerProps = {
   body?: string;
   /** Label for the primary CTA when the banner is collapsed (Guardian-style bar). */
   collapsedPrimaryLabel?: string;
-  /** Pin full-width to the bottom of the viewport (stays visible while scrolling). */
+  /** Pin to the bottom of the viewport (stays visible while scrolling). */
   pinToViewport?: boolean;
   /** Only pin when viewport width is at least this (px). Default 0. */
   pinToViewportMinWidth?: number;
@@ -86,6 +86,8 @@ type PlaceOwnerHelloBannerProps = {
 };
 
 const VIEWPORT_PIN_Z = 85;
+/** Match `layout.tsx` main content column (`max-w-[95%]` / `md:max-w-7xl`). */
+const PAGE_WIDTH_CLASS = "mx-auto w-full max-w-[95%] md:max-w-7xl md:min-w-0";
 
 function matchesViewportPinRange(minWidth: number, maxWidth?: number) {
   if (typeof window === "undefined") return false;
@@ -194,17 +196,6 @@ export function PlaceOwnerHelloBanner({
     return null;
   }
 
-  const viewportFixedStyle = isViewportFixed
-    ? ({
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: "var(--cookie-consent-offset, 0px)",
-        zIndex: VIEWPORT_PIN_Z,
-        width: "100%",
-      } as const)
-    : undefined;
-
   const safePad = isSlim
     ? "pb-[max(0.5rem,env(safe-area-inset-bottom))]"
     : "pb-[max(0.75rem,env(safe-area-inset-bottom))]";
@@ -212,14 +203,17 @@ export function PlaceOwnerHelloBanner({
   const shellClass = [
     "w-full shrink-0",
     isViewportFixed
-      ? `border-t border-[#1C4482]/15 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] ${safePad}`
+      ? [
+          "rounded-t-xl border border-b-0 border-[#1C4482]/15 shadow-[0_-4px_24px_rgba(0,0,0,0.12)]",
+          safePad,
+        ].join(" ")
       : "overflow-hidden rounded-lg",
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
-  const innerMaxWidth = "mx-auto w-full max-w-[1920px]";
+  const innerClass = "w-full";
 
   const getLayoutTokens = (collapsed: boolean) => {
     const tightCollapsedBar = collapsed && (isSlim || (!isMobileLayout && !isSlim));
@@ -271,9 +265,9 @@ export function PlaceOwnerHelloBanner({
           role="region"
           aria-label={`${alertLabel}: ${headline}`}
           className={shellClass}
-          style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
+          style={{ backgroundColor: BANNER_BG }}
         >
-          <div className={`${innerMaxWidth} flex flex-col gap-2 ${t.rowPad}`}>
+          <div className={`${innerClass} flex flex-col gap-2 ${t.rowPad}`}>
             <div className={`flex items-center ${isSlim ? "gap-2" : "gap-3"}`}>
               <BannerLogo className={t.logoCollapsed} />
               <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} multiline />
@@ -315,10 +309,10 @@ export function PlaceOwnerHelloBanner({
           role="region"
           aria-label={`${alertLabel}: ${headline}`}
           className={shellClass}
-          style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
+          style={{ backgroundColor: BANNER_BG }}
         >
           <div
-            className={`${innerMaxWidth} flex flex-wrap items-center md:flex-nowrap ${t.rowPad} ${t.rowGap}`}
+            className={`${innerClass} flex flex-wrap items-center md:flex-nowrap ${t.rowPad} ${t.rowGap}`}
           >
             <BannerLogo className={t.logoCollapsed} />
             <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} />
@@ -357,7 +351,7 @@ export function PlaceOwnerHelloBanner({
             "relative overflow-y-auto",
             isSlim ? "max-h-[min(70vh,420px)]" : "max-h-[min(85vh,560px)]",
           ].join(" ")}
-          style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
+          style={{ backgroundColor: BANNER_BG }}
         >
           <button
             type="button"
@@ -372,7 +366,7 @@ export function PlaceOwnerHelloBanner({
 
           <div
             id={contentId}
-            className={`${innerMaxWidth} flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4`}
+            className={`${innerClass} flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4`}
           >
             <div className="flex items-start gap-2.5">
               <BannerLogo className={t.logoExpanded} />
@@ -413,7 +407,7 @@ export function PlaceOwnerHelloBanner({
           "relative",
           isViewportFixed ? "max-h-[min(70vh,520px)] overflow-y-auto" : "",
         ].join(" ")}
-        style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
+        style={{ backgroundColor: BANNER_BG }}
       >
         <button
           type="button"
@@ -429,7 +423,7 @@ export function PlaceOwnerHelloBanner({
         <div
           id={contentId}
           className={[
-            innerMaxWidth,
+            innerClass,
             "relative flex flex-col pr-14 md:flex-row md:items-start lg:px-8",
             isSlim
               ? "gap-3 px-3 py-3 sm:px-4 sm:py-4 md:gap-4"
@@ -472,7 +466,15 @@ export function PlaceOwnerHelloBanner({
   const banner = renderBanner(!expanded);
 
   if (isViewportFixed) {
-    return createPortal(banner, document.body);
+    return createPortal(
+      <div
+        className="pointer-events-none fixed inset-x-0 flex justify-center"
+        style={{ bottom: "var(--cookie-consent-offset, 0px)", zIndex: VIEWPORT_PIN_Z }}
+      >
+        <div className={`pointer-events-auto ${PAGE_WIDTH_CLASS}`}>{banner}</div>
+      </div>,
+      document.body
+    );
   }
 
   return banner;
