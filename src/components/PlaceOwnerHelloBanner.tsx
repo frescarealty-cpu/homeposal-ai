@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { ContactInviteLink } from "@/components/ContactInviteLink";
-import { LOGO_BANNER_URL } from "@/lib/siteAssets";
+import { BANNER_BG, LOGO_BANNER_URL } from "@/lib/siteAssets";
 
 function BannerTitle({
   label,
@@ -85,7 +85,6 @@ type PlaceOwnerHelloBannerProps = {
   size?: "default" | "compact";
 };
 
-const BANNER_BG = "#cce7f5";
 const VIEWPORT_PIN_Z = 85;
 
 function matchesViewportPinRange(minWidth: number, maxWidth?: number) {
