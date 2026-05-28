@@ -81,8 +81,8 @@ type PlaceOwnerHelloBannerProps = {
   pinToBottom?: boolean;
   /** @deprecated Use `pinToViewportMinWidth` */
   pinToBottomMinWidth?: number;
-  /** Shorter banner for property / address detail views. */
-  size?: "default" | "compact";
+  /** `compact` = property detail; `cozy` = slightly smaller home index; `default` = full size. */
+  size?: "default" | "compact" | "cozy";
 };
 
 const VIEWPORT_PIN_Z = 85;
@@ -114,6 +114,7 @@ export function PlaceOwnerHelloBanner({
   size = "default",
 }: PlaceOwnerHelloBannerProps) {
   const isSlim = size === "compact";
+  const isCozy = size === "cozy";
   const pinnedToViewport = pinToViewport || pinToBottom === true;
   const pinnedMinWidth = pinToViewportMinWidth ?? pinToBottomMinWidth ?? 0;
 
@@ -216,15 +217,16 @@ export function PlaceOwnerHelloBanner({
   const innerClass = "w-full";
 
   const getLayoutTokens = (collapsed: boolean) => {
-    const tightCollapsedBar = collapsed && (isSlim || (!isMobileLayout && !isSlim));
+    const tightCollapsedBar = collapsed && (isSlim || isCozy || (!isMobileLayout && !isSlim && !isCozy));
+    const smallerExpandedChrome = tightCollapsedBar || (isCozy && !collapsed);
 
-    const primaryBtnClass = tightCollapsedBar
+    const primaryBtnClass = smallerExpandedChrome
       ? "inline-flex min-h-[36px] items-center justify-center gap-1 rounded-full bg-[#1C4482] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90 sm:min-h-[38px] sm:px-3.5 sm:text-sm"
       : "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-[#1C4482] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90";
-    const secondaryBtnClass = tightCollapsedBar
+    const secondaryBtnClass = smallerExpandedChrome
       ? "inline-flex min-h-[36px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8 sm:min-h-[38px] sm:px-3.5 sm:text-sm"
       : "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8";
-    const iconBtnClass = tightCollapsedBar
+    const iconBtnClass = smallerExpandedChrome
       ? "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white sm:h-9 sm:w-9"
       : "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white";
 
@@ -232,16 +234,35 @@ export function PlaceOwnerHelloBanner({
       ? isMobileLayout
         ? "h-10 w-10 shrink-0"
         : "h-12 w-12 shrink-0"
-      : isMobileLayout
-        ? "h-14 w-14 shrink-0"
-        : "h-14 w-14 shrink-0 sm:h-16 sm:w-16";
-    const logoExpanded = isSlim ? "h-14 w-14 shrink-0" : "h-28 w-28 sm:h-32 sm:w-32";
+      : isCozy
+        ? isMobileLayout
+          ? "h-11 w-11 shrink-0"
+          : "h-12 w-12 shrink-0"
+        : isMobileLayout
+          ? "h-14 w-14 shrink-0"
+          : "h-14 w-14 shrink-0 sm:h-16 sm:w-16";
+    const logoExpanded = isSlim
+      ? "h-14 w-14 shrink-0"
+      : isCozy
+        ? "h-20 w-20 shrink-0 sm:h-24 sm:w-24"
+        : "h-28 w-28 sm:h-32 sm:w-32";
     const rowPad = tightCollapsedBar
       ? "px-3 py-2 sm:px-4 sm:py-2.5 lg:px-6"
-      : "px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8 lg:py-6";
-    const titleSize: "small" | "default" | "large" =
-      tightCollapsedBar ? "small" : isSlim ? "small" : collapsed ? "default" : "large";
-    const rowGap = tightCollapsedBar ? "gap-2 sm:gap-3" : "sm:gap-4";
+      : isCozy
+        ? "px-3 py-2.5 sm:gap-3 sm:px-5 sm:py-3 lg:px-6 lg:py-4"
+        : "px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8 lg:py-6";
+    const titleSize: "small" | "default" | "large" = tightCollapsedBar
+      ? "small"
+      : isSlim
+        ? "small"
+        : isCozy
+          ? collapsed
+            ? "small"
+            : "default"
+          : collapsed
+            ? "default"
+            : "large";
+    const rowGap = tightCollapsedBar || isCozy ? "gap-2 sm:gap-3" : "sm:gap-4";
 
     return {
       primaryBtnClass,
@@ -405,7 +426,11 @@ export function PlaceOwnerHelloBanner({
         className={[
           shellClass,
           "relative",
-          isViewportFixed ? "max-h-[min(70vh,520px)] overflow-y-auto" : "",
+          isViewportFixed
+            ? isCozy
+              ? "max-h-[min(62vh,460px)] overflow-y-auto"
+              : "max-h-[min(70vh,520px)] overflow-y-auto"
+            : "",
         ].join(" ")}
         style={{ backgroundColor: BANNER_BG }}
       >
@@ -427,7 +452,9 @@ export function PlaceOwnerHelloBanner({
             "relative flex flex-col pr-14 md:flex-row md:items-start lg:px-8",
             isSlim
               ? "gap-3 px-3 py-3 sm:px-4 sm:py-4 md:gap-4"
-              : "gap-4 px-4 py-4 sm:px-6 sm:py-5 md:gap-6 lg:py-6",
+              : isCozy
+                ? "gap-3 px-3 py-3 sm:px-5 sm:py-3.5 md:gap-4 lg:py-4"
+                : "gap-4 px-4 py-4 sm:px-6 sm:py-5 md:gap-6 lg:py-6",
           ].join(" ")}
         >
           <div className="shrink-0 bg-transparent">
@@ -437,7 +464,12 @@ export function PlaceOwnerHelloBanner({
           <div className="min-w-0 flex-1">
             <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} />
             {body ? (
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--foreground-muted)] sm:text-[0.9375rem]">
+              <p
+                className={[
+                  "mt-2 max-w-2xl leading-relaxed text-[var(--foreground-muted)]",
+                  isCozy ? "text-xs sm:text-sm" : "text-sm sm:text-[0.9375rem]",
+                ].join(" ")}
+              >
                 {body}
               </p>
             ) : null}

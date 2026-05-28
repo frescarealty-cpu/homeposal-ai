@@ -14,6 +14,7 @@ type OwnerHelloBannerStackProps = {
   defaultExpandedDesktop?: boolean;
   /** Shorter banner for property / address detail views. */
   compact?: boolean;
+  size?: "default" | "compact" | "cozy";
 };
 
 /** Viewport-pinned owner hello banner (desktop + mobile), matching the home index experience. */
@@ -24,8 +25,9 @@ export function OwnerHelloBannerStack({
   ownerInquiryPhone,
   defaultExpandedDesktop = true,
   compact = false,
+  size: sizeProp,
 }: OwnerHelloBannerStackProps) {
-  const size = compact ? "compact" : "default";
+  const size = sizeProp ?? (compact ? "compact" : "default");
 
   return (
     <>

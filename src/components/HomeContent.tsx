@@ -155,7 +155,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
       {showOwnerHello && (
         <OwnerHelloBannerStack
           defaultExpandedDesktop={!addressToShow}
-          compact={Boolean(addressToShow)}
+          size={addressToShow ? "compact" : "cozy"}
         />
       )}
       <div className="flex min-w-0 min-h-0 flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row">
