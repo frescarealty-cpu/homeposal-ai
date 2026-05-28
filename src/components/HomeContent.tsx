@@ -62,9 +62,6 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const mobileMapRef = useRef<HTMLDivElement>(null);
-  const aboutContentRef = useRef<HTMLDivElement>(null);
-  const [aboutCanCollapse, setAboutCanCollapse] = useState(false);
-  const [aboutCollapsed, setAboutCollapsed] = useState(false);
   const [isMobileLayout, setIsMobileLayout] = useState(false);
 
   useEffect(() => {
@@ -86,30 +83,6 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
       setIsLoggedIn(!!session?.user);
     });
     return () => subscription.unsubscribe();
-  }, []);
-
-  // Only show a collapse control when the About panel would overflow.
-  useEffect(() => {
-    const el = aboutContentRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      // If we ever change the max height, keep this in sync.
-      const maxPx = 260;
-      const shouldCollapse = el.scrollHeight > maxPx + 4;
-      setAboutCanCollapse(shouldCollapse);
-      if (!shouldCollapse) setAboutCollapsed(false);
-    };
-
-    measure();
-
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(el);
-    window.addEventListener("resize", measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-    };
   }, []);
 
   const handlePlaceSelect = useCallback(
@@ -358,19 +331,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                   <AiAssistant />
 
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <h2 className="text-lg font-semibold text-[var(--foreground)]">What is HomePosal?</h2>
-                      {aboutCanCollapse && (
-                        <button
-                          type="button"
-                          className="min-h-[36px] rounded-md border border-[var(--border)] bg-[var(--background)] px-3 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--border-subtle)]"
-                          onClick={() => setAboutCollapsed((v) => !v)}
-                          aria-expanded={!aboutCollapsed}
-                        >
-                          {aboutCollapsed ? "Show more" : "Show less"}
-                        </button>
-                      )}
-                    </div>
+                    <h2 className="mb-3 text-lg font-semibold text-[var(--foreground)]">What is HomePosal?</h2>
 
                     <p className="mb-4 text-sm leading-relaxed text-[var(--foreground-muted)]">
                       <strong className="text-[var(--foreground)]">HomePosal:</strong> HomePosal is a public bulletin
@@ -378,12 +339,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                       any property. We connect owners and the Interested Party so they can find each other.
                     </p>
 
-                    <div
-                      ref={aboutContentRef}
-                      className={[
-                        aboutCanCollapse && aboutCollapsed ? "max-h-[260px] overflow-y-auto pr-1" : "pr-1",
-                      ].join(" ")}
-                    >
+                    <div>
                       <h3 className="mb-2 text-sm font-semibold text-[var(--foreground)]">For Owners:</h3>
                       <ul className="mb-4 space-y-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
                         <li className="flex items-start gap-2">
