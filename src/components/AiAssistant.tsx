@@ -351,7 +351,7 @@ export function AiAssistant() {
     <div
       className={[
         "flex flex-col rounded-xl border border-[var(--border)] bg-white",
-        collapsed ? "p-3" : "p-4 lg:h-[460px]",
+        collapsed ? "p-3" : "p-4",
       ].join(" ")}
     >
       <div className={collapsed ? "" : "mb-3"}>
@@ -378,10 +378,10 @@ export function AiAssistant() {
       </div>
 
       {!collapsed && (
-        <div className="lg:min-h-0 lg:flex-1 lg:overflow-hidden">
+        <div>
           <div
             ref={messagesScrollRef}
-            className="overflow-y-auto overflow-anchor-none rounded-lg bg-zinc-100 p-2 pr-1 max-h-[min(280px,42vh)] lg:max-h-none lg:h-full lg:p-3"
+            className="overflow-y-auto overflow-anchor-none rounded-lg bg-zinc-100 p-2 pr-1 max-h-[min(280px,42vh)] lg:max-h-[200px] lg:p-3"
           >
             <div className="space-y-2">
               {displayMessages.map((m) => {

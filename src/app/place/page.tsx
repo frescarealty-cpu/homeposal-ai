@@ -109,7 +109,7 @@ export default async function PlacePage({
           Back To Home
         </Link>
         <div className="px-4 lg:hidden">{addressHeading}</div>
-        <div className="hidden p-4 pb-0 lg:block">{zestimatePanel}</div>
+        <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
           proposals={proposals}

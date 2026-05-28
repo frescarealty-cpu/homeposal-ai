@@ -107,11 +107,15 @@ export function ZillowZestimatePanel({ address, lat, lng, variant = "default", c
   const isCollapsible = variant === "collapsible";
   const showDetails = !isCollapsible || open;
 
+  const sectionPad = isCompact ? "p-3 sm:p-4" : "p-4 sm:p-5";
+  const blockGap = isCompact ? "gap-3" : "gap-4";
+
   return (
     <section
       className={[
-        "kalshi-border rounded-xl bg-[var(--background)] shadow-sm",
-        isCompact ? "p-3 sm:p-4" : "p-4 sm:p-5",
+        "kalshi-border flex flex-col rounded-xl bg-[var(--background)] shadow-sm",
+        sectionPad,
+        blockGap,
         "ring-1 ring-[var(--border)]/60",
         className ?? "",
       ].join(" ")}
@@ -141,7 +145,7 @@ export function ZillowZestimatePanel({ address, lat, lng, variant = "default", c
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2 text-left hover:bg-[var(--border-subtle)] transition-colors"
+          className="flex w-full items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2 text-left transition-colors hover:bg-[var(--border-subtle)]"
           aria-expanded={open}
         >
           <div className="min-w-0">
@@ -162,7 +166,8 @@ export function ZillowZestimatePanel({ address, lat, lng, variant = "default", c
         </button>
       )}
 
-      {showDetails && <div className={isCompact ? "mt-3" : "mt-4"}>
+      {showDetails && (
+        <div>
         {loading ? (
           <div className="space-y-3">
             <div className="h-5 w-40 rounded bg-[var(--border-subtle)]" />
@@ -206,9 +211,11 @@ export function ZillowZestimatePanel({ address, lat, lng, variant = "default", c
             </div>
           </div>
         )}
-      </div>}
+        </div>
+      )}
 
-      {showDetails && <div className={isCompact ? "mt-3 space-y-1.5" : "mt-4 space-y-2"}>
+      {showDetails && (
+        <div className={isCompact ? "space-y-1.5" : "space-y-2"}>
         {/* Required link copy */}
         <Link
           href={zillowPropertyLink}
@@ -226,10 +233,11 @@ export function ZillowZestimatePanel({ address, lat, lng, variant = "default", c
         <p className="text-[0.7rem] leading-relaxed text-[var(--foreground-muted)]">
           Data is provided “as is” via the Zestimate API.
         </p>
-      </div>}
+        </div>
+      )}
 
       {/* Zillow attribution: show only alongside Zestimate data (this panel). */}
-      <div className="mt-4 border-t border-[var(--border)]/60 pt-3 text-[0.7rem] leading-relaxed text-[var(--foreground-muted)]">
+      <div className="border-t border-[var(--border)]/60 pt-3 text-[0.7rem] leading-relaxed text-[var(--foreground-muted)]">
         © Zillow, Inc., 2006-2023. Use is subject to{" "}
         <Link
           href="https://www.zillow.com/corp/Terms.htm"

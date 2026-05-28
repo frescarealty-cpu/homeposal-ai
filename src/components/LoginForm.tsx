@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { checkUserVerified } from "@/lib/actions/checkVerified";
+import { PasswordInput } from "@/components/ui/password-input";
 
 type LoginFormProps = {
   redirectTo: string;
@@ -88,13 +89,13 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
             Forgot password?
           </Link>
         </div>
-        <input
+        <PasswordInput
           id="password"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="kalshi-border w-full min-h-[44px] rounded-md bg-[var(--background)] py-3 px-4 text-base text-[var(--foreground)]"
+          autoComplete="current-password"
+          className="kalshi-border w-full min-h-[44px] rounded-md bg-[var(--background)] py-3 pl-4 text-base text-[var(--foreground)]"
         />
       </div>
       <button

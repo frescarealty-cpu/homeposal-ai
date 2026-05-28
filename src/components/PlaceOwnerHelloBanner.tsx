@@ -214,30 +214,49 @@ export function PlaceOwnerHelloBanner({
 
   const innerMaxWidth = "mx-auto w-full max-w-[1920px]";
 
-  const primaryBtnClass = isSlim
-    ? "inline-flex min-h-[36px] items-center justify-center gap-1 rounded-full bg-[#1C4482] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90 sm:min-h-[38px] sm:text-sm sm:px-3.5"
-    : "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-[#1C4482] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90";
-  const secondaryBtnClass = isSlim
-    ? "inline-flex min-h-[36px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8 sm:min-h-[38px] sm:text-sm sm:px-3.5"
-    : "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8";
-  const iconBtnClass = isSlim
-    ? "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white sm:h-9 sm:w-9"
-    : "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white";
+  const getLayoutTokens = (collapsed: boolean) => {
+    const tightCollapsedBar = collapsed && (isSlim || (!isMobileLayout && !isSlim));
 
-  const logoCollapsed = isSlim
-    ? isMobileLayout
-      ? "h-10 w-10 shrink-0"
-      : "h-12 w-12 shrink-0"
-    : isMobileLayout
-      ? "h-14 w-14 shrink-0"
-      : "h-20 w-20 sm:h-24 sm:w-24";
-  const logoExpanded = isSlim ? "h-14 w-14 shrink-0" : "h-28 w-28 sm:h-32 sm:w-32";
-  const rowPad = isSlim
-    ? "px-3 py-2 sm:px-4 sm:py-2.5"
-    : "px-4 py-3 sm:gap-4 sm:px-6 sm:py-4";
-  const titleSize = isSlim ? "small" : "default";
+    const primaryBtnClass = tightCollapsedBar
+      ? "inline-flex min-h-[36px] items-center justify-center gap-1 rounded-full bg-[#1C4482] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90 sm:min-h-[38px] sm:px-3.5 sm:text-sm"
+      : "inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-[#1C4482] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90";
+    const secondaryBtnClass = tightCollapsedBar
+      ? "inline-flex min-h-[36px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8 sm:min-h-[38px] sm:px-3.5 sm:text-sm"
+      : "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8";
+    const iconBtnClass = tightCollapsedBar
+      ? "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white sm:h-9 sm:w-9"
+      : "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white";
+
+    const logoCollapsed = isSlim
+      ? isMobileLayout
+        ? "h-10 w-10 shrink-0"
+        : "h-12 w-12 shrink-0"
+      : isMobileLayout
+        ? "h-14 w-14 shrink-0"
+        : "h-14 w-14 shrink-0 sm:h-16 sm:w-16";
+    const logoExpanded = isSlim ? "h-14 w-14 shrink-0" : "h-28 w-28 sm:h-32 sm:w-32";
+    const rowPad = tightCollapsedBar
+      ? "px-3 py-2 sm:px-4 sm:py-2.5 lg:px-6"
+      : "px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8 lg:py-6";
+    const titleSize: "small" | "default" | "large" =
+      tightCollapsedBar ? "small" : isSlim ? "small" : collapsed ? "default" : "large";
+    const rowGap = tightCollapsedBar ? "gap-2 sm:gap-3" : "sm:gap-4";
+
+    return {
+      primaryBtnClass,
+      secondaryBtnClass,
+      iconBtnClass,
+      logoCollapsed,
+      logoExpanded,
+      rowPad,
+      titleSize,
+      rowGap,
+    };
+  };
 
   const renderBanner = (collapsed: boolean) => {
+    const t = getLayoutTokens(collapsed);
+
     if (collapsed && isMobileLayout) {
       return (
         <div
@@ -247,29 +266,29 @@ export function PlaceOwnerHelloBanner({
           className={shellClass}
           style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
         >
-          <div className={`${innerMaxWidth} flex flex-col gap-2 ${rowPad}`}>
+          <div className={`${innerMaxWidth} flex flex-col gap-2 ${t.rowPad}`}>
             <div className={`flex items-center ${isSlim ? "gap-2" : "gap-3"}`}>
-              <BannerLogo className={logoCollapsed} />
-              <BannerTitle label={alertLabel} headline={headline} size={titleSize} multiline />
+              <BannerLogo className={t.logoCollapsed} />
+              <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} multiline />
             </div>
             <div className="grid grid-cols-[1fr_1fr_auto] items-stretch gap-2">
               <ContactInviteLink
                 contactType="owner-proposal"
-                className={`${primaryBtnClass} w-full px-3 text-center`}
+                className={`${t.primaryBtnClass} w-full px-3 text-center`}
               >
                 {collapsedPrimaryLabel}
               </ContactInviteLink>
               <button
                 type="button"
                 onClick={() => setDismissed(true)}
-                className={`${secondaryBtnClass} w-full px-3 text-center`}
+                className={`${t.secondaryBtnClass} w-full px-3 text-center`}
               >
                 Maybe later
               </button>
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
-                className={iconBtnClass}
+                className={t.iconBtnClass}
                 aria-expanded={false}
                 aria-controls={contentId}
                 aria-label="Expand owner hello banner"
@@ -292,22 +311,22 @@ export function PlaceOwnerHelloBanner({
           style={{ backgroundColor: BANNER_BG, ...viewportFixedStyle }}
         >
           <div
-            className={`${innerMaxWidth} flex flex-wrap items-center gap-2 md:flex-nowrap lg:px-8 ${rowPad} ${isSlim ? "sm:gap-2" : "sm:gap-4"}`}
+            className={`${innerMaxWidth} flex flex-wrap items-center md:flex-nowrap ${t.rowPad} ${t.rowGap}`}
           >
-            <BannerLogo className={logoCollapsed} />
-            <BannerTitle label={alertLabel} headline={headline} size={titleSize} />
+            <BannerLogo className={t.logoCollapsed} />
+            <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} />
             <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
-              <ContactInviteLink contactType="owner-proposal" className={primaryBtnClass}>
+              <ContactInviteLink contactType="owner-proposal" className={t.primaryBtnClass}>
                 {collapsedPrimaryLabel}
-                <ArrowRight className="h-4 w-4" aria-hidden />
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </ContactInviteLink>
-              <button type="button" onClick={() => setDismissed(true)} className={secondaryBtnClass}>
+              <button type="button" onClick={() => setDismissed(true)} className={t.secondaryBtnClass}>
                 Maybe later
               </button>
               <button
                 type="button"
                 onClick={() => setExpanded(true)}
-                className={iconBtnClass}
+                className={t.iconBtnClass}
                 aria-expanded={false}
                 aria-controls={contentId}
                 aria-label="Expand owner hello banner"
@@ -336,7 +355,7 @@ export function PlaceOwnerHelloBanner({
           <button
             type="button"
             onClick={() => setExpanded(false)}
-            className={`absolute right-3 top-2.5 z-10 ${iconBtnClass}`}
+            className={`absolute right-3 top-2.5 z-10 ${t.iconBtnClass}`}
             aria-expanded={true}
             aria-controls={contentId}
             aria-label="Collapse owner hello banner"
@@ -349,11 +368,11 @@ export function PlaceOwnerHelloBanner({
             className={`${innerMaxWidth} flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4`}
           >
             <div className="flex items-start gap-2.5">
-              <BannerLogo className={logoExpanded} />
+              <BannerLogo className={t.logoExpanded} />
               <BannerTitle
                 label={alertLabel}
                 headline={headline}
-                size={isSlim ? "default" : "large"}
+                size={t.titleSize}
                 multiline
               />
             </div>
@@ -361,14 +380,14 @@ export function PlaceOwnerHelloBanner({
               <p className="text-sm leading-relaxed text-[var(--foreground-muted)]">{body}</p>
             ) : null}
             <div className="flex flex-col gap-2">
-              <ContactInviteLink contactType="owner-proposal" className={`${primaryBtnClass} w-full`}>
+              <ContactInviteLink contactType="owner-proposal" className={`${t.primaryBtnClass} w-full`}>
                 Get More Info
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </ContactInviteLink>
-              <a href={`tel:${ownerInquiryPhone}`} className={`${secondaryBtnClass} w-full`}>
+              <a href={`tel:${ownerInquiryPhone}`} className={`${t.secondaryBtnClass} w-full`}>
                 Call {ownerInquiryPhone}
               </a>
-              <button type="button" onClick={() => setDismissed(true)} className={`${secondaryBtnClass} w-full`}>
+              <button type="button" onClick={() => setDismissed(true)} className={`${t.secondaryBtnClass} w-full`}>
                 Maybe later
               </button>
             </div>
@@ -392,7 +411,7 @@ export function PlaceOwnerHelloBanner({
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className={`absolute right-4 top-3 z-10 sm:right-6 lg:right-8 ${iconBtnClass}`}
+          className={`absolute right-4 top-3 z-10 sm:right-6 lg:right-8 ${t.iconBtnClass}`}
           aria-expanded={true}
           aria-controls={contentId}
           aria-label="Collapse owner hello banner"
@@ -411,28 +430,28 @@ export function PlaceOwnerHelloBanner({
           ].join(" ")}
         >
           <div className="shrink-0 bg-transparent">
-            <BannerLogo className={logoExpanded} />
+            <BannerLogo className={t.logoExpanded} />
           </div>
 
           <div className="min-w-0 flex-1">
-            <BannerTitle label={alertLabel} headline={headline} size={isSlim ? "default" : "large"} />
+            <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} />
             {body ? (
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--foreground-muted)] sm:text-[0.9375rem]">
                 {body}
               </p>
             ) : null}
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-              <ContactInviteLink contactType="owner-proposal" className={primaryBtnClass}>
+              <ContactInviteLink contactType="owner-proposal" className={t.primaryBtnClass}>
                 Get More Info
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </ContactInviteLink>
-              <a href={`tel:${ownerInquiryPhone}`} className={secondaryBtnClass}>
+              <a href={`tel:${ownerInquiryPhone}`} className={t.secondaryBtnClass}>
                 Call {ownerInquiryPhone}
               </a>
               <button
                 type="button"
                 onClick={() => setDismissed(true)}
-                className={`${secondaryBtnClass} sm:hidden`}
+                className={`${t.secondaryBtnClass} sm:hidden`}
               >
                 Maybe later
               </button>
