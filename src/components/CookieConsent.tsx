@@ -1,44 +1,91 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 
 const STORAGE_KEY = "homeposal-cookie-consent";
+const CONSENT_OFFSET_VAR = "--cookie-consent-offset";
 
 type ConsentStatus = "accepted" | "rejected" | null;
 
+function readStoredConsent(): ConsentStatus | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "accepted" || stored === "rejected") return stored;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function CookieConsent() {
-  const [status, setStatus] = useState<ConsentStatus>(null);
+  const [status, setStatus] = useState<ConsentStatus | null>(null);
   const [mounted, setMounted] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY) as ConsentStatus | null;
-      if (stored === "accepted" || stored === "rejected") {
-        setStatus(stored);
+    const params = new URLSearchParams(window.location.search);
+    if (process.env.NODE_ENV === "development" && params.get("reset-cookie-consent") === "1") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
       }
-    } finally {
+      setStatus(null);
       setMounted(true);
+      return;
     }
+
+    setStatus(readStoredConsent());
+    setMounted(true);
   }, []);
+
+  const showBar = mounted && status === null;
+
+  useEffect(() => {
+    if (!showBar) {
+      document.documentElement.style.removeProperty(CONSENT_OFFSET_VAR);
+      return;
+    }
+
+    const syncOffset = () => {
+      const height = barRef.current?.offsetHeight ?? 0;
+      if (height > 0) {
+        document.documentElement.style.setProperty(CONSENT_OFFSET_VAR, `${height}px`);
+        window.dispatchEvent(new Event("cookie-consent-layout"));
+      }
+    };
+
+    syncOffset();
+    const el = barRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(syncOffset);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      document.documentElement.style.removeProperty(CONSENT_OFFSET_VAR);
+    };
+  }, [showBar]);
 
   const save = (value: "accepted" | "rejected") => {
     try {
       localStorage.setItem(STORAGE_KEY, value);
-      setStatus(value);
     } catch {
-      setStatus(value);
+      /* ignore */
     }
+    setStatus(value);
   };
 
-  if (!mounted || status !== null) return null;
+  if (!showBar) return null;
 
-  return (
+  const bar = (
     <div
+      ref={barRef}
       role="dialog"
       aria-label="Cookie consent"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border)] bg-[var(--background-elevated)] px-4 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] sm:px-6"
+      className="fixed inset-x-0 bottom-0 z-[120] border-t border-[var(--border)] bg-[var(--background-elevated)] px-4 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] sm:px-6"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-base text-[var(--foreground)]">
@@ -71,4 +118,6 @@ export function CookieConsent() {
       </div>
     </div>
   );
+
+  return createPortal(bar, document.body);
 }

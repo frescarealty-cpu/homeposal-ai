@@ -161,7 +161,11 @@ export function PlaceOwnerHelloBanner({
 
     const updatePadding = () => {
       const height = rootRef.current?.offsetHeight ?? 0;
-      document.body.style.paddingBottom = height > 0 ? `${height}px` : "";
+      const cookieOffset = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--cookie-consent-offset") || "0"
+      );
+      const total = height + (Number.isFinite(cookieOffset) ? cookieOffset : 0);
+      document.body.style.paddingBottom = total > 0 ? `${total}px` : "";
     };
 
     updatePadding();
@@ -170,8 +174,12 @@ export function PlaceOwnerHelloBanner({
 
     const ro = new ResizeObserver(updatePadding);
     ro.observe(el);
+    window.addEventListener("resize", updatePadding);
+    window.addEventListener("cookie-consent-layout", updatePadding);
     return () => {
       ro.disconnect();
+      window.removeEventListener("resize", updatePadding);
+      window.removeEventListener("cookie-consent-layout", updatePadding);
       document.body.style.removeProperty("padding-bottom");
     };
   }, [viewportPinned, dismissed, expanded]);
@@ -191,7 +199,7 @@ export function PlaceOwnerHelloBanner({
         position: "fixed",
         left: 0,
         right: 0,
-        bottom: 0,
+        bottom: "var(--cookie-consent-offset, 0px)",
         zIndex: VIEWPORT_PIN_Z,
         width: "100%",
       } as const)
