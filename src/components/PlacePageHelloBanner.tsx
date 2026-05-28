@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { PlaceOwnerHelloBanner } from "@/components/PlaceOwnerHelloBanner";
 
-/** Mobile hello banner above the site logo on /place pages only. */
+/** Mobile hello banner (bottom of screen) on /place pages only. */
 export function PlacePageHelloBanner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -18,6 +18,11 @@ export function PlacePageHelloBanner() {
   return (
     <PlaceOwnerHelloBanner
       ownerInquiryPhone="760-123-4560"
+      pinToViewport
+      pinToViewportMinWidth={0}
+      pinToViewportMaxWidth={1024}
+      defaultExpanded={false}
+      autoCollapseMs={10000}
       className="lg:hidden"
     />
   );

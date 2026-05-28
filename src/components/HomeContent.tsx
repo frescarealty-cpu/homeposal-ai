@@ -11,6 +11,7 @@ import { ProposalsPublicView } from "./ProposalsPublicView";
 import { PlaceOfferForm } from "./PlaceOfferForm";
 import { ZillowZestimatePanel } from "./ZillowZestimatePanel";
 import { AiAssistant } from "./AiAssistant";
+import { PlaceOwnerHelloBanner } from "./PlaceOwnerHelloBanner";
 import { filterPropertiesByQuery, filterPropertiesNearLocation } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/client";
@@ -24,7 +25,6 @@ import {
   Handshake,
   MousePointerClick,
   Megaphone,
-  AlertCircle,
 } from "lucide-react";
 
 type HomeContentProps = {
@@ -175,8 +175,32 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   const proposals = selectedPropertyId ? getMockProposalsPublic(selectedPropertyId) : [];
   const bestOfferCents = proposals.length > 0 ? Math.max(...proposals.map((p) => p.priceCents)) : 0;
 
+  const showOwnerHello = !selectedProperty && !addressToShow;
+  const ownerHelloBody =
+    "See bona fide proposals from verified suitors before you deal with the stress of the MLS.";
+
   return (
     <>
+      {showOwnerHello && (
+        <>
+          <PlaceOwnerHelloBanner
+            pinToViewport
+            pinToViewportMinWidth={768}
+            defaultExpanded
+            autoCollapseMs={12000}
+            body={ownerHelloBody}
+          />
+          <PlaceOwnerHelloBanner
+            pinToViewport
+            pinToViewportMinWidth={0}
+            pinToViewportMaxWidth={768}
+            defaultExpanded={false}
+            autoCollapseMs={10000}
+            body={ownerHelloBody}
+            className="md:hidden"
+          />
+        </>
+      )}
       <div className="flex min-w-0 min-h-0 flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row">
         <div className="flex min-w-0 h-auto w-full shrink-0 flex-col md:h-[70vh] lg:h-full lg:w-[60%]">
           <div className="shrink-0 w-full border-b border-[var(--border)] py-2">
@@ -347,29 +371,6 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
             ) : (
               <>
                 <div className="space-y-4">
-                  <div
-                    role="note"
-                    aria-label="Owner Alert"
-                    className="hidden rounded-lg border border-[var(--border)] border-l-2 border-l-blue-400 bg-[var(--foreground)]/[0.03] px-3 py-2.5 shadow-sm sm:px-3.5 sm:py-3 md:block"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <AlertCircle
-                        className="h-3.5 w-3.5 shrink-0 text-[#1C4482]"
-                        strokeWidth={2}
-                        aria-hidden
-                      />
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#1C4482]">
-                        Owner Alert
-                      </p>
-                    </div>
-                    <p className="mt-1 text-sm font-semibold tracking-tight text-[var(--foreground)]">
-                      Don&apos;t List Yet.
-                    </p>
-                    <p className="mt-1.5 text-xs leading-relaxed text-[var(--foreground-muted)]">
-                      See bona fide proposals from verified suitors before you deal with the stress of the MLS.
-                    </p>
-                  </div>
-
                   <AiAssistant />
 
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
