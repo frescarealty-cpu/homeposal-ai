@@ -20,7 +20,7 @@ type OwnerHelloBannerStackProps = {
 };
 
 const DESKTOP_INDEX_AUTO_COLLAPSE_MS = 12000;
-const MOBILE_INDEX_AUTO_COLLAPSE_MS = 3000;
+const MOBILE_INDEX_AUTO_COLLAPSE_MS = 5000;
 
 /** Viewport-pinned owner hello banner (desktop + mobile), matching the home index experience. */
 export function OwnerHelloBannerStack({
