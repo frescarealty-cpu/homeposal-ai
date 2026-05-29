@@ -12,10 +12,15 @@ type OwnerHelloBannerStackProps = {
   ownerInquiryPhone?: string;
   /** Desktop banner starts expanded (home map view). */
   defaultExpandedDesktop?: boolean;
+  /** Mobile banner starts expanded; defaults to `defaultExpandedDesktop`. */
+  defaultExpandedMobile?: boolean;
   /** Shorter banner for property / address detail views. */
   compact?: boolean;
   size?: "default" | "compact" | "cozy";
 };
+
+const DESKTOP_INDEX_AUTO_COLLAPSE_MS = 12000;
+const MOBILE_INDEX_AUTO_COLLAPSE_MS = 6000;
 
 /** Viewport-pinned owner hello banner (desktop + mobile), matching the home index experience. */
 export function OwnerHelloBannerStack({
@@ -24,10 +29,12 @@ export function OwnerHelloBannerStack({
   alertLabel,
   ownerInquiryPhone,
   defaultExpandedDesktop = true,
+  defaultExpandedMobile,
   compact = false,
   size: sizeProp,
 }: OwnerHelloBannerStackProps) {
   const size = sizeProp ?? (compact ? "compact" : "default");
+  const mobileStartsExpanded = defaultExpandedMobile ?? defaultExpandedDesktop;
 
   return (
     <>
@@ -35,7 +42,9 @@ export function OwnerHelloBannerStack({
         pinToViewport
         pinToViewportMinWidth={768}
         defaultExpanded={defaultExpandedDesktop}
-        autoCollapseMs={defaultExpandedDesktop ? 12000 : 10000}
+        autoCollapseMs={
+          defaultExpandedDesktop ? DESKTOP_INDEX_AUTO_COLLAPSE_MS : 10000
+        }
         body={body}
         headline={headline}
         alertLabel={alertLabel}
@@ -46,8 +55,8 @@ export function OwnerHelloBannerStack({
         pinToViewport
         pinToViewportMinWidth={0}
         pinToViewportMaxWidth={768}
-        defaultExpanded={false}
-        autoCollapseMs={10000}
+        defaultExpanded={mobileStartsExpanded}
+        autoCollapseMs={mobileStartsExpanded ? MOBILE_INDEX_AUTO_COLLAPSE_MS : 10000}
         body={body}
         headline={headline}
         alertLabel={alertLabel}
