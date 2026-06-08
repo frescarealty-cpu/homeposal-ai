@@ -172,7 +172,7 @@ export default async function AdminPage() {
           </Link>
         </div>
         <p className="mb-6 text-sm text-[var(--foreground-muted)]">
-          View and manage pending, active, and cancelled proposals. Use the search to filter by property ID or address.
+          View and manage pending, active, and cancelled proposals. Filter by property ID, address, or user.
         </p>
         <AdminProposalsList
           proposals={proposals ?? []}

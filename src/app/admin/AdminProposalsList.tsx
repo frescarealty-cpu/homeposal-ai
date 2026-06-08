@@ -60,6 +60,7 @@ export function AdminProposalsList({
 }) {
   const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState("");
+  const [userSearch, setUserSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "cancelled">("all");
   const [exportFormat, setExportFormat] = useState<ProposalsExportFormat>("csv");
   const [exportLoading, setExportLoading] = useState(false);
@@ -67,6 +68,22 @@ export function AdminProposalsList({
   const safeProposals = Array.isArray(proposals) ? proposals : [];
   const safePlaceProposals = Array.isArray(placeProposals) ? placeProposals : [];
   const safeProfileByUserId = profileByUserId && typeof profileByUserId === "object" ? profileByUserId : {};
+
+  const matchesUserSearch = useMemo(() => {
+    const q = userSearch.trim().toLowerCase();
+    if (!q) return () => true;
+
+    return (userId: string) => {
+      const profile = safeProfileByUserId[userId];
+      if (!profile) return false;
+      const roleLabel = profile.role.replace(/_/g, " ");
+      const haystack = [profile.full_name, profile.email, profile.phone, profile.role, roleLabel]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    };
+  }, [userSearch, safeProfileByUserId]);
 
   const filteredProposals = useMemo(() => {
     let list = safeProposals;
@@ -79,8 +96,9 @@ export function AdminProposalsList({
     if (q) {
       list = list.filter((p) => p.property_id.toLowerCase().includes(q));
     }
+    list = list.filter((p) => matchesUserSearch(p.user_id));
     return list;
-  }, [safeProposals, search, statusFilter]);
+  }, [safeProposals, search, statusFilter, matchesUserSearch]);
 
   const filteredPlaceProposals = useMemo(() => {
     let list = safePlaceProposals;
@@ -93,8 +111,9 @@ export function AdminProposalsList({
     if (q) {
       list = list.filter((p) => (p.place_address ?? "").toLowerCase().includes(q));
     }
+    list = list.filter((p) => matchesUserSearch(p.user_id));
     return list;
-  }, [safePlaceProposals, search, statusFilter]);
+  }, [safePlaceProposals, search, statusFilter, matchesUserSearch]);
 
   const exportColumns: ExportColumn<Record<string, unknown>>[] = [
     { key: "proposal_type", label: "Proposal Type" },
@@ -334,23 +353,42 @@ export function AdminProposalsList({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-4">
-        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-          <label htmlFor="admin-proposal-search" className="text-sm font-medium text-[var(--foreground-muted)] sm:shrink-0">
-            Filter by property or address
-          </label>
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)]" />
-            <input
-              id="admin-proposal-search"
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="e.g. property ID or address..."
-              className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-3 text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-            />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:gap-4">
+          <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+            <label htmlFor="admin-proposal-search" className="text-sm font-medium text-[var(--foreground-muted)] sm:shrink-0">
+              Filter by property or address
+            </label>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)]" />
+              <input
+                id="admin-proposal-search"
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="e.g. property ID or address..."
+                className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-3 text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+              />
+            </div>
+          </div>
+          <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+            <label htmlFor="admin-user-search" className="text-sm font-medium text-[var(--foreground-muted)] sm:shrink-0">
+              Filter by user
+            </label>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)]" />
+              <input
+                id="admin-user-search"
+                type="text"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                placeholder="e.g. name, email, or phone..."
+                className="w-full rounded-md border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-3 text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+              />
+            </div>
           </div>
         </div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <label htmlFor="admin-status-filter" className="text-sm font-medium text-[var(--foreground-muted)] sm:shrink-0">
             Status
@@ -394,6 +432,7 @@ export function AdminProposalsList({
               {exportLoading ? "Exporting…" : "Export"}
             </button>
           </div>
+        </div>
         </div>
       </div>
 
@@ -561,9 +600,18 @@ export function AdminProposalsList({
         </section>
       )}
 
-      {hasAny && search.trim() && filteredProposals.length === 0 && filteredPlaceProposals.length === 0 && (
+      {hasAny &&
+        (search.trim() || userSearch.trim()) &&
+        filteredProposals.length === 0 &&
+        filteredPlaceProposals.length === 0 && (
         <p className="rounded-md border border-[var(--border)] bg-[var(--background-elevated)] p-4 text-sm text-[var(--foreground-muted)]">
-          No proposals match &quot;{search.trim()}&quot;. Try a different property ID or address.
+          No proposals match your filters
+          {search.trim() && userSearch.trim()
+            ? ` (property/address: "${search.trim()}", user: "${userSearch.trim()}")`
+            : search.trim()
+              ? ` for property or address "${search.trim()}"`
+              : ` for user "${userSearch.trim()}"`}
+          . Try different search terms.
         </p>
       )}
     </div>
