@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { redirect } from "next/navigation";
 import { AccountSettingsForm } from "@/components/AccountSettingsForm";
+import { SignedInAs } from "@/components/SignedInAs";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export default async function AccountSettingsPage({
       <h1 className="mb-2 text-xl font-semibold text-[var(--foreground)] sm:text-2xl">
         Account settings
       </h1>
+      <SignedInAs email={currentEmail} className="mb-2" />
       <p className="mb-6 text-base text-[var(--foreground-muted)]">
         Update your sign-in password or email address.
       </p>

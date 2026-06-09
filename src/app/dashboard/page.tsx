@@ -3,6 +3,8 @@ import { ArrowLeft } from "lucide-react";
 import { getMyProposals } from "@/lib/actions/getMyProposals";
 import { MyProposalsDashboard } from "@/components/MyProposalsDashboard";
 import { RevisedOfferBanner } from "@/components/RevisedOfferBanner";
+import { SignedInAs } from "@/components/SignedInAs";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,10 @@ export default async function DashboardPage({
 }) {
   try {
     const { revised } = await searchParams;
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const result = await getMyProposals();
 
     if (!result.success) {
@@ -48,6 +54,7 @@ export default async function DashboardPage({
           </Link>
         </nav>
         <h1 className="mb-2 text-xl sm:text-2xl font-semibold text-[var(--foreground)]">My proposals</h1>
+        {user?.email ? <SignedInAs email={user.email} className="mb-2" /> : null}
         <p className="mb-6 text-base text-[var(--foreground-muted)]">
           View and manage your property and address proposals.
         </p>

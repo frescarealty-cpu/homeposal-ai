@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, X, Mail } from "lucide-react";
+import { AccountMenu } from "@/components/AccountMenu";
 import { ContactModal } from "@/components/ContactModal";
 import {
   CONTACT_INVITE_PREFILL_MESSAGE,
@@ -73,35 +74,7 @@ export function Header() {
     }
   };
 
-  const navLinks = user ? (
-    <>
-      <span className="text-sm text-[var(--foreground-muted)] block md:hidden py-2">
-        {user.email}
-      </span>
-      <Link
-        href="/dashboard"
-        className={`rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] inline-flex items-center ${TOUCH_MIN} md:min-h-0 md:min-w-0`}
-        onClick={() => setMenuOpen(false)}
-      >
-        Dashboard
-      </Link>
-      <Link
-        href="/dashboard/settings"
-        className={`rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] inline-flex items-center ${TOUCH_MIN} md:min-h-0 md:min-w-0`}
-        onClick={() => setMenuOpen(false)}
-      >
-        Account settings
-      </Link>
-      <button
-        type="button"
-        onClick={() => { handleSignOut(); setMenuOpen(false); }}
-        className="rounded-lg bg-[var(--success)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 inline-flex items-center justify-center w-full md:w-auto md:min-h-0 md:min-w-0"
-        style={{ minHeight: 44, minWidth: 44 }}
-      >
-        Log Off
-      </button>
-    </>
-  ) : (
+  const guestNavLinks = (
     <>
       <Link
         href="/login"
@@ -194,27 +167,7 @@ export function Header() {
             <Mail className="h-5 w-5" />
           </button>
           {user ? (
-            <>
-              <span
-                className="max-w-[10rem] truncate text-sm text-[var(--foreground-muted)] lg:max-w-[14rem] xl:max-w-none"
-                title={user.email ?? undefined}
-              >
-                Signed in as {user.email}
-              </span>
-              <Link href="/dashboard" className="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]">
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/settings"
-                className="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]"
-              >
-                <span className="xl:hidden">Settings</span>
-                <span className="hidden xl:inline">Account settings</span>
-              </Link>
-              <button type="button" onClick={handleSignOut} className="rounded-lg bg-[var(--success)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90">
-                Log Off
-              </button>
-            </>
+            <AccountMenu user={user} onSignOut={handleSignOut} />
           ) : (
             <>
               <Link href="/login" className="rounded-lg px-4 py-2.5 text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]">
@@ -227,7 +180,7 @@ export function Header() {
           )}
         </div>
 
-        {/* Mobile: contact + hamburger (absolute so logo/title stay centered) */}
+        {/* Mobile: contact + account menu or guest hamburger */}
         <div className="absolute right-2 top-3 flex md:hidden items-center gap-1 md:relative md:right-0 md:top-0" ref={menuRef}>
           <button
             type="button"
@@ -240,21 +193,25 @@ export function Header() {
           >
             <Mail className="h-6 w-6" />
           </button>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
-            aria-expanded={menuOpen}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-          >
-            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] py-2 shadow-lg">
-              <div className="flex flex-col gap-0 px-2">
-                {navLinks}
-              </div>
-            </div>
+          {user ? (
+            <AccountMenu user={user} onSignOut={handleSignOut} />
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((o) => !o)}
+                className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
+                aria-expanded={menuOpen}
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+              >
+                {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] py-2 shadow-lg">
+                  <div className="flex flex-col gap-0 px-2">{guestNavLinks}</div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
