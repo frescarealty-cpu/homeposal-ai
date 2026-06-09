@@ -48,7 +48,7 @@ export default async function DashboardPage({
           </Link>
           <Link
             href="/dashboard/settings"
-            className="inline-flex min-h-[44px] w-fit items-center text-sm font-medium text-[var(--accent)] hover:underline"
+            className="hidden min-h-[44px] w-fit items-center text-sm font-medium text-[var(--accent)] hover:underline md:inline-flex"
           >
             Account settings — change password or email
           </Link>
