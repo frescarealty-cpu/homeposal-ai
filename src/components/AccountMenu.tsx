@@ -19,9 +19,11 @@ function accountInitial(email: string | undefined): string {
 type AccountMenuProps = {
   user: User;
   onSignOut: () => void;
+  /** Hide username on narrow screens (avatar + chevron only). */
+  compactOnMobile?: boolean;
 };
 
-export function AccountMenu({ user, onSignOut }: AccountMenuProps) {
+export function AccountMenu({ user, onSignOut, compactOnMobile = false }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const label = accountLabel(user.email ?? undefined);
@@ -44,7 +46,10 @@ export function AccountMenu({ user, onSignOut }: AccountMenuProps) {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex max-w-[12rem] items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--background)] py-1.5 pl-1.5 pr-3 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--border-subtle)] sm:max-w-[14rem]"
+        className={[
+          "inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--background)] text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--border-subtle)]",
+          compactOnMobile ? "max-w-[3.25rem] py-1.5 pl-1.5 pr-1.5 sm:max-w-[14rem] sm:py-1.5 sm:pl-1.5 sm:pr-3" : "max-w-[12rem] py-1.5 pl-1.5 pr-3 sm:max-w-[14rem]",
+        ].join(" ")}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Account menu"
@@ -56,11 +61,13 @@ export function AccountMenu({ user, onSignOut }: AccountMenuProps) {
         >
           {accountInitial(user.email ?? undefined)}
         </span>
-        <span className="truncate">{label}</span>
+        <span className={compactOnMobile ? "hidden truncate sm:inline" : "truncate"}>{label}</span>
         <ChevronDown
-          className={["h-4 w-4 shrink-0 text-[var(--foreground-muted)] transition-transform", open ? "rotate-180" : ""].join(
-            " "
-          )}
+          className={[
+            "h-4 w-4 shrink-0 text-[var(--foreground-muted)] transition-transform",
+            compactOnMobile ? "hidden sm:block" : "",
+            open ? "rotate-180" : "",
+          ].join(" ")}
           aria-hidden
         />
       </button>

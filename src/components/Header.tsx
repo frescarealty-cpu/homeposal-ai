@@ -94,16 +94,39 @@ export function Header() {
     </>
   );
 
+  const mobileAuthControls = user ? (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setContactInitialMessage(null);
+          setContactOpen(true);
+        }}
+        className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
+        aria-label="Contact HomePosal"
+      >
+        <Mail className="h-6 w-6" />
+      </button>
+      <AccountMenu user={user} onSignOut={handleSignOut} compactOnMobile />
+    </>
+  ) : null;
+
   return (
     <header className="kalshi-border border-x-0 border-t-0 bg-[var(--background-elevated)]">
-      <div className="relative mx-auto flex min-h-[80px] md:min-h-[120px] max-w-[1920px] flex-col items-center justify-between py-3 pl-2 pr-2 md:flex-row md:items-center md:py-2 md:pl-0 md:pr-6">
-        {/* Mobile: logo and title stacked, centered; hamburger absolute right */}
+      <div
+        className={[
+          "relative mx-auto flex min-h-[80px] max-w-[1920px] py-3 pl-2 pr-2 md:min-h-[120px] md:flex-row md:items-center md:justify-between md:py-2 md:pl-0 md:pr-6",
+          user ? "w-full flex-row items-center justify-between gap-2 md:gap-4" : "flex-col items-center justify-between",
+        ].join(" ")}
+      >
         <Link
           href="/"
           onClick={handleLogoClick}
           className={[
-            "flex flex-col items-center gap-3 text-center font-semibold text-[var(--foreground)] md:flex-row md:items-center md:gap-4 md:text-left lg:gap-6",
-            user ? "min-w-0 shrink md:shrink-0" : "min-w-0 shrink",
+            "font-semibold text-[var(--foreground)] md:flex-row md:items-center md:gap-4 md:text-left lg:gap-6",
+            user
+              ? "flex min-w-0 flex-1 items-center gap-2 text-left md:flex-initial md:shrink-0 md:gap-4"
+              : "flex min-w-0 shrink flex-col items-center gap-3 text-center md:flex-row md:items-center",
           ].join(" ")}
         >
           <Image
@@ -112,8 +135,8 @@ export function Header() {
             width={656}
             height={677}
             className={[
-              "h-20 w-20 shrink-0 object-contain",
-              user ? "md:h-28 md:w-28 lg:h-32 lg:w-32" : "md:h-36 md:w-36",
+              "shrink-0 object-contain",
+              user ? "h-14 w-14 sm:h-16 sm:w-16 md:h-28 md:w-28 lg:h-32 lg:w-32" : "h-20 w-20 md:h-36 md:w-36",
             ].join(" ")}
             priority
             unoptimized
@@ -121,14 +144,14 @@ export function Header() {
           <div
             className={[
               "flex flex-col md:items-start",
-              user ? "min-w-0 md:shrink-0" : "min-w-0",
+              user ? "min-w-0 flex-1" : "min-w-0",
             ].join(" ")}
           >
             <span
               className={[
                 "font-bold tracking-tight text-[var(--foreground)]",
                 user
-                  ? "text-base sm:text-lg md:whitespace-nowrap lg:text-xl"
+                  ? "text-sm leading-snug sm:text-base md:whitespace-nowrap md:text-lg lg:text-xl"
                   : "text-lg break-words sm:text-xl md:whitespace-nowrap lg:text-2xl",
               ].join(" ")}
             >
@@ -180,40 +203,38 @@ export function Header() {
           )}
         </div>
 
-        {/* Mobile: contact + account menu or guest hamburger */}
-        <div className="absolute right-2 top-3 flex md:hidden items-center gap-1 md:relative md:right-0 md:top-0" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => {
-              setContactInitialMessage(null);
-              setContactOpen(true);
-            }}
-            className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
-            aria-label="Contact HomePosal"
-          >
-            <Mail className="h-6 w-6" />
-          </button>
-          {user ? (
-            <AccountMenu user={user} onSignOut={handleSignOut} />
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setMenuOpen((o) => !o)}
-                className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
-                aria-expanded={menuOpen}
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
-              >
-                {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] py-2 shadow-lg">
-                  <div className="flex flex-col gap-0 px-2">{guestNavLinks}</div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        {/* Mobile logged-in: inline controls; guest: absolute hamburger */}
+        {user ? (
+          <div className="flex shrink-0 items-center gap-1 md:hidden">{mobileAuthControls}</div>
+        ) : (
+          <div className="absolute right-2 top-3 flex md:hidden items-center gap-1" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setContactInitialMessage(null);
+                setContactOpen(true);
+              }}
+              className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
+              aria-label="Contact HomePosal"
+            >
+              <Mail className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              className={`rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] ${TOUCH_MIN} inline-flex items-center justify-center`}
+              aria-expanded={menuOpen}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+            >
+              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] py-2 shadow-lg">
+                <div className="flex flex-col gap-0 px-2">{guestNavLinks}</div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {contactOpen && (
