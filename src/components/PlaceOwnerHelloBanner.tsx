@@ -69,7 +69,7 @@ type PlaceOwnerHelloBannerProps = {
   alertLabel?: string;
   headline?: string;
   body?: string;
-  /** Label for the primary CTA when the banner is collapsed (Guardian-style bar). */
+  /** Label for the expand button when the banner is collapsed (Guardian-style bar). */
   collapsedPrimaryLabel?: string;
   /** Pin to the bottom of the viewport (stays visible while scrolling). */
   pinToViewport?: boolean;
@@ -294,12 +294,15 @@ export function PlaceOwnerHelloBanner({
               <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} multiline />
             </div>
             <div className="grid grid-cols-[1fr_1fr_auto] items-stretch gap-2">
-              <ContactInviteLink
-                contactType="owner-proposal"
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
                 className={`${t.primaryBtnClass} w-full px-3 text-center`}
+                aria-expanded={false}
+                aria-controls={contentId}
               >
                 {collapsedPrimaryLabel}
-              </ContactInviteLink>
+              </button>
               <button
                 type="button"
                 onClick={() => setDismissed(true)}
@@ -338,10 +341,16 @@ export function PlaceOwnerHelloBanner({
             <BannerLogo className={t.logoCollapsed} />
             <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} />
             <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
-              <ContactInviteLink contactType="owner-proposal" className={t.primaryBtnClass}>
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className={t.primaryBtnClass}
+                aria-expanded={false}
+                aria-controls={contentId}
+              >
                 {collapsedPrimaryLabel}
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-              </ContactInviteLink>
+              </button>
               <button type="button" onClick={() => setDismissed(true)} className={t.secondaryBtnClass}>
                 Maybe later
               </button>
