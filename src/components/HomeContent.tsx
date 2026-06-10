@@ -159,7 +159,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
         />
       )}
       <div className="flex min-w-0 flex-col lg:flex-row lg:items-start">
-        <div className="flex min-w-0 h-auto w-full shrink-0 flex-col md:min-h-[70vh] lg:sticky lg:top-2 lg:max-h-[calc(100dvh-5rem)] lg:w-[60%] lg:self-start">
+        <div className="flex min-w-0 w-full shrink-0 flex-col md:h-[70vh] lg:sticky lg:top-2 lg:h-[calc(100dvh-8rem)] lg:w-[60%] lg:self-start">
           <div className="shrink-0 w-full border-b border-[var(--border)] py-2">
             <SearchAISection
               value={searchQuery}
@@ -172,7 +172,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               isLoaded={isMapsLoaded}
             />
           </div>
-          <div className="relative hidden min-h-[50vh] min-w-0 flex-1 overflow-hidden pb-4 md:block">
+          <div className="relative hidden min-h-0 min-w-0 flex-1 overflow-hidden pb-4 md:block">
             {!isMobileLayout && (
               <MapSection
                 properties={filteredProperties}
