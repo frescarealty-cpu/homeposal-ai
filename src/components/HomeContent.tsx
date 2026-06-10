@@ -158,8 +158,8 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           size={addressToShow ? "compact" : "cozy"}
         />
       )}
-      <div className="flex min-w-0 flex-col lg:flex-row lg:items-stretch">
-        <div className="flex min-w-0 w-full shrink-0 flex-col md:h-[70vh] lg:min-h-[calc(100dvh-8rem)] lg:w-[60%]">
+      <div className="flex min-w-0 flex-col lg:grid lg:grid-cols-[3fr_2fr] lg:items-stretch">
+        <div className="flex min-h-0 min-w-0 w-full flex-col md:h-[70vh] lg:h-full lg:min-h-[calc(100dvh-8rem)]">
           <div className="shrink-0 w-full border-b border-[var(--border)] py-2">
             <SearchAISection
               value={searchQuery}
@@ -226,7 +226,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
 
         <div
           ref={rightPanelRef}
-          className="flex min-w-0 w-full shrink-0 flex-col lg:w-[40%] border-t lg:border-t-0 lg:border-l border-[var(--border)]"
+          className="flex min-w-0 w-full flex-col border-t lg:border-t-0 lg:border-l border-[var(--border)]"
         >
           <div className="flex flex-col p-4">
             {selectedProperty ? (
