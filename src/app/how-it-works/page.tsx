@@ -1,13 +1,11 @@
-import Link from "next/link";
+import { BackToHomeLink } from "@/components/BackToHomeLink";
 import { HowItWorks } from "@/components/HowItWorks";
 
 export default function HowItWorksPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-2 py-10 sm:px-4">
       <div className="mb-8">
-        <Link href="/" className="inline-flex min-h-[44px] items-center text-sm text-[var(--success)] hover:underline">
-          ← Back to Home
-        </Link>
+        <BackToHomeLink />
         <h1 className="mt-4 text-balance text-3xl font-semibold text-[var(--foreground)]">
           How HomePosal Works
         </h1>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BackToHomeLink } from "@/components/BackToHomeLink";
 
 export const metadata: Metadata = {
   title: "Privacy Policy - HomePosal",
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
 export default function PrivacyPolicyPage() {
   return (
     <div className="mx-auto w-full max-w-[95%] sm:max-w-4xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--foreground)]">
+      <BackToHomeLink />
+      <h1 className="mt-4 text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--foreground)]">
         Privacy Policy
       </h1>
 

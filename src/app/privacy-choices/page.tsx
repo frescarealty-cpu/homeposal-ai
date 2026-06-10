@@ -1,3 +1,5 @@
+import { BackToHomeLink } from "@/components/BackToHomeLink";
+
 export const metadata = {
   title: "Your California Privacy Choices - HomePosal",
   description:
@@ -7,7 +9,8 @@ export const metadata = {
 export default function PrivacyChoicesPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-semibold text-[var(--foreground)]">
+      <BackToHomeLink />
+      <h1 className="mt-4 text-2xl font-semibold text-[var(--foreground)]">
         Your California Privacy Choices
       </h1>
       <p className="mt-4 text-sm leading-relaxed text-[var(--foreground-muted)]">
