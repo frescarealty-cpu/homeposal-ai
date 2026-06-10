@@ -86,6 +86,7 @@ type PlaceOwnerHelloBannerProps = {
 };
 
 const VIEWPORT_PIN_Z = 85;
+const OWNER_BANNER_OFFSET_VAR = "--owner-banner-offset";
 /** Match `layout.tsx` main content column (`max-w-[95%]` / `md:max-w-7xl`). */
 const PAGE_WIDTH_CLASS = "mx-auto w-full max-w-[95%] md:max-w-7xl md:min-w-0";
 
@@ -157,8 +158,13 @@ export function PlaceOwnerHelloBanner({
   }, [autoCollapseMs]);
 
   useEffect(() => {
-    if (!viewportPinned || dismissed) {
+    const clearOffsets = () => {
       document.body.style.removeProperty("padding-bottom");
+      document.documentElement.style.removeProperty(OWNER_BANNER_OFFSET_VAR);
+    };
+
+    if (!viewportPinned || dismissed) {
+      clearOffsets();
       return;
     }
 
@@ -168,7 +174,13 @@ export function PlaceOwnerHelloBanner({
         getComputedStyle(document.documentElement).getPropertyValue("--cookie-consent-offset") || "0"
       );
       const total = height + (Number.isFinite(cookieOffset) ? cookieOffset : 0);
-      document.body.style.paddingBottom = total > 0 ? `${total}px` : "";
+      if (total > 0) {
+        const offset = `${total}px`;
+        document.body.style.paddingBottom = offset;
+        document.documentElement.style.setProperty(OWNER_BANNER_OFFSET_VAR, offset);
+      } else {
+        clearOffsets();
+      }
     };
 
     updatePadding();
@@ -183,7 +195,7 @@ export function PlaceOwnerHelloBanner({
       ro.disconnect();
       window.removeEventListener("resize", updatePadding);
       window.removeEventListener("cookie-consent-layout", updatePadding);
-      document.body.style.removeProperty("padding-bottom");
+      clearOffsets();
     };
   }, [viewportPinned, dismissed, expanded]);
 

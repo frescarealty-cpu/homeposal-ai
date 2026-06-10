@@ -24,7 +24,7 @@ export function Footer() {
 
   return (
     <>
-      <footer className="border-t border-[var(--border)] bg-[var(--background)]">
+      <footer className="scroll-mt-4 border-t border-[var(--border)] bg-[var(--background)]">
         <div className="flex w-full flex-col items-center gap-4 px-4 py-4 text-xs sm:text-sm md:pl-16 md:pr-4">
           <div className="flex w-full flex-col items-center gap-4 md:flex-row md:flex-nowrap md:justify-between md:items-center">
             <div className="space-y-1 text-center md:text-left text-[var(--foreground-muted)]">

@@ -158,8 +158,8 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           size={addressToShow ? "compact" : "cozy"}
         />
       )}
-      <div className="flex min-w-0 min-h-0 flex-col lg:h-[calc(100vh-3.5rem)] lg:flex-row">
-        <div className="flex min-w-0 h-auto w-full shrink-0 flex-col md:h-[70vh] lg:h-full lg:w-[60%]">
+      <div className="flex min-w-0 flex-col lg:flex-row lg:items-start">
+        <div className="flex min-w-0 h-auto w-full shrink-0 flex-col md:min-h-[70vh] lg:sticky lg:top-2 lg:max-h-[calc(100dvh-5rem)] lg:w-[60%] lg:self-start">
           <div className="shrink-0 w-full border-b border-[var(--border)] py-2">
             <SearchAISection
               value={searchQuery}
@@ -226,9 +226,9 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
 
         <div
           ref={rightPanelRef}
-          className="flex min-w-0 w-full shrink-0 flex-col lg:h-full lg:w-[40%] border-t lg:border-t-0 lg:border-l border-[var(--border)]"
+          className="flex min-w-0 w-full shrink-0 flex-col lg:w-[40%] border-t lg:border-t-0 lg:border-l border-[var(--border)]"
         >
-          <div className="flex flex-1 flex-col overflow-y-visible p-4 lg:overflow-y-auto">
+          <div className="flex flex-col p-4">
             {selectedProperty ? (
               <>
                 <button
