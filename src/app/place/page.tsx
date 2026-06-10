@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { BackToHomeLink } from "@/components/BackToHomeLink";
 import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { ProposalsPublicView } from "@/components/ProposalsPublicView";
 import { PlaceOfferForm } from "@/components/PlaceOfferForm";
@@ -40,13 +41,7 @@ export default async function PlacePage({
         <p className="text-[var(--foreground-muted)]">
           Address and location are required. Search for an address on the map first.
         </p>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[var(--success)] hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back To Home
-        </Link>
+        <BackToHomeLink />
       </div>
     );
   }
@@ -73,13 +68,7 @@ export default async function PlacePage({
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Place details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
-        <Link
-          href="/"
-          className="mb-6 hidden min-h-[44px] items-center gap-2 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)] lg:inline-flex"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back To Home
-        </Link>
+        <BackToHomeLink className="mb-6 hidden lg:inline-flex" />
 
         <div className="hidden lg:block">{addressHeading}</div>
 
@@ -101,13 +90,7 @@ export default async function PlacePage({
         id="make-proposal"
         className="kalshi-border order-1 flex w-full flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto"
       >
-        <Link
-          href="/"
-          className="inline-flex min-h-[44px] items-center gap-2 px-4 pt-4 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)] lg:hidden"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back To Home
-        </Link>
+        <BackToHomeLink className="self-start px-4 pt-4 lg:hidden" />
         <div className="px-4 lg:hidden">{addressHeading}</div>
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
