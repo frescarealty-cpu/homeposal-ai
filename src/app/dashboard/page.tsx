@@ -43,8 +43,8 @@ export default async function DashboardPage({
             href="/"
             className="inline-flex min-h-[44px] w-fit items-center gap-2 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            Search properties to view or propose
           </Link>
         </nav>
         <h1 className="mb-2 text-xl sm:text-2xl font-semibold text-[var(--foreground)]">My proposals</h1>
