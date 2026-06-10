@@ -12,6 +12,7 @@ import { PlaceOfferForm } from "./PlaceOfferForm";
 import { ZillowZestimatePanel } from "./ZillowZestimatePanel";
 import { AiAssistant } from "./AiAssistant";
 import { OwnerHelloBannerStack } from "./OwnerHelloBannerStack";
+import { BackToHomeLink } from "./BackToHomeLink";
 import { filterPropertiesByQuery, filterPropertiesNearLocation } from "@/lib/searchProperties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/client";
@@ -231,13 +232,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           <div className="flex flex-col p-4">
             {selectedProperty ? (
               <>
-                <button
-                  type="button"
-                  onClick={handlePopupClose}
-                  className="mb-3 self-start min-h-[44px] px-2 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-                >
-                  ← Back
-                </button>
+                <BackToHomeLink className="mb-3 self-start" />
                 <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-md bg-[var(--background-elevated)]">
                   <Image
                     src={selectedProperty.imageUrls[0]}
@@ -293,13 +288,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               </>
             ) : addressToShow ? (
               <>
-                <button
-                  type="button"
-                  onClick={handlePopupClose}
-                  className="mb-3 self-start min-h-[44px] px-2 text-base text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-                >
-                  ← Back
-                </button>
+                <BackToHomeLink className="mb-3 self-start" />
                 <h2 className="mb-2 text-lg font-semibold text-[var(--foreground)]">{addressToShow.address}</h2>
                 <p className="mb-4 text-base text-[var(--foreground-muted)]">This address was selected from the map search.</p>
                 <ZillowZestimatePanel
