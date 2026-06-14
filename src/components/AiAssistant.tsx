@@ -78,12 +78,8 @@ function getAddressAutocompleteContext(
 
   if (!query || query.length < 3) return { enabled: false };
 
-  if (selectedPlace?.address) {
-    const placeIdx = draft.indexOf(selectedPlace.address);
-    if (placeIdx >= 0) {
-      const after = draft.slice(placeIdx + selectedPlace.address.length).trim();
-      if (after.length > 0) return { enabled: false };
-    }
+  if (selectedPlace?.address && draft.includes(selectedPlace.address)) {
+    return { enabled: false };
   }
 
   return { enabled: true, start: span.start, query, suffix: "" };
@@ -464,7 +460,13 @@ export function AiAssistant() {
             <Input
               ref={inputRef}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                setDraft(next);
+                if (selectedPlace && !next.includes(selectedPlace.address)) {
+                  setSelectedPlace(null);
+                }
+              }}
               onFocus={() => {
                 keepPredictionsOpen();
                 if (predictions.length > 0) setPredictionsOpen(true);
