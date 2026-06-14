@@ -358,7 +358,7 @@ export function AiAssistant() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
-              Questions? Chat With a Specialist Now
+              Questions? Chat With Us Now
               <Sparkles className="h-4 w-4 text-amber-400/90" aria-hidden />
             </h2>
           </div>
