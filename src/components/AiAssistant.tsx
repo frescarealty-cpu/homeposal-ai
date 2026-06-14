@@ -5,7 +5,6 @@ import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
 import { ChevronDown, ChevronUp, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useGoogleMaps } from "@/components/GoogleMapsProvider";
 
 // Southern California bounds (same as SearchAISection)
@@ -144,14 +143,25 @@ export function AiAssistant() {
 
   const [draft, setDraft] = useState("");
   const isLoading = status !== "ready";
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const { isLoaded: isMapsLoaded } = useGoogleMaps();
   const [predictions, setPredictions] = useState<Array<{ placeId: string; description: string }>>([]);
   const [predictionsOpen, setPredictionsOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<{ address: string; lat: number; lng: number } | null>(null);
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+
+  function adjustTextareaHeight() {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+  }
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [draft, collapsed]);
 
   useEffect(() => {
     setMessages((prev) => {
@@ -439,7 +449,7 @@ export function AiAssistant() {
 
       {!collapsed && (
         <form
-          className="mt-3 flex items-center gap-2"
+          className="mt-3 flex items-end gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             if (isLoading) return;
@@ -454,11 +464,13 @@ export function AiAssistant() {
             sendMessage({ text }, place ? { body: { place } } : undefined);
             setDraft("");
             setSelectedPlace(null);
+            requestAnimationFrame(adjustTextareaHeight);
           }}
         >
-          <div className="relative flex-1">
-            <Input
+          <div className="relative min-w-0 flex-1">
+            <textarea
               ref={inputRef}
+              rows={1}
               value={draft}
               onChange={(e) => {
                 const next = e.target.value;
@@ -466,6 +478,7 @@ export function AiAssistant() {
                 if (selectedPlace && !next.includes(selectedPlace.address)) {
                   setSelectedPlace(null);
                 }
+                adjustTextareaHeight();
               }}
               onFocus={() => {
                 keepPredictionsOpen();
@@ -474,26 +487,38 @@ export function AiAssistant() {
               onBlur={() => closePredictionsSoon()}
               onKeyDown={(e) => {
                 const acCtx = getAddressAutocompleteContext(draft, selectedPlace);
-                if (!predictionsOpen || !acCtx.enabled) return;
-                if (e.key === "ArrowDown") {
+                if (predictionsOpen && acCtx.enabled) {
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setActiveIdx((i) => Math.min(predictions.length - 1, Math.max(0, i + 1)));
+                    return;
+                  }
+                  if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setActiveIdx((i) => Math.max(0, i - 1));
+                    return;
+                  }
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    setPredictionsOpen(false);
+                    return;
+                  }
+                  if (e.key === "Enter" && !e.shiftKey && activeIdx >= 0 && predictions[activeIdx]) {
+                    e.preventDefault();
+                    void selectPrediction(predictions[activeIdx]);
+                    return;
+                  }
+                }
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  setActiveIdx((i) => Math.min(predictions.length - 1, Math.max(0, i + 1)));
-                } else if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  setActiveIdx((i) => Math.max(0, i - 1));
-                } else if (e.key === "Escape") {
-                  e.preventDefault();
-                  setPredictionsOpen(false);
-                } else if (e.key === "Enter" && activeIdx >= 0 && predictions[activeIdx]) {
-                  e.preventDefault();
-                  void selectPrediction(predictions[activeIdx]);
+                  e.currentTarget.form?.requestSubmit();
                 }
               }}
               placeholder={isLoading ? "Thinking…" : "Ask a question"}
               disabled={isLoading}
               autoComplete="off"
               name="homeposal-ai-address"
-              className="bg-white"
+              className="min-h-10 max-h-[120px] w-full resize-none overflow-y-auto rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
             />
 
             {predictionsOpen && predictions.length > 0 && (
