@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { LegalDocumentModal, type LegalDocumentType } from "@/components/LegalDocumentModal";
 import { parseDollarInput, formatDollarDisplay } from "@/lib/formatDollarInput";
 import { submitProposal } from "@/lib/actions/submitProposal";
 import { submitPlaceProposal } from "@/lib/actions/submitPlaceProposal";
@@ -99,6 +100,7 @@ export function PlaceOfferForm({
   const [preferredContactMethod, setPreferredContactMethod] = useState<"" | "email" | "text" | "phone">("");
   const [notes, setNotes] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [legalModal, setLegalModal] = useState<LegalDocumentType | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -540,13 +542,29 @@ export function PlaceOfferForm({
           />
           <span>
             I have read and accept the{" "}
-            <Link href="/notice-at-collection" className="font-medium text-[var(--accent)] hover:underline">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setLegalModal("notice");
+              }}
+              className="font-medium text-[var(--accent)] hover:underline"
+            >
               Notice at Collection
-            </Link>{" "}
+            </button>{" "}
             and{" "}
-            <Link href="/terms" className="font-medium text-[var(--accent)] hover:underline">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setLegalModal("terms");
+              }}
+              className="font-medium text-[var(--accent)] hover:underline"
+            >
               Terms of Use
-            </Link>
+            </button>
             .
           </span>
         </label>
@@ -559,6 +577,10 @@ export function PlaceOfferForm({
           {loading ? "Submitting…" : "Make Proposal"}
         </Button>
       </form>
+
+      {legalModal && (
+        <LegalDocumentModal documentType={legalModal} onClose={() => setLegalModal(null)} />
+      )}
     </div>
   );
 }

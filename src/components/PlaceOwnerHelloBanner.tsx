@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { ContactInviteLink } from "@/components/ContactInviteLink";
+import { OwnerAddressCheckPanel } from "@/components/OwnerAddressCheckPanel";
 import { BANNER_BG, LOGO_BANNER_URL } from "@/lib/siteAssets";
 
 function BannerTitle({
@@ -83,6 +84,8 @@ type PlaceOwnerHelloBannerProps = {
   pinToBottomMinWidth?: number;
   /** `compact` = property detail; `cozy` = slightly smaller home index; `default` = full size. */
   size?: "default" | "compact" | "cozy";
+  /** Show "Check my address" + search panel (home map). Hide on property/place detail pages. */
+  showAddressCheck?: boolean;
 };
 
 const VIEWPORT_PIN_Z = 85;
@@ -113,6 +116,7 @@ export function PlaceOwnerHelloBanner({
   pinToBottom,
   pinToBottomMinWidth,
   size = "default",
+  showAddressCheck = true,
 }: PlaceOwnerHelloBannerProps) {
   const isSlim = size === "compact";
   const isCozy = size === "cozy";
@@ -126,8 +130,14 @@ export function PlaceOwnerHelloBanner({
     pinnedToViewport ? matchesViewportPinRange(pinnedMinWidth, pinToViewportMaxWidth) : false
   );
   const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const [addressFocusToken, setAddressFocusToken] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentId = "place-owner-hello-content";
+
+  const openAddressCheck = () => {
+    setExpanded(true);
+    setAddressFocusToken((token) => token + 1);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -238,6 +248,9 @@ export function PlaceOwnerHelloBanner({
     const secondaryBtnClass = smallerExpandedChrome
       ? "inline-flex min-h-[36px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8 sm:min-h-[38px] sm:px-3.5 sm:text-sm"
       : "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-transparent px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#1C4482]/8";
+    const addressCheckBtnClass = smallerExpandedChrome
+      ? "inline-flex min-h-[36px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-white px-3 py-1.5 text-xs font-medium text-[#121212] shadow-sm transition-colors hover:bg-white/90 sm:min-h-[38px] sm:px-3.5 sm:text-sm"
+      : "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#1C4482]/40 bg-white px-4 py-2.5 text-sm font-medium text-[#121212] shadow-sm transition-colors hover:bg-white/90";
     const iconBtnClass = smallerExpandedChrome
       ? "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white sm:h-9 sm:w-9"
       : "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1C4482]/30 bg-white/80 text-[#1C4482] shadow-sm transition-colors hover:bg-white";
@@ -279,6 +292,7 @@ export function PlaceOwnerHelloBanner({
     return {
       primaryBtnClass,
       secondaryBtnClass,
+      addressCheckBtnClass,
       iconBtnClass,
       logoCollapsed,
       logoExpanded,
@@ -305,33 +319,77 @@ export function PlaceOwnerHelloBanner({
               <BannerLogo className={t.logoCollapsed} />
               <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} multiline />
             </div>
-            <div className="grid grid-cols-[1fr_1fr_auto] items-stretch gap-2">
-              <button
-                type="button"
-                onClick={() => setExpanded(true)}
-                className={`${t.primaryBtnClass} w-full px-3 text-center`}
-                aria-expanded={false}
-                aria-controls={contentId}
-              >
-                {collapsedPrimaryLabel}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDismissed(true)}
-                className={`${t.secondaryBtnClass} w-full px-3 text-center`}
-              >
-                Maybe later
-              </button>
-              <button
-                type="button"
-                onClick={() => setExpanded(true)}
-                className={t.iconBtnClass}
-                aria-expanded={false}
-                aria-controls={contentId}
-                aria-label="Expand owner hello banner"
-              >
-                <ChevronUp className="h-4 w-4" aria-hidden />
-              </button>
+            <div className="flex flex-col gap-2">
+              {showAddressCheck ? (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(true)}
+                      className={`${t.primaryBtnClass} w-full px-3 text-center`}
+                      aria-expanded={false}
+                      aria-controls={contentId}
+                    >
+                      {collapsedPrimaryLabel}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openAddressCheck}
+                      className={`${t.addressCheckBtnClass} w-full px-3 text-center`}
+                    >
+                      Check address
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-[1fr_auto] items-stretch gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDismissed(true)}
+                      className={`${t.secondaryBtnClass} w-full px-3 text-center`}
+                    >
+                      Maybe later
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(true)}
+                      className={t.iconBtnClass}
+                      aria-expanded={false}
+                      aria-controls={contentId}
+                      aria-label="Expand owner hello banner"
+                    >
+                      <ChevronUp className="h-4 w-4" aria-hidden />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-[1fr_1fr_auto] items-stretch gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(true)}
+                    className={`${t.primaryBtnClass} w-full px-3 text-center`}
+                    aria-expanded={false}
+                    aria-controls={contentId}
+                  >
+                    {collapsedPrimaryLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDismissed(true)}
+                    className={`${t.secondaryBtnClass} w-full px-3 text-center`}
+                  >
+                    Maybe later
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(true)}
+                    className={t.iconBtnClass}
+                    aria-expanded={false}
+                    aria-controls={contentId}
+                    aria-label="Expand owner hello banner"
+                  >
+                    <ChevronUp className="h-4 w-4" aria-hidden />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -363,6 +421,11 @@ export function PlaceOwnerHelloBanner({
                 {collapsedPrimaryLabel}
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </button>
+              {showAddressCheck ? (
+                <button type="button" onClick={openAddressCheck} className={t.addressCheckBtnClass}>
+                  Check my address
+                </button>
+              ) : null}
               <button type="button" onClick={() => setDismissed(true)} className={t.secondaryBtnClass}>
                 Maybe later
               </button>
@@ -421,6 +484,9 @@ export function PlaceOwnerHelloBanner({
             </div>
             {body ? (
               <p className="text-sm leading-relaxed text-[var(--foreground-muted)]">{body}</p>
+            ) : null}
+            {showAddressCheck ? (
+              <OwnerAddressCheckPanel focusToken={addressFocusToken} className="mt-1" />
             ) : null}
             <div className="flex flex-col gap-2">
               <ContactInviteLink contactType="owner-proposal" className={`${t.primaryBtnClass} w-full`}>
@@ -493,6 +559,9 @@ export function PlaceOwnerHelloBanner({
               >
                 {body}
               </p>
+            ) : null}
+            {showAddressCheck ? (
+              <OwnerAddressCheckPanel focusToken={addressFocusToken} className="mt-3" />
             ) : null}
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <ContactInviteLink contactType="owner-proposal" className={t.primaryBtnClass}>

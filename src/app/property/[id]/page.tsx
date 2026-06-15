@@ -8,6 +8,7 @@ import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
 import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { MobileProposalsNudge } from "@/components/MobileProposalsNudge";
+import { AiAssistant } from "@/components/AiAssistant";
 import { MOCK_PROPERTIES } from "@/data/properties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/server";
@@ -74,7 +75,7 @@ export default async function PropertyPage({
 
   return (
     <>
-      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact />
+      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Property details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
@@ -133,8 +134,8 @@ export default async function PropertyPage({
           />
         </div>
 
-        <div className="mb-6">
-          <StickyDisclosureBanner />
+        <div className="hidden w-full shrink-0 border-t border-[var(--border)] lg:block">
+          <StickyDisclosureBanner inline className="rounded-none border-x-0 text-sm" />
         </div>
 
       </div>
@@ -146,6 +147,10 @@ export default async function PropertyPage({
       >
         <BackToHomeLink className="self-start px-4 pt-4 lg:hidden" />
         <MobileProposalsNudge proposalCount={proposals.length} />
+        <div className="px-4 pb-4 lg:pt-4">
+          <AiAssistant defaultExpandedDesktop={false} />
+        </div>
+        <div className="hidden border-t border-[var(--border)] lg:block" />
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
@@ -181,6 +186,9 @@ export default async function PropertyPage({
             />
           </div>
         )}
+        <div className="border-t border-[var(--border)] p-4 lg:hidden">
+          <StickyDisclosureBanner inline className="text-xs sm:text-sm" />
+        </div>
       </aside>
     </div>
     </>

@@ -190,6 +190,12 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
             )}
           </div>
 
+          {(addressToShow || selectedProperty) && (
+            <div className="hidden w-full shrink-0 border-t border-[var(--border)] md:block">
+              <div className="w-full">{NOTICE}</div>
+            </div>
+          )}
+
           {showMobileStreetMap && (
             <div
               ref={mobileMapRef}
@@ -232,7 +238,6 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           <div className="flex flex-col p-4">
             {selectedProperty ? (
               <>
-                <BackToHomeLink className="mb-3 self-start" />
                 <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-md bg-[var(--background-elevated)]">
                   <Image
                     src={selectedProperty.imageUrls[0]}
@@ -259,7 +264,6 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                     <p className="font-tabular text-sm">{selectedProperty.bedrooms} / {selectedProperty.bathrooms}</p>
                   </div>
                 </div>
-                <div className="mb-4">{NOTICE}</div>
                 <ProposalsPublicView
                   proposals={proposals}
                   listPriceCents={selectedProperty.listPriceCents}
@@ -279,18 +283,22 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                     />
                   </div>
                 )}
+                <div className="mb-4 mt-4 md:hidden">{NOTICE}</div>
                 <Link
                   href={`/property/${selectedProperty.id}`}
                   className="mt-4 block w-full min-h-[44px] rounded-md border border-[var(--border)] py-3 text-center text-base font-medium text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)] flex items-center justify-center"
                 >
                   View full property page →
                 </Link>
+                <div className="mt-4 border-t border-[var(--border)] pt-4">
+                  <BackToHomeLink variant="button" />
+                </div>
               </>
             ) : addressToShow ? (
               <>
-                <BackToHomeLink className="mb-3 self-start" />
                 <h2 className="mb-2 text-lg font-semibold text-[var(--foreground)]">{addressToShow.address}</h2>
                 <p className="mb-4 text-base text-[var(--foreground-muted)]">This address was selected from the map search.</p>
+                <AiAssistant defaultExpandedDesktop={false} className="mb-4" />
                 <ZillowZestimatePanel
                   address={addressToShow.address}
                   lat={addressToShow.lat}
@@ -298,7 +306,6 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                   variant="collapsible"
                   className="mb-4"
                 />
-                <div className="mb-4">{NOTICE}</div>
                 <div className="flex flex-col gap-2">
                   <Link
                     href={`/place?address=${encodeURIComponent(addressToShow.address)}&lat=${addressToShow.lat}&lng=${addressToShow.lng}#make-proposal`}
@@ -312,6 +319,10 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                   >
                     View Proposals
                   </Link>
+                </div>
+                <div className="mt-4 md:hidden">{NOTICE}</div>
+                <div className="mt-4 border-t border-[var(--border)] pt-4">
+                  <BackToHomeLink variant="button" />
                 </div>
               </>
             ) : (

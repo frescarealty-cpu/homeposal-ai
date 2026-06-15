@@ -136,7 +136,13 @@ function getMessageText(message: unknown): string {
   return "";
 }
 
-export function AiAssistant() {
+type AiAssistantProps = {
+  /** When true (default), expands on md+ viewports — index home only. */
+  defaultExpandedDesktop?: boolean;
+  className?: string;
+};
+
+export function AiAssistant({ defaultExpandedDesktop = true, className = "" }: AiAssistantProps) {
   const { messages, setMessages, sendMessage, status, error } = useChat({
     transport: new TextStreamChatTransport({ api: "/api/chat" }),
   });
@@ -154,6 +160,7 @@ export function AiAssistant() {
   const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
+    if (!defaultExpandedDesktop) return;
     const mqDesktop = window.matchMedia("(min-width: 768px)");
     const syncDesktop = () => {
       if (mqDesktop.matches) setCollapsed(false);
@@ -161,7 +168,7 @@ export function AiAssistant() {
     syncDesktop();
     mqDesktop.addEventListener("change", syncDesktop);
     return () => mqDesktop.removeEventListener("change", syncDesktop);
-  }, []);
+  }, [defaultExpandedDesktop]);
 
   function adjustTextareaHeight() {
     const el = inputRef.current;
@@ -377,7 +384,10 @@ export function AiAssistant() {
       className={[
         "flex flex-col overflow-visible rounded-xl border border-[var(--border)] bg-white",
         collapsed ? "p-3" : "p-4",
-      ].join(" ")}
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <div className={collapsed ? "" : "mb-3"}>
         <div className="flex items-start justify-between gap-3">

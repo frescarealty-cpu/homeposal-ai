@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { BackToHomeLink } from "@/components/BackToHomeLink";
 import { StreetViewPanel } from "@/components/StreetViewPanel";
@@ -8,6 +7,7 @@ import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
 import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { MobileProposalsNudge } from "@/components/MobileProposalsNudge";
+import { AiAssistant } from "@/components/AiAssistant";
 import { getPlaceProposals } from "@/lib/placeProposals";
 import { createClient } from "@/lib/supabase/server";
 
@@ -65,7 +65,7 @@ export default async function PlacePage({
 
   return (
     <>
-      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact />
+      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Place details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
@@ -81,8 +81,8 @@ export default async function PlacePage({
           />
         </div>
 
-        <div className="mb-6">
-          <StickyDisclosureBanner />
+        <div className="hidden w-full shrink-0 border-t border-[var(--border)] lg:block">
+          <StickyDisclosureBanner inline className="rounded-none border-x-0 text-sm" />
         </div>
       </div>
 
@@ -91,13 +91,16 @@ export default async function PlacePage({
         id="make-proposal"
         className="kalshi-border order-1 flex w-full flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto"
       >
-        <BackToHomeLink className="self-start px-4 pt-4 lg:hidden" />
-        <div className="px-4 lg:hidden">{addressHeading}</div>
+        <div className="px-4 pt-4 lg:hidden">{addressHeading}</div>
         <MobileProposalsNudge
           proposalCount={proposals.length}
           proposalsSectionId="place-proposals"
           keepVisibleSectionId="place-zestimate"
         />
+        <div className="px-4 pb-4 lg:pt-4">
+          <AiAssistant defaultExpandedDesktop={false} />
+        </div>
+        <div className="hidden border-t border-[var(--border)] lg:block" />
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
@@ -122,13 +125,11 @@ export default async function PlacePage({
           isLoggedIn={isLoggedIn}
           redirectPath={redirectPath}
         />
-        <div className="flex flex-col gap-3 border-t border-[var(--border)] p-4">
-          <Link
-            href="/"
-            className="block w-full rounded-md border border-[var(--border)] px-4 py-2.5 text-center text-sm font-medium text-[var(--foreground-muted)] transition-colors hover:bg-[var(--border-subtle)]"
-          >
-            Back To Home
-          </Link>
+        <div className="border-t border-[var(--border)] p-4 lg:hidden">
+          <StickyDisclosureBanner inline className="text-xs sm:text-sm" />
+        </div>
+        <div className="border-t border-[var(--border)] p-4">
+          <BackToHomeLink variant="button" />
         </div>
       </aside>
     </div>

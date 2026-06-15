@@ -17,6 +17,8 @@ type OwnerHelloBannerStackProps = {
   /** Shorter banner for property / address detail views. */
   compact?: boolean;
   size?: "default" | "compact" | "cozy";
+  /** Show address search in hello banner (default on home). */
+  showAddressCheck?: boolean;
 };
 
 const DESKTOP_INDEX_AUTO_COLLAPSE_MS = 12000;
@@ -32,6 +34,7 @@ export function OwnerHelloBannerStack({
   defaultExpandedMobile,
   compact = false,
   size: sizeProp,
+  showAddressCheck = true,
 }: OwnerHelloBannerStackProps) {
   const size = sizeProp ?? (compact ? "compact" : "default");
   const mobileStartsExpanded = defaultExpandedMobile ?? defaultExpandedDesktop;
@@ -50,6 +53,7 @@ export function OwnerHelloBannerStack({
         alertLabel={alertLabel}
         ownerInquiryPhone={ownerInquiryPhone}
         size={size}
+        showAddressCheck={showAddressCheck}
       />
       <PlaceOwnerHelloBanner
         pinToViewport
@@ -62,6 +66,7 @@ export function OwnerHelloBannerStack({
         alertLabel={alertLabel}
         ownerInquiryPhone={ownerInquiryPhone}
         size={size}
+        showAddressCheck={showAddressCheck}
         className="md:hidden"
       />
     </>

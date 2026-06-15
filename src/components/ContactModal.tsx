@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { sendContactForm } from "@/lib/actions/sendContactForm";
+import { MODAL_OVERLAY_CLASS } from "@/lib/modalLayer";
 
 const TOUCH_MIN = "min-h-[44px]";
 
@@ -22,6 +24,11 @@ export function ContactModal({
   const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -81,9 +88,13 @@ export function ContactModal({
     [name, email, phone, preferredContactMethod, message, humanChecked, honeypot]
   );
 
-  return (
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-4 sm:items-center"
+      className={`fixed inset-0 flex items-start justify-center overflow-y-auto p-4 sm:items-center ${MODAL_OVERLAY_CLASS}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="contact-modal-title"
@@ -262,6 +273,7 @@ export function ContactModal({
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
