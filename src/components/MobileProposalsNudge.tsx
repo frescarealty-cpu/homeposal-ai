@@ -19,13 +19,13 @@ export function MobileProposalsNudge({
   keepVisibleSectionId = "property-zestimate",
 }: MobileProposalsNudgeProps) {
   const [visible, setVisible] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (sessionStorage.getItem(storageKey) === "1") return;
-    const timer = window.setTimeout(() => setVisible(true), 500);
-    return () => window.clearTimeout(timer);
+    try {
+      setVisible(sessionStorage.getItem(storageKey) !== "1");
+    } catch {
+      setVisible(true);
+    }
   }, [storageKey]);
 
   const dismiss = () => {
@@ -55,11 +55,9 @@ export function MobileProposalsNudge({
     } else {
       proposalsEl.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-
-    dismiss();
   };
 
-  if (!mounted || !visible) return null;
+  if (!visible) return null;
 
   const hasProposals = proposalCount > 0;
   const message = hasProposals
@@ -71,7 +69,7 @@ export function MobileProposalsNudge({
   return (
     <div
       role="status"
-      className="mb-3 md:hidden motion-safe:animate-[proposals-nudge-in_0.35s_ease-out]"
+      className="mb-3 lg:hidden motion-safe:animate-[proposals-nudge-in_0.35s_ease-out]"
     >
       <div className="relative rounded-xl border border-white/50 bg-white/90 px-3 py-2.5 shadow-lg backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/90">
         <button
