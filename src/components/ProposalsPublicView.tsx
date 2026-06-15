@@ -23,6 +23,8 @@ type ProposalsPublicViewProps = {
   ownerAlertClassName?: string;
   /** Rendered before the "Proposals (public view)" heading (e.g. mobile Zestimate). */
   beforeProposalsHeading?: ReactNode;
+  /** Anchor id for the proposals heading (scroll targets). */
+  proposalsHeadingId?: string;
 };
 
 function formatCurrency(cents: number) {
@@ -99,6 +101,7 @@ export function ProposalsPublicView({
   ownerAlertMobileBelowProposals = false,
   ownerAlertClassName = "",
   beforeProposalsHeading,
+  proposalsHeadingId = "property-proposals",
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
   const [priceSort, setPriceSort] = useState<"none" | "high" | "low">("high");
@@ -362,7 +365,10 @@ export function ProposalsPublicView({
 
       {beforeProposalsHeading}
 
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div
+        id={proposalsHeadingId}
+        className="mb-4 flex scroll-mt-3 items-center justify-between gap-3"
+      >
         <h2 className="text-sm font-semibold text-[var(--foreground)]">
           Proposals (public view)
         </h2>

@@ -7,6 +7,7 @@ import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
 import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
+import { MobileProposalsNudge } from "@/components/MobileProposalsNudge";
 import { getPlaceProposals } from "@/lib/placeProposals";
 import { createClient } from "@/lib/supabase/server";
 
@@ -103,9 +104,16 @@ export default async function PlacePage({
           beforeProposalsHeading={
             <div className="mb-4 flex flex-col gap-4 lg:hidden">
               <StreetViewPanel latitude={latNum} longitude={lngNum} address={address} />
-              {zestimatePanel}
+              <div id="place-zestimate">{zestimatePanel}</div>
+              <MobileProposalsNudge
+                proposalCount={proposals.length}
+                storageKey={`proposals-nudge-place-${encodeURIComponent(address ?? "")}`}
+                proposalsSectionId="place-proposals"
+                keepVisibleSectionId="place-zestimate"
+              />
             </div>
           }
+          proposalsHeadingId="place-proposals"
         />
         <div className="border-t border-[var(--border)]" />
         <PlaceOfferForm
