@@ -150,6 +150,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
   const bestOfferCents = proposals.length > 0 ? Math.max(...proposals.map((p) => p.priceCents)) : 0;
 
   const showOwnerHello = !selectedProperty;
+  const isHomeIndex = !selectedProperty && !addressToShow;
 
   return (
     <>
@@ -235,7 +236,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           ref={rightPanelRef}
           className="flex min-w-0 w-full flex-col border-t lg:border-t-0 lg:border-l border-[var(--border)]"
         >
-          <div className="flex flex-col p-4">
+          <div className={`flex flex-col px-4 pb-4 ${isHomeIndex ? "pt-2" : "pt-4"}`}>
             {selectedProperty ? (
               <>
                 <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-md bg-[var(--background-elevated)]">
@@ -328,7 +329,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
             ) : (
               <>
                 <div className="space-y-4">
-                  <AiAssistant />
+                  <AiAssistant className={isHomeIndex ? "!pt-2.5 !px-4 !pb-4" : undefined} />
 
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
                     <h2 className="mb-3 text-lg font-semibold text-[var(--foreground)]">What is HomePosal?</h2>

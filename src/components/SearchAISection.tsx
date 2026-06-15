@@ -443,7 +443,7 @@ export function SearchAISection({
 
   return (
     <div className="relative">
-      <p className="mb-2 px-2 text-base font-medium text-[var(--foreground)] sm:px-3">
+      <p className="mb-2 mt-0 px-2 text-base font-medium text-[var(--foreground)] sm:px-3 lg:mt-2.5">
         <span className="md:hidden">Find a property to view current purchase proposals or submit your own.</span>
         <span className="hidden md:inline">Find a property to view current purchase proposals or submit your own.</span>
       </p>
