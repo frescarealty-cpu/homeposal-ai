@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
 import { ChevronDown, ChevronUp, Send, Sparkles } from "lucide-react";
@@ -151,11 +151,23 @@ export function AiAssistant() {
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [collapsed, setCollapsed] = useState(true);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(min-width: 768px)").matches) {
-      setCollapsed(false);
-    }
+    const mqDesktop = window.matchMedia("(min-width: 768px)");
+    const mqMobile = window.matchMedia("(max-width: 767px)");
+    const syncDesktop = () => {
+      if (mqDesktop.matches) setCollapsed(false);
+    };
+    const syncMobile = () => setIsMobileLayout(mqMobile.matches);
+    syncDesktop();
+    syncMobile();
+    mqDesktop.addEventListener("change", syncDesktop);
+    mqMobile.addEventListener("change", syncMobile);
+    return () => {
+      mqDesktop.removeEventListener("change", syncDesktop);
+      mqMobile.removeEventListener("change", syncMobile);
+    };
   }, []);
 
   function adjustTextareaHeight() {
@@ -226,10 +238,11 @@ export function AiAssistant() {
 
   // Address autocomplete (Google Places) on the assistant input.
   useEffect(() => {
-    if (!isMapsLoaded) return;
-    if (!window.google?.maps?.places) return;
-    return () => {};
-  }, [isMapsLoaded]);
+    if (!isMobileLayout || !predictionsOpen || predictions.length === 0) return;
+    requestAnimationFrame(() => {
+      inputRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+  }, [isMobileLayout, predictionsOpen, predictions.length]);
 
   useEffect(() => {
     if (!isMapsLoaded) return;
@@ -286,7 +299,7 @@ export function AiAssistant() {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     blurTimeoutRef.current = setTimeout(() => {
       setPredictionsOpen(false);
-    }, 150);
+    }, isMobileLayout ? 300 : 150);
   }
 
   function keepPredictionsOpen() {
@@ -294,6 +307,11 @@ export function AiAssistant() {
       clearTimeout(blurTimeoutRef.current);
       blurTimeoutRef.current = null;
     }
+  }
+
+  function handlePredictionPointerDown(e: ReactPointerEvent) {
+    e.preventDefault();
+    keepPredictionsOpen();
   }
 
   async function selectPrediction(p: { placeId: string; description: string }) {
@@ -362,7 +380,7 @@ export function AiAssistant() {
   return (
     <div
       className={[
-        "flex flex-col rounded-xl border border-[var(--border)] bg-white",
+        "flex flex-col overflow-visible rounded-xl border border-[var(--border)] bg-white",
         collapsed ? "p-3" : "p-4",
       ].join(" ")}
     >
@@ -473,7 +491,7 @@ export function AiAssistant() {
             requestAnimationFrame(adjustTextareaHeight);
           }}
         >
-          <div className="relative min-w-0 flex-1">
+          <div className="relative min-w-0 flex-1 overflow-visible">
             <textarea
               ref={inputRef}
               rows={1}
@@ -523,23 +541,32 @@ export function AiAssistant() {
               placeholder={isLoading ? "Thinking…" : "Ask a question"}
               disabled={isLoading}
               autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               name="homeposal-ai-address"
               className="min-h-10 max-h-[120px] w-full resize-none overflow-y-auto rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
             />
 
             {predictionsOpen && predictions.length > 0 && (
               <div
-                className="absolute bottom-[calc(100%+0.5rem)] left-0 right-0 z-[9999] max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-white shadow-xl"
-                onMouseDown={() => keepPredictionsOpen()}
+                className={[
+                  "absolute left-0 right-0 z-[9999] max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-white shadow-xl",
+                  isMobileLayout
+                    ? "top-[calc(100%+0.5rem)]"
+                    : "bottom-[calc(100%+0.5rem)]",
+                ].join(" ")}
+                onPointerDown={handlePredictionPointerDown}
               >
                 {predictions.map((p, idx) => (
                   <button
                     key={p.placeId}
                     type="button"
                     className={[
-                      "block w-full px-3 py-2 text-left text-sm",
+                      "block w-full px-3 py-3 text-left text-sm sm:py-2",
                       idx === activeIdx ? "bg-zinc-100" : "bg-white hover:bg-zinc-50",
                     ].join(" ")}
+                    onPointerDown={handlePredictionPointerDown}
                     onClick={() => void selectPrediction(p)}
                   >
                     {p.description}
