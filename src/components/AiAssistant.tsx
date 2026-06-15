@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { createPortal } from "react-dom";
 import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
 import { ChevronDown, ChevronUp, Send, Sparkles } from "lucide-react";
@@ -78,25 +77,8 @@ function getAddressAutocompleteContext(
 
   if (!query || query.length < 3) return { enabled: false };
 
-  if (selectedPlace?.address) {
-    const span = extractAddressSpan(draft);
-    if (span) {
-      let addressPart = span.query.trim();
-      const suffixMatch = addressPart.match(ADDRESS_SUFFIX_WORD);
-      if (suffixMatch && suffixMatch.index != null) {
-        addressPart = addressPart.slice(0, suffixMatch.index).trim();
-      } else {
-        const zipTail = addressPart.match(/(\d{5}(?:\s*,?\s*(?:USA))?)(\s+.+)$/i);
-        if (zipTail?.[1]) addressPart = zipTail[1].trim();
-      }
-      if (
-        addressPart === selectedPlace.address ||
-        selectedPlace.address.startsWith(addressPart) ||
-        addressPart.startsWith(selectedPlace.address)
-      ) {
-        return { enabled: false };
-      }
-    }
+  if (selectedPlace?.address && draft.includes(selectedPlace.address)) {
+    return { enabled: false };
   }
 
   return { enabled: true, start: span.start, query, suffix: "" };
@@ -167,18 +149,11 @@ export function AiAssistant() {
   const [predictions, setPredictions] = useState<Array<{ placeId: string; description: string }>>([]);
   const [predictionsOpen, setPredictionsOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
-  const [predictionsRect, setPredictionsRect] = useState<{
-    left: number;
-    top: number;
-    width: number;
-  } | null>(null);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [collapsed, setCollapsed] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const mqDesktop = window.matchMedia("(min-width: 768px)");
     const syncDesktop = () => {
       if (mqDesktop.matches) setCollapsed(false);
@@ -305,40 +280,6 @@ export function AiAssistant() {
     return () => clearTimeout(t);
   }, [draft, isMapsLoaded, selectedPlace]);
 
-  function syncPredictionsPosition() {
-    const el = inputRef.current;
-    if (!el) {
-      setPredictionsRect(null);
-      return;
-    }
-    const rect = el.getBoundingClientRect();
-    setPredictionsRect({
-      left: rect.left,
-      top: rect.top - 8,
-      width: rect.width,
-    });
-  }
-
-  useEffect(() => {
-    if (!predictionsOpen || predictions.length === 0) {
-      setPredictionsRect(null);
-      return;
-    }
-
-    syncPredictionsPosition();
-    const onLayoutChange = () => syncPredictionsPosition();
-    window.addEventListener("scroll", onLayoutChange, true);
-    window.addEventListener("resize", onLayoutChange);
-    window.visualViewport?.addEventListener("resize", onLayoutChange);
-    window.visualViewport?.addEventListener("scroll", onLayoutChange);
-    return () => {
-      window.removeEventListener("scroll", onLayoutChange, true);
-      window.removeEventListener("resize", onLayoutChange);
-      window.visualViewport?.removeEventListener("resize", onLayoutChange);
-      window.visualViewport?.removeEventListener("scroll", onLayoutChange);
-    };
-  }, [predictionsOpen, predictions.length, draft, collapsed]);
-
   function closePredictionsSoon() {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     blurTimeoutRef.current = setTimeout(() => {
@@ -421,40 +362,6 @@ export function AiAssistant() {
     }
   }
 
-  const predictionsDropdown =
-    mounted &&
-    predictionsOpen &&
-    predictions.length > 0 &&
-    predictionsRect &&
-    createPortal(
-      <div
-        className="fixed z-[10001] max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-white shadow-xl"
-        style={{
-          left: predictionsRect.left,
-          top: predictionsRect.top,
-          width: predictionsRect.width,
-          transform: "translateY(-100%)",
-        }}
-        onPointerDown={handlePredictionPointerDown}
-      >
-        {predictions.map((p, idx) => (
-          <button
-            key={p.placeId}
-            type="button"
-            className={[
-              "block w-full px-3 py-2.5 text-left text-sm",
-              idx === activeIdx ? "bg-zinc-100" : "bg-white hover:bg-zinc-50",
-            ].join(" ")}
-            onPointerDown={handlePredictionPointerDown}
-            onClick={() => void selectPrediction(p)}
-          >
-            {p.description}
-          </button>
-        ))}
-      </div>,
-      document.body
-    );
-
   const displayMessages = useMemo(
     () =>
       messages.map((m) => ({
@@ -466,9 +373,7 @@ export function AiAssistant() {
   );
 
   return (
-    <>
-      {predictionsDropdown}
-      <div
+    <div
       className={[
         "flex flex-col overflow-visible rounded-xl border border-[var(--border)] bg-white",
         collapsed ? "p-3" : "p-4",
@@ -487,7 +392,15 @@ export function AiAssistant() {
             variant="secondary"
             size="sm"
             className="shrink-0 bg-[var(--background)]"
-            onClick={() => setCollapsed((v) => !v)}
+            onClick={() => {
+              setCollapsed((value) => {
+                const next = !value;
+                if (!next) {
+                  requestAnimationFrame(() => inputRef.current?.focus());
+                }
+                return next;
+              });
+            }}
             aria-expanded={!collapsed}
             aria-label={collapsed ? "Expand assistant" : "Collapse assistant"}
           >
@@ -497,8 +410,7 @@ export function AiAssistant() {
         </div>
       </div>
 
-      {!collapsed && (
-        <div>
+      <div className={collapsed ? "hidden" : undefined} aria-hidden={collapsed}>
           <div
             ref={messagesScrollRef}
             className="overflow-y-auto overflow-anchor-none rounded-lg bg-zinc-100 p-2 pr-1 max-h-[min(280px,42vh)] lg:max-h-[200px] lg:p-3"
@@ -552,16 +464,13 @@ export function AiAssistant() {
               })}
             </div>
           </div>
-        </div>
-      )}
 
-      {!collapsed && error && (
-        <div className="mt-3 rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-700">
-          {error instanceof Error ? error.message : String(error)}
-        </div>
-      )}
+        {error && (
+          <div className="mt-3 rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-700">
+            {error instanceof Error ? error.message : String(error)}
+          </div>
+        )}
 
-      {!collapsed && (
         <form
           className="mt-3 flex items-end gap-2"
           onSubmit={(e) => {
@@ -596,10 +505,7 @@ export function AiAssistant() {
               }}
               onFocus={() => {
                 keepPredictionsOpen();
-                if (predictions.length > 0) {
-                  setPredictionsOpen(true);
-                  syncPredictionsPosition();
-                }
+                if (predictions.length > 0) setPredictionsOpen(true);
               }}
               onBlur={() => closePredictionsSoon()}
               onKeyDown={(e) => {
@@ -641,14 +547,34 @@ export function AiAssistant() {
               className="min-h-10 max-h-[120px] w-full resize-none overflow-y-auto rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
             />
 
+            {predictionsOpen && predictions.length > 0 && (
+              <div
+                className="absolute bottom-[calc(100%+0.5rem)] left-0 right-0 z-[9999] max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-white shadow-xl"
+                onPointerDown={handlePredictionPointerDown}
+              >
+                {predictions.map((p, idx) => (
+                  <button
+                    key={p.placeId}
+                    type="button"
+                    className={[
+                      "block w-full px-3 py-2.5 text-left text-sm",
+                      idx === activeIdx ? "bg-zinc-100" : "bg-white hover:bg-zinc-50",
+                    ].join(" ")}
+                    onPointerDown={handlePredictionPointerDown}
+                    onClick={() => void selectPrediction(p)}
+                  >
+                    {p.description}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <Button type="submit" size="icon" disabled={isLoading || !draft.trim()} aria-label="Send">
             <Send className="h-4 w-4" />
           </Button>
         </form>
-      )}
+      </div>
     </div>
-    </>
   );
 }
 
