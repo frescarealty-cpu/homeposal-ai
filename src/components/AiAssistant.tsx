@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { createPortal } from "react-dom";
 import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
 import { ChevronDown, ChevronUp, Send, Sparkles } from "lucide-react";
@@ -77,8 +78,25 @@ function getAddressAutocompleteContext(
 
   if (!query || query.length < 3) return { enabled: false };
 
-  if (selectedPlace?.address && draft.includes(selectedPlace.address)) {
-    return { enabled: false };
+  if (selectedPlace?.address) {
+    const span = extractAddressSpan(draft);
+    if (span) {
+      let addressPart = span.query.trim();
+      const suffixMatch = addressPart.match(ADDRESS_SUFFIX_WORD);
+      if (suffixMatch && suffixMatch.index != null) {
+        addressPart = addressPart.slice(0, suffixMatch.index).trim();
+      } else {
+        const zipTail = addressPart.match(/(\d{5}(?:\s*,?\s*(?:USA))?)(\s+.+)$/i);
+        if (zipTail?.[1]) addressPart = zipTail[1].trim();
+      }
+      if (
+        addressPart === selectedPlace.address ||
+        selectedPlace.address.startsWith(addressPart) ||
+        addressPart.startsWith(selectedPlace.address)
+      ) {
+        return { enabled: false };
+      }
+    }
   }
 
   return { enabled: true, start: span.start, query, suffix: "" };
@@ -144,30 +162,30 @@ export function AiAssistant() {
   const [draft, setDraft] = useState("");
   const isLoading = status !== "ready";
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const selectingPredictionRef = useRef(false);
   const { isLoaded: isMapsLoaded } = useGoogleMaps();
   const [predictions, setPredictions] = useState<Array<{ placeId: string; description: string }>>([]);
   const [predictionsOpen, setPredictionsOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const [predictionsRect, setPredictionsRect] = useState<{
+    left: number;
+    top: number;
+    width: number;
+  } | null>(null);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [collapsed, setCollapsed] = useState(true);
-  const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const mqDesktop = window.matchMedia("(min-width: 768px)");
-    const mqMobile = window.matchMedia("(max-width: 767px)");
     const syncDesktop = () => {
       if (mqDesktop.matches) setCollapsed(false);
     };
-    const syncMobile = () => setIsMobileLayout(mqMobile.matches);
     syncDesktop();
-    syncMobile();
     mqDesktop.addEventListener("change", syncDesktop);
-    mqMobile.addEventListener("change", syncMobile);
-    return () => {
-      mqDesktop.removeEventListener("change", syncDesktop);
-      mqMobile.removeEventListener("change", syncMobile);
-    };
+    return () => mqDesktop.removeEventListener("change", syncDesktop);
   }, []);
 
   function adjustTextareaHeight() {
@@ -236,14 +254,6 @@ export function AiAssistant() {
     requestAnimationFrame(tryScroll);
   }, [messages, status, collapsed]);
 
-  // Address autocomplete (Google Places) on the assistant input.
-  useEffect(() => {
-    if (!isMobileLayout || !predictionsOpen || predictions.length === 0) return;
-    requestAnimationFrame(() => {
-      inputRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
-    });
-  }, [isMobileLayout, predictionsOpen, predictions.length]);
-
   useEffect(() => {
     if (!isMapsLoaded) return;
     if (!window.google?.maps?.places) return;
@@ -295,11 +305,46 @@ export function AiAssistant() {
     return () => clearTimeout(t);
   }, [draft, isMapsLoaded, selectedPlace]);
 
+  function syncPredictionsPosition() {
+    const el = inputRef.current;
+    if (!el) {
+      setPredictionsRect(null);
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    setPredictionsRect({
+      left: rect.left,
+      top: rect.top - 8,
+      width: rect.width,
+    });
+  }
+
+  useEffect(() => {
+    if (!predictionsOpen || predictions.length === 0) {
+      setPredictionsRect(null);
+      return;
+    }
+
+    syncPredictionsPosition();
+    const onLayoutChange = () => syncPredictionsPosition();
+    window.addEventListener("scroll", onLayoutChange, true);
+    window.addEventListener("resize", onLayoutChange);
+    window.visualViewport?.addEventListener("resize", onLayoutChange);
+    window.visualViewport?.addEventListener("scroll", onLayoutChange);
+    return () => {
+      window.removeEventListener("scroll", onLayoutChange, true);
+      window.removeEventListener("resize", onLayoutChange);
+      window.visualViewport?.removeEventListener("resize", onLayoutChange);
+      window.visualViewport?.removeEventListener("scroll", onLayoutChange);
+    };
+  }, [predictionsOpen, predictions.length, draft, collapsed]);
+
   function closePredictionsSoon() {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     blurTimeoutRef.current = setTimeout(() => {
+      if (selectingPredictionRef.current) return;
       setPredictionsOpen(false);
-    }, isMobileLayout ? 300 : 150);
+    }, 200);
   }
 
   function keepPredictionsOpen() {
@@ -311,61 +356,104 @@ export function AiAssistant() {
 
   function handlePredictionPointerDown(e: ReactPointerEvent) {
     e.preventDefault();
+    selectingPredictionRef.current = true;
     keepPredictionsOpen();
   }
 
   async function selectPrediction(p: { placeId: string; description: string }) {
-    // Resolve to formatted_address + geometry so server lookup matches Supabase records.
-    let resolved = { address: p.description, lat: NaN, lng: NaN };
+    keepPredictionsOpen();
+    selectingPredictionRef.current = true;
     try {
-      if (window.google?.maps?.places) {
-        const svc = new google.maps.places.PlacesService(document.createElement("div"));
-        const details = await new Promise<google.maps.places.PlaceResult | null>((resolve) => {
-          svc.getDetails(
-            { placeId: p.placeId, fields: ["formatted_address", "geometry", "name"] },
-            (placeDetails, status) => {
-              if (status !== google.maps.places.PlacesServiceStatus.OK || !placeDetails) {
-                resolve(null);
-                return;
+      let resolved = { address: p.description, lat: NaN, lng: NaN };
+      try {
+        if (window.google?.maps?.places) {
+          const svc = new google.maps.places.PlacesService(document.createElement("div"));
+          const details = await new Promise<google.maps.places.PlaceResult | null>((resolve) => {
+            svc.getDetails(
+              { placeId: p.placeId, fields: ["formatted_address", "geometry", "name"] },
+              (placeDetails, status) => {
+                if (status !== google.maps.places.PlacesServiceStatus.OK || !placeDetails) {
+                  resolve(null);
+                  return;
+                }
+                resolve(placeDetails);
               }
-              resolve(placeDetails);
-            }
-          );
-        });
-        const addr = (details?.formatted_address || details?.name || p.description).trim();
-        const loc = details?.geometry?.location;
-        const lat = loc ? loc.lat() : NaN;
-        const lng = loc ? loc.lng() : NaN;
-        resolved = { address: addr, lat, lng };
+            );
+          });
+          const addr = (details?.formatted_address || details?.name || p.description).trim();
+          const loc = details?.geometry?.location;
+          const lat = loc ? loc.lat() : NaN;
+          const lng = loc ? loc.lng() : NaN;
+          resolved = { address: addr, lat, lng };
+        }
+      } catch {
+        // ignore; fall back to description only
       }
-    } catch {
-      // ignore; fall back to description only
-    }
 
-    const span = extractAddressSpan(draft);
-    const start = span?.start ?? 0;
-    let suffix = "";
-    if (span) {
-      const suffixMatch = span.query.match(ADDRESS_SUFFIX_WORD);
-      if (suffixMatch && suffixMatch.index != null) {
-        suffix = span.query.slice(suffixMatch.index).trim();
-      } else {
-        const zipTail = span.query.match(/(\d{5}(?:\s*,?\s*(?:USA))?)(\s+.+)$/i);
-        if (zipTail?.[2]) suffix = zipTail[2].trim();
+      const span = extractAddressSpan(draft);
+      const start = span?.start ?? 0;
+      let suffix = "";
+      if (span) {
+        const suffixMatch = span.query.match(ADDRESS_SUFFIX_WORD);
+        if (suffixMatch && suffixMatch.index != null) {
+          suffix = span.query.slice(suffixMatch.index).trim();
+        } else {
+          const zipTail = span.query.match(/(\d{5}(?:\s*,?\s*(?:USA))?)(\s+.+)$/i);
+          if (zipTail?.[2]) suffix = zipTail[2].trim();
+        }
       }
+      const nextText = `${draft.slice(0, start)}${resolved.address}${suffix ? ` ${suffix}` : ""}`;
+      setDraft(nextText);
+      if (Number.isFinite(resolved.lat) && Number.isFinite(resolved.lng)) {
+        setSelectedPlace({ address: resolved.address, lat: resolved.lat, lng: resolved.lng });
+      } else {
+        setSelectedPlace(null);
+      }
+      setPredictionsOpen(false);
+      setPredictions([]);
+      setActiveIdx(-1);
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        adjustTextareaHeight();
+      });
+    } finally {
+      selectingPredictionRef.current = false;
     }
-    const nextText = `${draft.slice(0, start)}${resolved.address}${suffix ? ` ${suffix}` : ""}`;
-    setDraft(nextText);
-    if (Number.isFinite(resolved.lat) && Number.isFinite(resolved.lng)) {
-      setSelectedPlace({ address: resolved.address, lat: resolved.lat, lng: resolved.lng });
-    } else {
-      setSelectedPlace(null);
-    }
-    setPredictionsOpen(false);
-    setPredictions([]);
-    setActiveIdx(-1);
-    inputRef.current?.focus();
   }
+
+  const predictionsDropdown =
+    mounted &&
+    predictionsOpen &&
+    predictions.length > 0 &&
+    predictionsRect &&
+    createPortal(
+      <div
+        className="fixed z-[10001] max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-white shadow-xl"
+        style={{
+          left: predictionsRect.left,
+          top: predictionsRect.top,
+          width: predictionsRect.width,
+          transform: "translateY(-100%)",
+        }}
+        onPointerDown={handlePredictionPointerDown}
+      >
+        {predictions.map((p, idx) => (
+          <button
+            key={p.placeId}
+            type="button"
+            className={[
+              "block w-full px-3 py-2.5 text-left text-sm",
+              idx === activeIdx ? "bg-zinc-100" : "bg-white hover:bg-zinc-50",
+            ].join(" ")}
+            onPointerDown={handlePredictionPointerDown}
+            onClick={() => void selectPrediction(p)}
+          >
+            {p.description}
+          </button>
+        ))}
+      </div>,
+      document.body
+    );
 
   const displayMessages = useMemo(
     () =>
@@ -378,7 +466,9 @@ export function AiAssistant() {
   );
 
   return (
-    <div
+    <>
+      {predictionsDropdown}
+      <div
       className={[
         "flex flex-col overflow-visible rounded-xl border border-[var(--border)] bg-white",
         collapsed ? "p-3" : "p-4",
@@ -506,7 +596,10 @@ export function AiAssistant() {
               }}
               onFocus={() => {
                 keepPredictionsOpen();
-                if (predictions.length > 0) setPredictionsOpen(true);
+                if (predictions.length > 0) {
+                  setPredictionsOpen(true);
+                  syncPredictionsPosition();
+                }
               }}
               onBlur={() => closePredictionsSoon()}
               onKeyDown={(e) => {
@@ -548,32 +641,6 @@ export function AiAssistant() {
               className="min-h-10 max-h-[120px] w-full resize-none overflow-y-auto rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm leading-relaxed text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
             />
 
-            {predictionsOpen && predictions.length > 0 && (
-              <div
-                className={[
-                  "absolute left-0 right-0 z-[9999] max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-white shadow-xl",
-                  isMobileLayout
-                    ? "top-[calc(100%+0.5rem)]"
-                    : "bottom-[calc(100%+0.5rem)]",
-                ].join(" ")}
-                onPointerDown={handlePredictionPointerDown}
-              >
-                {predictions.map((p, idx) => (
-                  <button
-                    key={p.placeId}
-                    type="button"
-                    className={[
-                      "block w-full px-3 py-3 text-left text-sm sm:py-2",
-                      idx === activeIdx ? "bg-zinc-100" : "bg-white hover:bg-zinc-50",
-                    ].join(" ")}
-                    onPointerDown={handlePredictionPointerDown}
-                    onClick={() => void selectPrediction(p)}
-                  >
-                    {p.description}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
           <Button type="submit" size="icon" disabled={isLoading || !draft.trim()} aria-label="Send">
             <Send className="h-4 w-4" />
@@ -581,6 +648,7 @@ export function AiAssistant() {
         </form>
       )}
     </div>
+    </>
   );
 }
 
