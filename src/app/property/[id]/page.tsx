@@ -76,9 +76,9 @@ export default async function PropertyPage({
   return (
     <>
       <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
-      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
+      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row lg:items-stretch">
       {/* Left: Property details (below sidebar on mobile) */}
-      <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
+      <div className="order-2 flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <BackToHomeLink className="mb-6 hidden lg:inline-flex" />
 
         <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-md bg-[var(--background-elevated)]">
@@ -143,7 +143,7 @@ export default async function PropertyPage({
       {/* Right: Public proposals list + Place offer (requires login) */}
       <aside
         id="make-proposal"
-        className="kalshi-border order-1 flex w-full flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto"
+        className="kalshi-border order-1 flex w-full min-h-0 flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto"
       >
         <BackToHomeLink className="self-start px-4 pt-4 lg:hidden" />
         <MobileProposalsNudge proposalCount={proposals.length} />
@@ -172,20 +172,25 @@ export default async function PropertyPage({
             </div>
           }
         />
-        {property.status === "open" && (
-          <div className="border-t border-[var(--border)]">
-            <PlaceOfferForm
-              propertyId={property.id}
-              listPriceCents={property.listPriceCents}
-              initialAmount={initialOffer}
-              isLoggedIn={isLoggedIn}
-              redirectPath={`/property/${property.id}#make-proposal`}
-              zillowLookupAddress={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
-              zillowLookupLat={property.latitude}
-              zillowLookupLng={property.longitude}
-            />
+        <div className="mt-auto flex flex-col">
+          {property.status === "open" && (
+            <div className="border-t border-[var(--border)]">
+              <PlaceOfferForm
+                propertyId={property.id}
+                listPriceCents={property.listPriceCents}
+                initialAmount={initialOffer}
+                isLoggedIn={isLoggedIn}
+                redirectPath={`/property/${property.id}#make-proposal`}
+                zillowLookupAddress={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
+                zillowLookupLat={property.latitude}
+                zillowLookupLng={property.longitude}
+              />
+            </div>
+          )}
+          <div className="hidden border-t border-[var(--border)] p-4 lg:block">
+            <BackToHomeLink variant="button" />
           </div>
-        )}
+        </div>
         <div className="border-t border-[var(--border)] p-4 lg:hidden">
           <StickyDisclosureBanner inline className="text-xs sm:text-sm" />
         </div>

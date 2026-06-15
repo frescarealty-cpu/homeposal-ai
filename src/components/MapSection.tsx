@@ -8,6 +8,40 @@ const GOOGLE_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
 /** Close enough to read street names on satellite/hybrid (see mobile street search). */
 const STREET_SEARCH_ZOOM = 18;
+/** Tight satellite view when a full address is found (house ~¼ of map panel). */
+const ADDRESS_SEARCH_ZOOM = 20;
+/** ~90 m half-span for fitBounds framing at SoCal latitudes. */
+const ADDRESS_BOUNDS_DELTA = 0.0008;
+
+function focusMapOnAddress(
+  map: google.maps.Map,
+  lat: number,
+  lng: number,
+  isStreetSearch?: boolean
+) {
+  const position = { lat, lng };
+  google.maps.event.trigger(map, "resize");
+
+  if (isStreetSearch) {
+    map.panTo(position);
+    map.setZoom(STREET_SEARCH_ZOOM);
+    return;
+  }
+
+  const bounds = new google.maps.LatLngBounds(
+    { lat: lat - ADDRESS_BOUNDS_DELTA, lng: lng - ADDRESS_BOUNDS_DELTA },
+    { lat: lat + ADDRESS_BOUNDS_DELTA, lng: lng + ADDRESS_BOUNDS_DELTA }
+  );
+  map.fitBounds(bounds, 56);
+
+  google.maps.event.addListenerOnce(map, "idle", () => {
+    let zoom = map.getZoom() ?? ADDRESS_SEARCH_ZOOM;
+    if (zoom < ADDRESS_SEARCH_ZOOM) zoom = ADDRESS_SEARCH_ZOOM;
+    if (zoom > 21) zoom = 21;
+    map.setZoom(zoom);
+    map.panTo(position);
+  });
+}
 
 // Southern California bounds
 const SOCAL_BOUNDS = {
@@ -193,14 +227,14 @@ export function MapSection({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !countySlug) return;
+    if (!map || !countySlug || addressToShow) return;
 
     const county = SOCAL_COUNTIES.find((c) => c.slug === countySlug);
     if (county) {
       map.panTo({ lat: county.lat, lng: county.lng });
       map.setZoom(county.zoom);
     }
-  }, [countySlug]);
+  }, [countySlug, addressToShow]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -289,17 +323,6 @@ export function MapSection({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !countySlug) return;
-
-    const county = SOCAL_COUNTIES.find((c) => c.slug === countySlug);
-    if (county) {
-      map.panTo({ lat: county.lat, lng: county.lng });
-      map.setZoom(county.zoom);
-    }
-  }, [countySlug]);
-
-  useEffect(() => {
-    const map = mapRef.current;
     const infoWindow = infoWindowRef.current;
     if (!addressToShow) {
       clickMarkerRef.current?.setMap(null);
@@ -316,24 +339,29 @@ export function MapSection({
     }
 
     const { lat, lng, isStreetSearch } = addressToShow;
-    const position = { lat, lng };
-    const targetZoom = isStreetSearch ? STREET_SEARCH_ZOOM : 21;
     // Offset pin ~2m north so it doesn't cover the address number on the map
     const OFFSET_DEG = 0.000018;
     const markerPosition = { lat: lat + OFFSET_DEG, lng };
 
-    // Defer pan so Chrome (and other browsers) have map ready; then re-pan after a short delay so the map settles on the correct location (fixes Chrome first-select going to wrong place)
     let rafId = 0;
     let timeoutId = 0;
-    const applyView = () => {
-      google.maps.event.trigger(map, "resize");
-      map.panTo(position);
-      map.setZoom(targetZoom);
-    };
+    let layoutTimeoutId = 0;
+    const applyView = () => focusMapOnAddress(map, lat, lng, isStreetSearch);
+
     rafId = requestAnimationFrame(() => {
       applyView();
       timeoutId = window.setTimeout(applyView, 120);
+      layoutTimeoutId = window.setTimeout(applyView, 450);
     });
+
+    const resizeObserver =
+      containerRef.current &&
+      new ResizeObserver(() => {
+        applyView();
+      });
+    if (resizeObserver && containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
 
     clickMarkerRef.current?.setMap(null);
     const pin = new google.maps.Marker({
@@ -355,6 +383,8 @@ export function MapSection({
     return () => {
       cancelAnimationFrame(rafId);
       clearTimeout(timeoutId);
+      clearTimeout(layoutTimeoutId);
+      resizeObserver?.disconnect();
       pin.setMap(null);
       if (clickMarkerRef.current === pin) {
         clickMarkerRef.current = null;
