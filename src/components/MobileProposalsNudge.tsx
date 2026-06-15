@@ -1,44 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { X } from "lucide-react";
-
-const MOBILE_MAX_WIDTH_PX = 1023;
+import { useState } from "react";
+import { ArrowDown, X } from "lucide-react";
 
 type MobileProposalsNudgeProps = {
   proposalCount: number;
   proposalsSectionId?: string;
   /** Scroll target keeps this section visible above proposals (e.g. Zestimate). */
   keepVisibleSectionId?: string;
+  className?: string;
 };
-
-function useMobileLayout() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`);
-    const sync = () => setIsMobile(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  return isMobile;
-}
 
 export function MobileProposalsNudge({
   proposalCount,
   proposalsSectionId = "property-proposals",
   keepVisibleSectionId = "property-zestimate",
+  className = "",
 }: MobileProposalsNudgeProps) {
   const [dismissed, setDismissed] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const isMobile = useMobileLayout();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const scrollToProposals = () => {
     const proposalsEl = document.getElementById(proposalsSectionId);
@@ -64,49 +43,54 @@ export function MobileProposalsNudge({
     }
   };
 
-  if (!mounted || !isMobile || dismissed) return null;
+  if (dismissed) return null;
 
   const hasProposals = proposalCount > 0;
-  const message = hasProposals
+  const headline = hasProposals
     ? proposalCount === 1
-      ? "1 verified proposal on this property."
-      : `${proposalCount} verified proposals on this property.`
-    : "No proposals yet — you could be the first.";
+      ? "1 verified proposal"
+      : `${proposalCount} verified proposals`
+    : "No proposals yet";
+  const detail = hasProposals
+    ? "Review offers on this property."
+    : "You could be the first to submit one.";
 
-  return createPortal(
+  return (
     <div
       role="status"
-      aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 z-[86] px-3"
-      style={{
-        bottom:
-          "calc(var(--cookie-consent-offset, 0px) + var(--owner-banner-offset, 3.75rem) + 0.5rem)",
-      }}
+      className={["px-4 pb-3 lg:hidden", className].filter(Boolean).join(" ")}
     >
-      <div className="pointer-events-auto mx-auto w-full max-w-[95%]">
-        <div className="relative rounded-xl border border-emerald-200/80 bg-white px-3 py-2.5 shadow-xl dark:border-emerald-900/50 dark:bg-slate-900">
-          <button
-            type="button"
-            onClick={() => setDismissed(true)}
-            aria-label="Dismiss"
-            className="absolute right-2 top-2 rounded-md p-1 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]"
-          >
-            <X className="h-3.5 w-3.5" aria-hidden />
-          </button>
-          <p className="pr-6 text-[0.65rem] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-            Proposals
-          </p>
-          <p className="mt-0.5 pr-5 text-xs leading-snug text-[var(--foreground)]">{message}</p>
-          <button
-            type="button"
-            onClick={scrollToProposals}
-            className="mt-2 text-xs font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
-          >
-            {hasProposals ? "View proposals ↓" : "See how to propose ↓"}
-          </button>
+      <div className="flex items-center gap-2.5 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
+        <span
+          aria-hidden
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold tabular-nums text-emerald-600 dark:text-emerald-400"
+        >
+          {hasProposals ? proposalCount : "—"}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-semibold text-[var(--foreground)]">{headline}</p>
+          <p className="truncate text-[0.6875rem] text-[var(--foreground-muted)]">{detail}</p>
         </div>
+
+        <button
+          type="button"
+          onClick={scrollToProposals}
+          className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-[0.6875rem] font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+        >
+          {hasProposals ? "View" : "Propose"}
+          <ArrowDown className="h-3 w-3" aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Dismiss"
+          className="shrink-0 rounded-md p-1 text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]"
+        >
+          <X className="h-3.5 w-3.5" aria-hidden />
+        </button>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }

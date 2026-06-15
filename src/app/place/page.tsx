@@ -66,11 +66,6 @@ export default async function PlacePage({
   return (
     <>
       <OwnerHelloBannerStack defaultExpandedDesktop={false} compact />
-      <MobileProposalsNudge
-        proposalCount={proposals.length}
-        proposalsSectionId="place-proposals"
-        keepVisibleSectionId="place-zestimate"
-      />
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Place details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
@@ -98,6 +93,11 @@ export default async function PlacePage({
       >
         <BackToHomeLink className="self-start px-4 pt-4 lg:hidden" />
         <div className="px-4 lg:hidden">{addressHeading}</div>
+        <MobileProposalsNudge
+          proposalCount={proposals.length}
+          proposalsSectionId="place-proposals"
+          keepVisibleSectionId="place-zestimate"
+        />
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <ProposalsPublicView
