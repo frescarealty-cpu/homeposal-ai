@@ -53,7 +53,7 @@ export function MobileProposalsNudge({
     : "No proposals yet";
   const detail = hasProposals
     ? "Review offers on this property."
-    : "You could be the first to submit one.";
+    : "Be the first";
 
   return (
     <div
