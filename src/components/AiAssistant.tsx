@@ -150,7 +150,13 @@ export function AiAssistant() {
   const [activeIdx, setActiveIdx] = useState(-1);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<{ address: string; lat: number; lng: number } | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      setCollapsed(false);
+    }
+  }, []);
 
   function adjustTextareaHeight() {
     const el = inputRef.current;
