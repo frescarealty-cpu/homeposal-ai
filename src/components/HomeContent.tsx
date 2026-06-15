@@ -162,7 +162,14 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
       )}
       <div className="flex min-w-0 flex-col lg:grid lg:grid-cols-[3fr_2fr] lg:items-stretch">
         <div className="flex min-h-0 min-w-0 w-full flex-col md:h-[70vh] lg:h-full lg:min-h-[calc(100dvh-8rem)]">
-          <div className="shrink-0 w-full border-b border-[var(--border)] py-2">
+          <div
+            className={[
+              "shrink-0 w-full border-b border-[var(--border)] py-2",
+              isHomeIndex ? "home-index-search-block" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             <SearchAISection
               value={searchQuery}
               onChange={setSearchQuery}
@@ -172,6 +179,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               properties={properties}
               filteredProperties={filteredProperties}
               isLoaded={isMapsLoaded}
+              homeIndexAlign={isHomeIndex}
             />
           </div>
           <div className="relative hidden min-h-[50vh] min-w-0 flex-1 overflow-hidden md:block lg:min-h-0">
@@ -236,7 +244,14 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
           ref={rightPanelRef}
           className="flex min-w-0 w-full flex-col border-t lg:border-t-0 lg:border-l border-[var(--border)]"
         >
-          <div className={`flex flex-col px-4 pb-4 ${isHomeIndex ? "pt-2" : "pt-4"}`}>
+          <div
+            className={[
+              "flex flex-col pb-4",
+              isHomeIndex ? "home-index-sidebar-block" : "px-4 pt-4",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             {selectedProperty ? (
               <>
                 <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-md bg-[var(--background-elevated)]">
@@ -329,7 +344,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
             ) : (
               <>
                 <div className="space-y-4">
-                  <AiAssistant className={isHomeIndex ? "!pt-2.5 !px-4 !pb-4" : undefined} />
+                  <AiAssistant homeIndexAlign={isHomeIndex} />
 
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
                     <h2 className="mb-3 text-lg font-semibold text-[var(--foreground)]">What is HomePosal?</h2>

@@ -140,9 +140,15 @@ type AiAssistantProps = {
   /** When true (default), expands on md+ viewports — index home only. */
   defaultExpandedDesktop?: boolean;
   className?: string;
+  /** Desktop home index: shared padding with search heading (see globals.css). */
+  homeIndexAlign?: boolean;
 };
 
-export function AiAssistant({ defaultExpandedDesktop = true, className = "" }: AiAssistantProps) {
+export function AiAssistant({
+  defaultExpandedDesktop = true,
+  className = "",
+  homeIndexAlign = false,
+}: AiAssistantProps) {
   const { messages, setMessages, sendMessage, status, error } = useChat({
     transport: new TextStreamChatTransport({ api: "/api/chat" }),
   });
@@ -383,7 +389,13 @@ export function AiAssistant({ defaultExpandedDesktop = true, className = "" }: A
     <div
       className={[
         "flex flex-col overflow-visible rounded-xl border border-[var(--border)] bg-white",
-        collapsed ? "p-3" : "p-4",
+        homeIndexAlign
+          ? collapsed
+            ? "home-index-ai-card ai-assistant-collapsed"
+            : "home-index-ai-card"
+          : collapsed
+            ? "p-3"
+            : "p-4",
         className,
       ]
         .filter(Boolean)

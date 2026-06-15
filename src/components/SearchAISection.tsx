@@ -75,6 +75,8 @@ type SearchAISectionProps = {
   filteredProperties?: PropertyListing[];
   placeholder?: string;
   isLoaded?: boolean;
+  /** Desktop home index: align heading with right-column AI card */
+  homeIndexAlign?: boolean;
 };
 
 function findPropertyByLocation(
@@ -204,6 +206,7 @@ export function SearchAISection({
   filteredProperties = [],
   placeholder = "Enter an address or street name...",
   isLoaded = false,
+  homeIndexAlign = false,
 }: SearchAISectionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -443,7 +446,14 @@ export function SearchAISection({
 
   return (
     <div className="relative">
-      <p className="mb-2 mt-0 px-2 text-base font-medium text-[var(--foreground)] sm:px-3 lg:mt-2.5">
+      <p
+        className={[
+          "mb-2 px-2 text-base font-medium text-[var(--foreground)] sm:px-3",
+          homeIndexAlign ? "home-index-search-heading" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
         <span className="md:hidden">Find a property to view current purchase proposals or submit your own.</span>
         <span className="hidden md:inline">Find a property to view current purchase proposals or submit your own.</span>
       </p>
