@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Info, Mail, Phone } from "lucide-react";
 import { ContactInviteLink } from "@/components/ContactInviteLink";
-import { MobileProposalsNudge } from "@/components/MobileProposalsNudge";
 import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
 import type { ProposalPublic } from "@/types/proposals";
 import { createClient } from "@/lib/supabase/client";
@@ -26,12 +25,6 @@ type ProposalsPublicViewProps = {
   beforeProposalsHeading?: ReactNode;
   /** Anchor id for the proposals heading (scroll targets). */
   proposalsHeadingId?: string;
-  /** Compact mobile notice between Zestimate and proposals (rendered in this client tree). */
-  mobileProposalsNudge?: {
-    proposalCount: number;
-    storageKey: string;
-    keepVisibleSectionId?: string;
-  };
 };
 
 function formatCurrency(cents: number) {
@@ -109,7 +102,6 @@ export function ProposalsPublicView({
   ownerAlertClassName = "",
   beforeProposalsHeading,
   proposalsHeadingId = "property-proposals",
-  mobileProposalsNudge,
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
   const [priceSort, setPriceSort] = useState<"none" | "high" | "low">("high");
@@ -372,15 +364,6 @@ export function ProposalsPublicView({
       )}
 
       {beforeProposalsHeading}
-
-      {mobileProposalsNudge && (
-        <MobileProposalsNudge
-          proposalCount={mobileProposalsNudge.proposalCount}
-          storageKey={mobileProposalsNudge.storageKey}
-          proposalsSectionId={proposalsHeadingId}
-          keepVisibleSectionId={mobileProposalsNudge.keepVisibleSectionId}
-        />
-      )}
 
       <div
         id={proposalsHeadingId}

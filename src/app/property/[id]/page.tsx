@@ -7,6 +7,7 @@ import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
 import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
+import { MobileProposalsNudge } from "@/components/MobileProposalsNudge";
 import { MOCK_PROPERTIES } from "@/data/properties";
 import { getMockProposalsPublic } from "@/data/mockProposals";
 import { createClient } from "@/lib/supabase/server";
@@ -74,6 +75,10 @@ export default async function PropertyPage({
   return (
     <>
       <OwnerHelloBannerStack defaultExpandedDesktop={false} compact />
+      <MobileProposalsNudge
+        proposalCount={proposals.length}
+        keepVisibleSectionId="property-zestimate"
+      />
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
       {/* Left: Property details (below sidebar on mobile) */}
       <div className="order-2 flex-1 overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
@@ -164,11 +169,6 @@ export default async function PropertyPage({
               <div id="property-zestimate">{zestimatePanel}</div>
             </div>
           }
-          mobileProposalsNudge={{
-            proposalCount: proposals.length,
-            storageKey: `proposals-nudge-property-${property.id}`,
-            keepVisibleSectionId: "property-zestimate",
-          }}
         />
         {property.status === "open" && (
           <div className="border-t border-[var(--border)]">
