@@ -53,13 +53,10 @@ export default async function PlacePage({
 
   const addressHeading = (
     <>
-      <h1 className="mb-2 flex items-center gap-2 text-xl font-semibold text-[var(--foreground)] sm:text-2xl">
+      <h1 className="mb-4 flex items-center gap-2 text-xl font-semibold text-[var(--foreground)] sm:text-2xl">
         <MapPin className="h-6 w-6 shrink-0 text-[var(--foreground-muted)]" />
         {address}
       </h1>
-      <p className="mb-4 text-base text-[var(--foreground-muted)]">
-        This address was selected from the map search.
-      </p>
     </>
   );
 

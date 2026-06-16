@@ -312,8 +312,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
               </>
             ) : addressToShow ? (
               <>
-                <h2 className="mb-2 text-lg font-semibold text-[var(--foreground)]">{addressToShow.address}</h2>
-                <p className="mb-4 text-base text-[var(--foreground-muted)]">This address was selected from the map search.</p>
+                <h2 className="mb-4 text-lg font-semibold text-[var(--foreground)]">{addressToShow.address}</h2>
                 <AiAssistant defaultExpandedDesktop={false} className="mb-4" />
                 <ZillowZestimatePanel
                   address={addressToShow.address}

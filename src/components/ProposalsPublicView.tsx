@@ -21,7 +21,7 @@ type ProposalsPublicViewProps = {
   ownerAlertMobileBelowProposals?: boolean;
   /** Extra classes on the desktop Owner Alert (e.g. `hidden lg:block`). */
   ownerAlertClassName?: string;
-  /** Rendered before the "Proposals (public view)" heading (e.g. mobile Zestimate). */
+  /** Rendered before the "Proposals" heading (e.g. mobile Zestimate). */
   beforeProposalsHeading?: ReactNode;
   /** Anchor id for the proposals heading (scroll targets). */
   proposalsHeadingId?: string;
@@ -370,7 +370,7 @@ export function ProposalsPublicView({
         className="mb-4 flex scroll-mt-3 items-center justify-between gap-3"
       >
         <h2 className="text-sm font-semibold text-[var(--foreground)]">
-          Proposals (public view)
+          Proposals
         </h2>
 
         <div className="relative" ref={popoverRef}>
@@ -550,13 +550,18 @@ export function ProposalsPublicView({
                     <p className="mt-1 break-words font-tabular text-base font-semibold leading-snug text-[var(--success)]">
                       {formatCurrency(p.priceCents)}
                     </p>
-                    <p className="mt-1 text-xs text-[var(--foreground-muted)]">
-                      <span className="capitalize">{formatFinancing(p.financingType)}</span>
-                      <span className="mx-1.5 text-[var(--border)]" aria-hidden>
-                        ·
-                      </span>
-                      <span>{days} days to close</span>
-                    </p>
+                    <div className="mt-2 grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-2">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-medium text-[var(--foreground-muted)]">Funding</p>
+                        <p className="mt-0.5 text-sm capitalize text-[var(--foreground)]">
+                          {formatFinancing(p.financingType)}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-medium text-[var(--foreground-muted)]">Days to close</p>
+                        <p className="mt-0.5 text-sm text-[var(--foreground)]">{days}</p>
+                      </div>
+                    </div>
                   </li>
                 );
               })}
