@@ -40,7 +40,6 @@ export async function GET(
         financingType: String(row.financing_type ?? "conventional"),
         closingDate: String(row.closing_date).slice(0, 10),
         desiredDaysToClose: row.desired_days_to_close != null ? Number(row.desired_days_to_close) : null,
-        docsVerified: true,
       }));
 
       return NextResponse.json(proposals);

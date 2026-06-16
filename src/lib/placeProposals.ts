@@ -39,7 +39,6 @@ export async function getPlaceProposals(
         financingType: row.financing_type,
         closingDate: row.closing_date,
         desiredDaysToClose: row.desired_days_to_close ?? null,
-        docsVerified: true,
       }));
     }
     return [];

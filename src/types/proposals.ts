@@ -10,13 +10,4 @@ export type ProposalPublic = {
   closingDate: string;
   /** User-entered desired days to close (static, not a countdown). */
   desiredDaysToClose?: number | null;
-  /**
-   * Proof-of-funds / pre-approval reviewed before public display.
-   * Omitted or true for proposals returned by public RPCs.
-   */
-  docsVerified?: boolean;
 };
-
-export function isProposalDocsVerified(proposal: ProposalPublic): boolean {
-  return proposal.docsVerified !== false;
-}

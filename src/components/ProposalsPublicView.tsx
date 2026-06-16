@@ -5,8 +5,6 @@ import { Info, Mail, Phone } from "lucide-react";
 import { ContactInviteLink } from "@/components/ContactInviteLink";
 import { OwnerAlertBanner } from "@/components/OwnerAlertBanner";
 import type { ProposalPublic } from "@/types/proposals";
-import { isProposalDocsVerified } from "@/types/proposals";
-import { VerifiedProposalBadge, VerifiedProposalFootnote } from "@/components/VerifiedProposalBadge";
 import { createClient } from "@/lib/supabase/client";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
@@ -350,8 +348,6 @@ export function ProposalsPublicView({
   const showOwnerAlert =
     showOwnerAlertBanner && enableInquiry && pendingProposals.length > 0;
 
-  const hasVerifiedProposals = pendingProposals.some(isProposalDocsVerified);
-
   return (
     <div className="flex flex-col p-4">
       {showOwnerAlert && (
@@ -482,17 +478,14 @@ export function ProposalsPublicView({
       </div>
 
       {(bestOfferCents > 0 || timeLeft) && (
-        <div className="mb-4 flex items-start justify-between gap-3 rounded-md bg-[var(--background-elevated)] px-4 py-3">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs text-[var(--foreground-muted)]">Current Highest Proposal</p>
-              {bestOfferCents > 0 && hasVerifiedProposals && <VerifiedProposalBadge compact />}
-            </div>
+        <div className="mb-4 flex items-center justify-between rounded-md bg-[var(--background-elevated)] px-4 py-3">
+          <div>
+            <p className="text-xs text-[var(--foreground-muted)]">Current Highest Proposal</p>
             <p className="font-tabular text-xl font-semibold text-[var(--success)]">
               {bestOfferCents > 0 ? formatCurrency(bestOfferCents) : "—"}
             </p>
           </div>
-          {timeLeft && <div className="shrink-0 text-sm text-[var(--foreground-muted)]">{timeLeft}</div>}
+          {timeLeft && <div className="text-sm text-[var(--foreground-muted)]">{timeLeft}</div>}
         </div>
       )}
 
@@ -554,12 +547,9 @@ export function ProposalsPublicView({
                         </button>
                       )}
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <p className="break-words font-tabular text-base font-semibold leading-snug text-[var(--success)]">
-                        {formatCurrency(p.priceCents)}
-                      </p>
-                      {isProposalDocsVerified(p) && <VerifiedProposalBadge compact />}
-                    </div>
+                    <p className="mt-1 break-words font-tabular text-base font-semibold leading-snug text-[var(--success)]">
+                      {formatCurrency(p.priceCents)}
+                    </p>
                     <p className="mt-1 text-xs text-[var(--foreground-muted)]">
                       <span className="capitalize">{formatFinancing(p.financingType)}</span>
                       <span className="mx-1.5 text-[var(--border)]" aria-hidden>
@@ -611,13 +601,8 @@ export function ProposalsPublicView({
                     <td className="w-[23%] py-2 pr-1 text-[var(--foreground-muted)] whitespace-nowrap">
                       {formatProposalDateShort(p.offerDate)}
                     </td>
-                    <td className="w-[30%] py-2 pr-2 whitespace-nowrap">
-                      <div className="flex flex-col items-start gap-1">
-                        <span className="font-tabular text-[var(--success)]">
-                          {formatCurrency(p.priceCents)}
-                        </span>
-                        {isProposalDocsVerified(p) && <VerifiedProposalBadge compact />}
-                      </div>
+                    <td className="w-[30%] py-2 pr-2 font-tabular text-[var(--success)] whitespace-nowrap">
+                      {formatCurrency(p.priceCents)}
                     </td>
                     <td className="w-[20%] py-2 pr-1 capitalize text-[var(--foreground-muted)] whitespace-nowrap">
                       {formatFinancing(p.financingType)}
@@ -653,10 +638,6 @@ export function ProposalsPublicView({
         )}
       </div>
 
-      {pendingProposals.length > 0 && hasVerifiedProposals && (
-        <VerifiedProposalFootnote className="mt-3" />
-      )}
-
       {listPriceCents > 0 && (
         <p className="mt-2 text-xs text-[var(--foreground-muted)]">
           List price:{" "}
@@ -683,19 +664,12 @@ export function ProposalsPublicView({
                     I&apos;m the Owner: I&apos;d Like to Discuss this Proposal
                   </h3>
                   {selectedProposal ? (
-                    <>
-                      <p className="mt-1 line-clamp-2 text-sm text-[var(--foreground-muted)]">
-                        {inquiryTargetLabel} • {formatDate(selectedProposal.offerDate)} •{" "}
-                        <span className="font-tabular text-[var(--success)]">
-                          {formatCurrency(selectedProposal.priceCents)}
-                        </span>
-                      </p>
-                      {isProposalDocsVerified(selectedProposal) && (
-                        <div className="mt-2">
-                          <VerifiedProposalBadge />
-                        </div>
-                      )}
-                    </>
+                    <p className="mt-1 line-clamp-2 text-sm text-[var(--foreground-muted)]">
+                      {inquiryTargetLabel} • {formatDate(selectedProposal.offerDate)} •{" "}
+                      <span className="font-tabular text-[var(--success)]">
+                        {formatCurrency(selectedProposal.priceCents)}
+                      </span>
+                    </p>
                   ) : (
                     <p className="mt-1 text-sm text-[var(--foreground-muted)]">
                       Send an inquiry to verify details and next steps.

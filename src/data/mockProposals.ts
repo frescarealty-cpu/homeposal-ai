@@ -12,7 +12,6 @@ export const MOCK_PROPOSALS_BY_PROPERTY: Record<string, ProposalPublic[]> = {
       priceCents: 57500000,
       financingType: "cash",
       closingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      docsVerified: true,
     },
     {
       id: "p2",
@@ -20,7 +19,6 @@ export const MOCK_PROPOSALS_BY_PROPERTY: Record<string, ProposalPublic[]> = {
       priceCents: 56000000,
       financingType: "conventional",
       closingDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      docsVerified: true,
     },
     {
       id: "p3",
@@ -28,7 +26,6 @@ export const MOCK_PROPOSALS_BY_PROPERTY: Record<string, ProposalPublic[]> = {
       priceCents: 55000000,
       financingType: "fha",
       closingDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      docsVerified: true,
     },
   ],
   "2": [
@@ -38,7 +35,6 @@ export const MOCK_PROPOSALS_BY_PROPERTY: Record<string, ProposalPublic[]> = {
       priceCents: 61200000,
       financingType: "conventional",
       closingDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      docsVerified: true,
     },
     {
       id: "p5",
@@ -46,7 +42,6 @@ export const MOCK_PROPOSALS_BY_PROPERTY: Record<string, ProposalPublic[]> = {
       priceCents: 60000000,
       financingType: "cash",
       closingDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      docsVerified: true,
     },
   ],
 };
