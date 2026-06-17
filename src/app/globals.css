@@ -15,7 +15,7 @@
   --accent: #3b82f6; /* blue-500 */
   --card-bg: #1e293b;
   /* Space reserved for mobile site header when viewport-pinned banners expand upward */
-  --mobile-header-reserve: 10rem;
+  --mobile-header-reserve: 11.5rem;
 }
 
 [data-theme="light"] {
@@ -68,20 +68,6 @@ body {
 
 .kalshi-border-subtle {
   border: 1px solid var(--border-subtle);
-}
-
-/* Viewport-pinned owner hello banner: fill space below header (covers index search heading) */
-@media (max-width: 767px) {
-  .owner-hello-banner-mobile-viewport-expanded {
-    height: calc(
-      100dvh - var(--mobile-header-reserve, 10rem) - var(--cookie-consent-offset, 0px) -
-        env(safe-area-inset-top, 0px)
-    );
-    max-height: calc(
-      100dvh - var(--mobile-header-reserve, 10rem) - var(--cookie-consent-offset, 0px) -
-        env(safe-area-inset-top, 0px)
-    );
-  }
 }
 
 /* Home index (lg+): align search heading with AI assistant header — plain CSS so prod matches local */
