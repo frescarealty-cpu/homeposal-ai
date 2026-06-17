@@ -388,11 +388,7 @@ export function AiAssistant({
     [messages]
   );
 
-  const headingText = detailPageCompact
-    ? collapsed
-      ? "Ask about this home"
-      : "Questions about this property?"
-    : "Questions? Chat with us";
+  const headingText = "Questions? Chat with us";
 
   return (
     <div
@@ -429,7 +425,8 @@ export function AiAssistant({
               <Sparkles
                 className={[
                   "shrink-0 text-amber-400/90",
-                  detailPageCompact && collapsed ? "h-3.5 w-3.5 lg:h-4 lg:w-4" : "h-4 w-4",
+                  collapsed ? "hidden lg:inline-flex" : "inline-flex",
+                  detailPageCompact && collapsed ? "lg:h-4 lg:w-4" : "h-4 w-4",
                 ].join(" ")}
                 aria-hidden
               />
