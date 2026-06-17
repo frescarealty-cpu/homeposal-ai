@@ -388,8 +388,11 @@ export function AiAssistant({
     [messages]
   );
 
-  const headingText =
-    detailPageCompact && collapsed ? "Questions? Chat with us" : "Questions? Chat With Us Now";
+  const headingText = detailPageCompact
+    ? collapsed
+      ? "Ask about this home"
+      : "Questions about this property?"
+    : "Questions? Chat with us";
 
   return (
     <div
