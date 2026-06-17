@@ -70,6 +70,16 @@ body {
   border: 1px solid var(--border-subtle);
 }
 
+/* Viewport-pinned owner hello banner on mobile: stay below measured site header */
+@media (max-width: 767px) {
+  .owner-hello-banner-mobile-viewport-expanded {
+    max-height: calc(
+      100dvh - var(--site-header-height, var(--mobile-header-reserve, 11.5rem)) -
+        var(--cookie-consent-offset, 0px) - env(safe-area-inset-top, 0px)
+    );
+  }
+}
+
 /* Home index (lg+): align search heading with AI assistant header — plain CSS so prod matches local */
 @media (min-width: 1024px) {
   .home-index-search-block {

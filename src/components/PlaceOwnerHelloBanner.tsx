@@ -446,24 +446,67 @@ export function PlaceOwnerHelloBanner({
     }
 
     if (isMobileLayout) {
-      const mobileExpandedMaxH = isViewportFixed
-        ? isSlim
-          ? "max-h-[min(420px,calc(100dvh-var(--mobile-header-reserve,11.5rem)-env(safe-area-inset-top,0px)))]"
-          : "max-h-[min(560px,calc(100dvh-var(--mobile-header-reserve,11.5rem)-env(safe-area-inset-top,0px)))]"
-        : isSlim
-          ? "max-h-[min(70vh,420px)]"
-          : "max-h-[min(85vh,560px)]";
+      const pinMobileActions = isViewportFixed && showAddressCheck;
+      const hideBannerLogo = pinMobileActions;
+      const mobileExpandedMaxH = pinMobileActions
+        ? "owner-hello-banner-mobile-viewport-expanded flex min-h-0 flex-col overflow-hidden"
+        : isViewportFixed
+          ? isSlim
+            ? "max-h-[min(420px,calc(100dvh-var(--site-header-height,var(--mobile-header-reserve,11.5rem))-var(--cookie-consent-offset,0px)-env(safe-area-inset-top,0px)))] overflow-y-auto"
+            : "max-h-[min(560px,calc(100dvh-var(--site-header-height,var(--mobile-header-reserve,11.5rem))-var(--cookie-consent-offset,0px)-env(safe-area-inset-top,0px)))] overflow-y-auto"
+          : [
+              "overflow-y-auto",
+              isSlim ? "max-h-[min(70vh,420px)]" : "max-h-[min(85vh,560px)]",
+            ].join(" ");
+
+      const mobileExpandedBody = (
+        <div className={pinMobileActions ? "flex flex-col gap-2.5" : "flex flex-col gap-3"}>
+          <div className={hideBannerLogo ? "" : "flex items-start gap-2.5"}>
+            {!hideBannerLogo ? <BannerLogo className={t.logoExpanded} /> : null}
+            <BannerTitle
+              label={alertLabel}
+              headline={headline}
+              size={hideBannerLogo ? "small" : t.titleSize}
+              multiline
+            />
+          </div>
+          {body ? (
+            <p
+              className={[
+                "leading-relaxed text-[var(--foreground-muted)]",
+                hideBannerLogo ? "text-[0.8125rem] leading-snug" : "text-sm",
+              ].join(" ")}
+            >
+              {body}
+            </p>
+          ) : null}
+          {showAddressCheck ? (
+            <OwnerAddressCheckPanel focusToken={addressFocusToken} className={hideBannerLogo ? "" : "mt-1"} />
+          ) : null}
+        </div>
+      );
+
+      const mobileExpandedActions = (
+        <div className="flex flex-col gap-2">
+          <ContactInviteLink contactType="owner-proposal" className={`${t.primaryBtnClass} w-full`}>
+            Get More Info
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </ContactInviteLink>
+          <a href={`tel:${ownerInquiryPhone}`} className={`${t.secondaryBtnClass} w-full`}>
+            Call {ownerInquiryPhone}
+          </a>
+          <button type="button" onClick={() => setDismissed(true)} className={`${t.secondaryBtnClass} w-full`}>
+            Maybe later
+          </button>
+        </div>
+      );
 
       return (
         <div
           ref={rootRef}
           role="region"
           aria-label={`${alertLabel}: ${headline}`}
-          className={[
-            shellClass,
-            "relative overflow-y-auto",
-            mobileExpandedMaxH,
-          ].join(" ")}
+          className={[shellClass, "relative", mobileExpandedMaxH].join(" ")}
           style={{ backgroundColor: BANNER_BG }}
         >
           <button
@@ -479,35 +522,31 @@ export function PlaceOwnerHelloBanner({
 
           <div
             id={contentId}
-            className={`${innerClass} flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4`}
+            className={[
+              innerClass,
+              pinMobileActions
+                ? "flex min-h-0 flex-1 flex-col"
+                : "flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4",
+            ].join(" ")}
           >
-            <div className="flex items-start gap-2.5">
-              <BannerLogo className={t.logoExpanded} />
-              <BannerTitle
-                label={alertLabel}
-                headline={headline}
-                size={t.titleSize}
-                multiline
-              />
-            </div>
-            {body ? (
-              <p className="text-sm leading-relaxed text-[var(--foreground-muted)]">{body}</p>
-            ) : null}
-            {showAddressCheck ? (
-              <OwnerAddressCheckPanel focusToken={addressFocusToken} className="mt-1" />
-            ) : null}
-            <div className="flex flex-col gap-2">
-              <ContactInviteLink contactType="owner-proposal" className={`${t.primaryBtnClass} w-full`}>
-                Get More Info
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </ContactInviteLink>
-              <a href={`tel:${ownerInquiryPhone}`} className={`${t.secondaryBtnClass} w-full`}>
-                Call {ownerInquiryPhone}
-              </a>
-              <button type="button" onClick={() => setDismissed(true)} className={`${t.secondaryBtnClass} w-full`}>
-                Maybe later
-              </button>
-            </div>
+            {pinMobileActions ? (
+              <>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2.5 pr-12 sm:px-4 sm:py-3">
+                  {mobileExpandedBody}
+                </div>
+                <div
+                  className="shrink-0 border-t border-[#1C4482]/10 px-3 pb-3 pt-2 sm:px-4 sm:pb-4"
+                  style={{ backgroundColor: BANNER_BG }}
+                >
+                  {mobileExpandedActions}
+                </div>
+              </>
+            ) : (
+              <>
+                {mobileExpandedBody}
+                {mobileExpandedActions}
+              </>
+            )}
           </div>
         </div>
       );

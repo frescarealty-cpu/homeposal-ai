@@ -26,6 +26,26 @@ export function Header() {
   const [contactOpen, setContactOpen] = useState(false);
   const [contactInitialMessage, setContactInitialMessage] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const updateHeaderHeight = () => {
+      document.documentElement.style.setProperty("--site-header-height", `${header.offsetHeight}px`);
+    };
+
+    updateHeaderHeight();
+    const ro = new ResizeObserver(updateHeaderHeight);
+    ro.observe(header);
+    window.addEventListener("resize", updateHeaderHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateHeaderHeight);
+      document.documentElement.style.removeProperty("--site-header-height");
+    };
+  }, [user]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -112,7 +132,10 @@ export function Header() {
   ) : null;
 
   return (
-    <header className="kalshi-border border-x-0 border-t-0 bg-[var(--background-elevated)]">
+    <header
+      ref={headerRef}
+      className="relative z-[90] kalshi-border border-x-0 border-t-0 bg-[var(--background-elevated)]"
+    >
       <div
         className={[
           "relative mx-auto flex min-h-[80px] max-w-[1920px] py-3 pl-2 pr-2 md:min-h-[120px] md:flex-row md:items-center md:justify-between md:py-2 md:pl-0 md:pr-6",
