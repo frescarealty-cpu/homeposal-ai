@@ -147,8 +147,8 @@ export default async function PropertyPage({
       >
         <BackToHomeLink className="self-start px-4 pt-4 lg:hidden" />
         <MobileProposalsNudge proposalCount={proposals.length} />
-        <div className="px-4 pb-4 lg:pt-4">
-          <AiAssistant defaultExpandedDesktop={false} />
+        <div className="hidden px-4 pb-4 lg:block lg:pt-4">
+          <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
         </div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
@@ -169,6 +169,11 @@ export default async function PropertyPage({
                 address={`${property.address}, ${property.city}, ${property.state}`}
               />
               <div id="property-zestimate">{zestimatePanel}</div>
+            </div>
+          }
+          afterContextBeforeProposals={
+            <div className="mb-4 lg:hidden">
+              <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
             </div>
           }
         />

@@ -21,8 +21,10 @@ type ProposalsPublicViewProps = {
   ownerAlertMobileBelowProposals?: boolean;
   /** Extra classes on the desktop Owner Alert (e.g. `hidden lg:block`). */
   ownerAlertClassName?: string;
-  /** Rendered before the "Proposals" heading (e.g. mobile Zestimate). */
+  /** Rendered before the "Proposals" heading (e.g. mobile aerial view + Zestimate). */
   beforeProposalsHeading?: ReactNode;
+  /** After context blocks, before the "Proposals" heading (e.g. mobile AI assistant). */
+  afterContextBeforeProposals?: ReactNode;
   /** Anchor id for the proposals heading (scroll targets). */
   proposalsHeadingId?: string;
 };
@@ -101,6 +103,7 @@ export function ProposalsPublicView({
   ownerAlertMobileBelowProposals = false,
   ownerAlertClassName = "",
   beforeProposalsHeading,
+  afterContextBeforeProposals,
   proposalsHeadingId = "property-proposals",
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
@@ -364,6 +367,8 @@ export function ProposalsPublicView({
       )}
 
       {beforeProposalsHeading}
+
+      {afterContextBeforeProposals}
 
       <div
         id={proposalsHeadingId}

@@ -142,12 +142,15 @@ type AiAssistantProps = {
   className?: string;
   /** Desktop home index: shared padding with search heading (see globals.css). */
   homeIndexAlign?: boolean;
+  /** Property/place detail: shorter collapsed chrome on mobile. */
+  detailPageCompact?: boolean;
 };
 
 export function AiAssistant({
   defaultExpandedDesktop = true,
   className = "",
   homeIndexAlign = false,
+  detailPageCompact = false,
 }: AiAssistantProps) {
   const { messages, setMessages, sendMessage, status, error } = useChat({
     transport: new TextStreamChatTransport({ api: "/api/chat" }),
@@ -385,6 +388,9 @@ export function AiAssistant({
     [messages]
   );
 
+  const headingText =
+    detailPageCompact && collapsed ? "Questions? Chat with us" : "Questions? Chat With Us Now";
+
   return (
     <div
       className={[
@@ -393,27 +399,49 @@ export function AiAssistant({
           ? collapsed
             ? "home-index-ai-card ai-assistant-collapsed"
             : "home-index-ai-card"
-          : collapsed
-            ? "p-3"
-            : "p-4",
+          : detailPageCompact
+            ? collapsed
+              ? "p-2.5 lg:p-4"
+              : "p-3 lg:p-4"
+            : collapsed
+              ? "p-3"
+              : "p-4",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
     >
       <div className={collapsed ? "" : "mb-3"}>
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-2 lg:items-start lg:gap-3">
           <div className="min-w-0">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
-              Questions? Chat With Us Now
-              <Sparkles className="h-4 w-4 text-amber-400/90" aria-hidden />
+            <h2
+              className={[
+                "flex items-center font-semibold text-[var(--foreground)]",
+                detailPageCompact && collapsed
+                  ? "gap-1.5 text-sm lg:gap-2 lg:text-lg"
+                  : "gap-2 text-lg",
+              ].join(" ")}
+            >
+              {headingText}
+              <Sparkles
+                className={[
+                  "shrink-0 text-amber-400/90",
+                  detailPageCompact && collapsed ? "h-3.5 w-3.5 lg:h-4 lg:w-4" : "h-4 w-4",
+                ].join(" ")}
+                aria-hidden
+              />
             </h2>
           </div>
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="shrink-0 bg-[var(--background)]"
+            className={[
+              "shrink-0 bg-[var(--background)]",
+              detailPageCompact && collapsed ? "h-8 px-2 lg:h-9 lg:px-3" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             onClick={() => {
               setCollapsed((value) => {
                 const next = !value;
@@ -427,7 +455,9 @@ export function AiAssistant({
             aria-label={collapsed ? "Expand assistant" : "Collapse assistant"}
           >
             {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-            {collapsed ? "Expand" : "Collapse"}
+            <span className={detailPageCompact && collapsed ? "hidden sm:inline" : undefined}>
+              {collapsed ? "Expand" : "Collapse"}
+            </span>
           </Button>
         </div>
       </div>

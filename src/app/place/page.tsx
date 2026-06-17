@@ -94,8 +94,8 @@ export default async function PlacePage({
           proposalsSectionId="place-proposals"
           keepVisibleSectionId="place-zestimate"
         />
-        <div className="px-4 pb-4 lg:pt-4">
-          <AiAssistant defaultExpandedDesktop={false} />
+        <div className="hidden px-4 pb-4 lg:block lg:pt-4">
+          <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
         </div>
         <div className="hidden border-t border-[var(--border)] lg:block" />
         <div className="hidden p-4 lg:block">{zestimatePanel}</div>
@@ -110,6 +110,11 @@ export default async function PlacePage({
             <div className="mb-4 flex flex-col gap-4 lg:hidden">
               <StreetViewPanel latitude={latNum} longitude={lngNum} address={address} />
               <div id="place-zestimate">{zestimatePanel}</div>
+            </div>
+          }
+          afterContextBeforeProposals={
+            <div className="mb-4 lg:hidden">
+              <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
             </div>
           }
           proposalsHeadingId="place-proposals"
