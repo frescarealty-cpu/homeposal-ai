@@ -88,6 +88,10 @@ export default async function PropertyPage({
     <>
       <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row lg:items-stretch">
+      <div className="w-full shrink-0 px-4 pt-4 lg:hidden">
+        <BackToHomeLink className="mb-4" />
+        {propertyAddressHeading}
+      </div>
       {/* Left: Property details (below sidebar on mobile) */}
       <div className="order-2 flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <BackToHomeLink className="mb-6 hidden lg:inline-flex" />
@@ -158,10 +162,6 @@ export default async function PropertyPage({
         id="make-proposal"
         className="kalshi-border order-1 flex w-full min-h-0 flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto"
       >
-        <div className="px-4 pt-4 lg:hidden">
-          <BackToHomeLink className="mb-4" />
-          {propertyAddressHeading}
-        </div>
         <MobileProposalsNudge proposalCount={proposals.length} />
         <div className="hidden px-4 pb-4 lg:block lg:pt-4">
           <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
