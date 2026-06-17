@@ -535,10 +535,15 @@ export function ProposalsPublicView({
                         : undefined
                     }
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-medium text-[var(--foreground-muted)]">
-                        {formatProposalDateShort(p.offerDate)}
-                      </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-medium text-[var(--foreground-muted)]">
+                          Proposal Date
+                        </p>
+                        <p className="mt-0.5 text-sm text-[var(--foreground)]">
+                          {formatProposalDateShort(p.offerDate)}
+                        </p>
+                      </div>
                       {enableInquiry && (
                         <button
                           type="button"
