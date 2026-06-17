@@ -446,24 +446,48 @@ export function PlaceOwnerHelloBanner({
     }
 
     if (isMobileLayout) {
-      const mobileExpandedMaxH = isViewportFixed
-        ? isSlim
-          ? "max-h-[min(420px,calc(100dvh-var(--mobile-header-reserve,11.5rem)-env(safe-area-inset-top,0px)))]"
-          : "max-h-[min(560px,calc(100dvh-var(--mobile-header-reserve,11.5rem)-env(safe-area-inset-top,0px)))]"
-        : isSlim
-          ? "max-h-[min(70vh,420px)]"
-          : "max-h-[min(85vh,560px)]";
+      const pinMobileActions = isViewportFixed && showAddressCheck;
+      const mobileExpandedMaxH = pinMobileActions
+        ? "owner-hello-banner-mobile-viewport-expanded flex flex-col"
+        : [
+            "overflow-y-auto",
+            isSlim ? "max-h-[min(70vh,420px)]" : "max-h-[min(85vh,560px)]",
+          ].join(" ");
+
+      const mobileExpandedBody = (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-2.5">
+            <BannerLogo className={t.logoExpanded} />
+            <BannerTitle label={alertLabel} headline={headline} size={t.titleSize} multiline />
+          </div>
+          {body ? <p className="text-sm leading-relaxed text-[var(--foreground-muted)]">{body}</p> : null}
+          {showAddressCheck ? (
+            <OwnerAddressCheckPanel focusToken={addressFocusToken} className="mt-1" />
+          ) : null}
+        </div>
+      );
+
+      const mobileExpandedActions = (
+        <div className="flex flex-col gap-2">
+          <ContactInviteLink contactType="owner-proposal" className={`${t.primaryBtnClass} w-full`}>
+            Get More Info
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </ContactInviteLink>
+          <a href={`tel:${ownerInquiryPhone}`} className={`${t.secondaryBtnClass} w-full`}>
+            Call {ownerInquiryPhone}
+          </a>
+          <button type="button" onClick={() => setDismissed(true)} className={`${t.secondaryBtnClass} w-full`}>
+            Maybe later
+          </button>
+        </div>
+      );
 
       return (
         <div
           ref={rootRef}
           role="region"
           aria-label={`${alertLabel}: ${headline}`}
-          className={[
-            shellClass,
-            "relative overflow-y-auto",
-            mobileExpandedMaxH,
-          ].join(" ")}
+          className={[shellClass, "relative", mobileExpandedMaxH].join(" ")}
           style={{ backgroundColor: BANNER_BG }}
         >
           <button
@@ -479,35 +503,24 @@ export function PlaceOwnerHelloBanner({
 
           <div
             id={contentId}
-            className={`${innerClass} flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4`}
+            className={[
+              innerClass,
+              pinMobileActions ? "flex min-h-0 flex-1 flex-col" : "flex flex-col gap-3 px-3 py-3 pr-12 sm:px-4 sm:py-4",
+            ].join(" ")}
           >
-            <div className="flex items-start gap-2.5">
-              <BannerLogo className={t.logoExpanded} />
-              <BannerTitle
-                label={alertLabel}
-                headline={headline}
-                size={t.titleSize}
-                multiline
-              />
-            </div>
-            {body ? (
-              <p className="text-sm leading-relaxed text-[var(--foreground-muted)]">{body}</p>
-            ) : null}
-            {showAddressCheck ? (
-              <OwnerAddressCheckPanel focusToken={addressFocusToken} className="mt-1" />
-            ) : null}
-            <div className="flex flex-col gap-2">
-              <ContactInviteLink contactType="owner-proposal" className={`${t.primaryBtnClass} w-full`}>
-                Get More Info
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </ContactInviteLink>
-              <a href={`tel:${ownerInquiryPhone}`} className={`${t.secondaryBtnClass} w-full`}>
-                Call {ownerInquiryPhone}
-              </a>
-              <button type="button" onClick={() => setDismissed(true)} className={`${t.secondaryBtnClass} w-full`}>
-                Maybe later
-              </button>
-            </div>
+            {pinMobileActions ? (
+              <>
+                <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 pr-12 sm:px-4 sm:py-4">
+                  {mobileExpandedBody}
+                </div>
+                <div className="flex shrink-0 px-3 pb-3 pt-1 sm:px-4 sm:pb-4">{mobileExpandedActions}</div>
+              </>
+            ) : (
+              <>
+                {mobileExpandedBody}
+                {mobileExpandedActions}
+              </>
+            )}
           </div>
         </div>
       );
