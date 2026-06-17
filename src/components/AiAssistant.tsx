@@ -6,14 +6,11 @@ import { TextStreamChatTransport } from "ai";
 import { ChevronDown, ChevronUp, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGoogleMaps } from "@/components/GoogleMapsProvider";
-
-// Southern California bounds (same as SearchAISection)
-const SOCAL_BOUNDS = {
-  north: 35.5,
-  south: 32.5,
-  east: -115.0,
-  west: -120.5,
-};
+import {
+  filterPredictionsToSoCal,
+  getSoCalPredictionRequest,
+  isWithinSoCalBounds,
+} from "@/lib/propertyAddressLookup";
 
 /** Words that follow the address in a question — stop treating the tail as address input. */
 const ADDRESS_SUFFIX_WORD =
@@ -262,30 +259,13 @@ export function AiAssistant({
     const isNumericOnly = /^\d+$/.test(q);
     const requestInput = isNumericOnly ? `${q} ` : q;
 
-    const bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(SOCAL_BOUNDS.south, SOCAL_BOUNDS.west),
-      new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
-    );
-
-    const socalCenter = new google.maps.LatLng(34.05, -118.25);
-
     const svc = new google.maps.places.AutocompleteService();
     const t = setTimeout(() => {
       svc.getPlacePredictions(
-        {
-          input: requestInput,
-          // Use SoCal as a bias (not a hard restrict) so short numeric prefixes like "2365" still return results.
-          bounds,
-          // Extra bias that helps numeric-only inputs.
-          location: socalCenter,
-          radius: 400_000,
-          componentRestrictions: { country: "us" },
-          // For numeric-only prefixes, "address" often returns nothing; "geocode" is more permissive.
-          types: [isNumericOnly ? "geocode" : "address"],
-        },
-        (results) => {
-          const items =
-            results?.map((r) => ({ placeId: r.place_id, description: r.description })) ?? [];
+        getSoCalPredictionRequest(requestInput, [isNumericOnly ? "geocode" : "address"]),
+        async (results) => {
+          const filtered = await filterPredictionsToSoCal(results ?? []);
+          const items = filtered.map((r) => ({ placeId: r.place_id, description: r.description }));
           setPredictions(items);
           setPredictionsOpen(items.length > 0);
           setActiveIdx(items.length > 0 ? 0 : -1);
@@ -341,6 +321,11 @@ export function AiAssistant({
           const loc = details?.geometry?.location;
           const lat = loc ? loc.lat() : NaN;
           const lng = loc ? loc.lng() : NaN;
+          if (Number.isFinite(lat) && Number.isFinite(lng) && !isWithinSoCalBounds(lat, lng)) {
+            setPredictionsOpen(false);
+            setPredictions([]);
+            return;
+          }
           resolved = { address: addr, lat, lng };
         }
       } catch {

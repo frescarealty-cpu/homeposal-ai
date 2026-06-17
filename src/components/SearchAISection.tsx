@@ -3,16 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Search, MapPin, X } from "lucide-react";
 import type { PropertyListing } from "@/data/properties";
+import {
+  createSoCalLatLngBounds,
+  getSoCalAutocompleteOptions,
+  isWithinSoCalBounds,
+} from "@/lib/propertyAddressLookup";
 
 const GOOGLE_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-
-// Southern California: all 9 counties (Imperial, San Diego, Orange, LA, Riverside, San Bernardino, Ventura, Santa Barbara, Kern)
-const SOCAL_BOUNDS = {
-  north: 35.5,
-  south: 32.5,
-  east: -115.0,  // Imperial Valley
-  west: -120.5,  // Ventura / Santa Barbara
-};
 
 export type PlaceViewport = {
   north: number;
@@ -135,6 +132,7 @@ function runLocateWithPlace(
   if (loc && addr) {
     const lat = loc.lat();
     const lng = loc.lng();
+    if (!isWithinSoCalBounds(lat, lng)) return false;
     const match =
       findPropertyByLocation(properties, lat, lng) ?? findPropertyByAddress(properties, addr);
     if (match) {
@@ -159,10 +157,7 @@ function locateAndSelect(
   if (!address.trim() || !window.google?.maps) return;
 
   const geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: address.trim(), bounds: new google.maps.LatLngBounds(
-    new google.maps.LatLng(SOCAL_BOUNDS.south, SOCAL_BOUNDS.west),
-    new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
-  ) }, (results, status) => {
+  geocoder.geocode({ address: address.trim(), bounds: createSoCalLatLngBounds() }, (results, status) => {
     if (status !== "OK" || !results?.[0]) return;
     const loc = results[0].geometry?.location;
     const addr = results[0].formatted_address;
@@ -170,7 +165,7 @@ function locateAndSelect(
     const lat = loc.lat();
     const lng = loc.lng();
     // Only accept addresses within Southern California bounds
-    if (lat < SOCAL_BOUNDS.south || lat > SOCAL_BOUNDS.north || lng < SOCAL_BOUNDS.west || lng > SOCAL_BOUNDS.east) return;
+    if (!isWithinSoCalBounds(lat, lng)) return;
     const match = findPropertyByLocation(properties, lat, lng) ?? findPropertyByAddress(properties, addr);
     if (match) {
       onPropertySelect?.(match);
@@ -238,25 +233,32 @@ export function SearchAISection({
   useEffect(() => {
     if (!isLoaded || !inputRef.current || !window.google?.maps?.places) return;
 
-    const bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(SOCAL_BOUNDS.south, SOCAL_BOUNDS.west),
-      new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
+    const autocomplete = new google.maps.places.Autocomplete(
+      inputRef.current,
+      getSoCalAutocompleteOptions([
+        "formatted_address",
+        "geometry",
+        "address_components",
+        "name",
+        "place_id",
+        "types",
+      ])
     );
-
-    // Restrict to address type only (street addresses); avoids establishments/POI in dropdown.
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-      bounds,
-      strictBounds: true,
-      componentRestrictions: { country: "us" },
-      types: ["address"],
-      fields: ["formatted_address", "geometry", "address_components", "name", "place_id", "types"],
-    });
 
     // When user selects from Google dropdown: if it matches a property, navigate immediately and do NOT fill the search box.
     // Only fill the search box when showing the place on the map (no property match).
     // If the selection is an establishment/POI (not a street address), resolve it via Geocoder to get the actual street address.
     autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
+      const loc = place.geometry?.location;
+      if (loc && !isWithinSoCalBounds(loc.lat(), loc.lng())) {
+        if (inputRef.current) {
+          inputRef.current.value = "";
+          setQuery("");
+          onChange?.("");
+        }
+        return;
+      }
       let addr = place.formatted_address || place.name || "";
       if (blurTimeoutRef.current) {
         clearTimeout(blurTimeoutRef.current);
@@ -289,10 +291,7 @@ export function SearchAISection({
         geocoder.geocode(
           {
             address: addr,
-            bounds: new google.maps.LatLngBounds(
-              new google.maps.LatLng(SOCAL_BOUNDS.south, SOCAL_BOUNDS.west),
-              new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
-            ),
+            bounds: createSoCalLatLngBounds(),
           },
           (results, status) => {
             if (status === "OK" && results?.[0]) {

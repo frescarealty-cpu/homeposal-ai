@@ -7,8 +7,9 @@ import { useGoogleMaps } from "@/components/GoogleMapsProvider";
 import { MOCK_PROPERTIES } from "@/data/properties";
 import {
   geocodeSoCalAddress,
+  getSoCalAutocompleteOptions,
+  isWithinSoCalBounds,
   resolvePropertyOrPlacePath,
-  SOCAL_BOUNDS,
 } from "@/lib/propertyAddressLookup";
 
 type OwnerAddressCheckPanelProps = {
@@ -63,24 +64,20 @@ export function OwnerAddressCheckPanel({
   useEffect(() => {
     if (!isLoaded || !inputRef.current || !window.google?.maps?.places) return;
 
-    const bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(SOCAL_BOUNDS.south, SOCAL_BOUNDS.west),
-      new google.maps.LatLng(SOCAL_BOUNDS.north, SOCAL_BOUNDS.east)
+    const autocomplete = new google.maps.places.Autocomplete(
+      inputRef.current,
+      getSoCalAutocompleteOptions(["formatted_address", "geometry", "name"])
     );
-
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-      bounds,
-      strictBounds: true,
-      componentRestrictions: { country: "us" },
-      types: ["address"],
-      fields: ["formatted_address", "geometry", "name"],
-    });
 
     const listener = autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
       const address = place.formatted_address || place.name || "";
       const loc = place.geometry?.location;
       if (!address) return;
+      if (loc && !isWithinSoCalBounds(loc.lat(), loc.lng())) {
+        setError("Address must be in Southern California. Try including city and state.");
+        return;
+      }
       if (loc) {
         void handleResolvedAddress(address, loc.lat(), loc.lng());
         return;
