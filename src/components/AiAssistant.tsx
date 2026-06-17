@@ -388,7 +388,7 @@ export function AiAssistant({
     [messages]
   );
 
-  const headingText = "Questions? Chat with us";
+  const headingText = "Questions? Ask away";
 
   return (
     <div
