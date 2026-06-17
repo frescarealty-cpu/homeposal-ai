@@ -51,9 +51,7 @@ export function MobileProposalsNudge({
       ? "1 verified proposal"
       : `${proposalCount} verified proposals`
     : "No proposals yet";
-  const detail = hasProposals
-    ? "Review offers on this property."
-    : "Be the first";
+  const detail = hasProposals ? "Review offers" : "Be the first";
 
   return (
     <div
