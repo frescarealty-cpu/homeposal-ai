@@ -446,6 +446,14 @@ export function PlaceOwnerHelloBanner({
     }
 
     if (isMobileLayout) {
+      const mobileExpandedMaxH = isViewportFixed
+        ? isSlim
+          ? "max-h-[min(420px,calc(100dvh-var(--mobile-header-reserve,11.5rem)-env(safe-area-inset-top,0px)))]"
+          : "max-h-[min(560px,calc(100dvh-var(--mobile-header-reserve,11.5rem)-env(safe-area-inset-top,0px)))]"
+        : isSlim
+          ? "max-h-[min(70vh,420px)]"
+          : "max-h-[min(85vh,560px)]";
+
       return (
         <div
           ref={rootRef}
@@ -454,7 +462,7 @@ export function PlaceOwnerHelloBanner({
           className={[
             shellClass,
             "relative overflow-y-auto",
-            isSlim ? "max-h-[min(70vh,420px)]" : "max-h-[min(85vh,560px)]",
+            mobileExpandedMaxH,
           ].join(" ")}
           style={{ backgroundColor: BANNER_BG }}
         >
