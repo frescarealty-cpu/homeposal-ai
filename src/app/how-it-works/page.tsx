@@ -1,9 +1,12 @@
 import { BackToHomeLink } from "@/components/BackToHomeLink";
 import { HowItWorks } from "@/components/HowItWorks";
+import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 
 export default function HowItWorksPage() {
   return (
-    <div className="mx-auto w-full max-w-4xl px-2 py-10 sm:px-4">
+    <>
+      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
+      <div className="mx-auto w-full max-w-4xl px-2 py-10 sm:px-4">
       <div className="mb-8">
         <BackToHomeLink />
         <h1 className="mt-4 text-balance text-3xl font-semibold text-[var(--foreground)]">
@@ -58,6 +61,7 @@ export default function HowItWorksPage() {
       </nav>
 
       <HowItWorks />
-    </div>
+      </div>
+    </>
   );
 }
