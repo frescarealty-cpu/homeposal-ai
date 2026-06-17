@@ -91,6 +91,10 @@ function formatFinancing(type: string) {
   return map[type.toLowerCase()] ?? type;
 }
 
+/** Clickable proposal row: visible hover on light backgrounds + keyboard focus. */
+const PROPOSAL_ROW_INTERACTIVE_CLASS =
+  "cursor-pointer transition-[background-color,box-shadow] hover:bg-[var(--border-subtle)] hover:shadow-[inset_3px_0_0_0_#2C56A3] focus-visible:outline-none focus-visible:bg-[var(--border-subtle)] focus-visible:shadow-[inset_3px_0_0_0_#2C56A3] focus-visible:ring-2 focus-visible:ring-[#2C56A3]/25 active:bg-[var(--border-subtle)]";
+
 export function ProposalsPublicView({
   proposals,
   listPriceCents = 0,
@@ -518,9 +522,7 @@ export function ProposalsPublicView({
                   <li
                     key={p.id}
                     className={`kalshi-border-subtle rounded-lg border px-3 py-2.5 ${
-                      enableInquiry
-                        ? "cursor-pointer transition-colors hover:bg-[var(--background-elevated)] active:bg-[var(--border-subtle)]"
-                        : ""
+                      enableInquiry ? PROPOSAL_ROW_INTERACTIVE_CLASS : ""
                     }`}
                     role={enableInquiry ? "button" : undefined}
                     tabIndex={enableInquiry ? 0 : undefined}
@@ -595,7 +597,7 @@ export function ProposalsPublicView({
                   <tr
                     key={p.id}
                     className={`kalshi-border-subtle border-b last:border-0 ${
-                      enableInquiry ? "cursor-pointer hover:bg-[var(--background-elevated)] transition-colors" : ""
+                      enableInquiry ? PROPOSAL_ROW_INTERACTIVE_CLASS : ""
                     }`}
                     role={enableInquiry ? "button" : undefined}
                     tabIndex={enableInquiry ? 0 : undefined}
