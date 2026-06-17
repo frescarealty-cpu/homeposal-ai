@@ -64,6 +64,17 @@ export default async function PropertyPage({
         : "badge-pending";
 
   const zillowAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`;
+  const propertyAddressHeading = (
+    <>
+      <span className={`mb-2 inline-block ${statusClass}`}>
+        {property.status === "open" ? "Open for Offers" : property.status}
+      </span>
+      <h1 className="text-xl font-semibold text-[var(--foreground)] sm:text-2xl">{property.address}</h1>
+      <p className="mt-1 mb-4 text-base text-[var(--foreground-muted)]">
+        {property.city}, {property.state} {property.zipCode}
+      </p>
+    </>
+  );
   const zestimatePanel = (
     <ZillowZestimatePanel
       address={zillowAddress}
@@ -92,11 +103,13 @@ export default async function PropertyPage({
           />
         </div>
 
-        <span className={`mb-2 inline-block ${statusClass}`}>
+        <span className={`mb-2 hidden lg:inline-block ${statusClass}`}>
           {property.status === "open" ? "Open for Offers" : property.status}
         </span>
-        <h1 className="text-xl sm:text-2xl font-semibold text-[var(--foreground)]">{property.address}</h1>
-        <p className="mb-4 text-base text-[var(--foreground-muted)]">
+        <h1 className="hidden text-xl font-semibold text-[var(--foreground)] sm:text-2xl lg:block">
+          {property.address}
+        </h1>
+        <p className="mb-4 hidden text-base text-[var(--foreground-muted)] lg:block">
           {property.city}, {property.state} {property.zipCode}
         </p>
 
@@ -145,7 +158,10 @@ export default async function PropertyPage({
         id="make-proposal"
         className="kalshi-border order-1 flex w-full min-h-0 flex-col border-t lg:order-2 lg:w-[40%] lg:min-w-[360px] lg:border-l lg:border-t-0 lg:sticky lg:top-0 lg:max-h-screen lg:overflow-y-auto"
       >
-        <BackToHomeLink className="self-start px-4 pt-4 lg:hidden" />
+        <div className="px-4 pt-4 lg:hidden">
+          <BackToHomeLink className="mb-4" />
+          {propertyAddressHeading}
+        </div>
         <MobileProposalsNudge proposalCount={proposals.length} />
         <div className="hidden px-4 pb-4 lg:block lg:pt-4">
           <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
