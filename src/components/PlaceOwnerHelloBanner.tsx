@@ -173,41 +173,48 @@ export function PlaceOwnerHelloBanner({
       document.documentElement.style.removeProperty(OWNER_BANNER_OFFSET_VAR);
     };
 
-    if (!viewportPinned || dismissed) {
+    if (!pinnedToViewport) return;
+
+    if (dismissed) {
       clearOffsets();
       return;
     }
 
+    // Inactive breakpoint instance (e.g. mobile banner on desktop) must not wipe padding.
+    if (!viewportPinned) return;
+
     const updatePadding = () => {
       const height = rootRef.current?.offsetHeight ?? 0;
+      if (height === 0) return;
+
       const cookieOffset = parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue("--cookie-consent-offset") || "0"
       );
       const total = height + (Number.isFinite(cookieOffset) ? cookieOffset : 0);
-      if (total > 0) {
-        const offset = `${total}px`;
-        document.body.style.paddingBottom = offset;
-        document.documentElement.style.setProperty(OWNER_BANNER_OFFSET_VAR, offset);
-      } else {
-        clearOffsets();
-      }
+      const offset = `${total}px`;
+      document.body.style.paddingBottom = offset;
+      document.documentElement.style.setProperty(OWNER_BANNER_OFFSET_VAR, offset);
     };
 
     updatePadding();
     const el = rootRef.current;
-    if (!el) return;
 
-    const ro = new ResizeObserver(updatePadding);
-    ro.observe(el);
+    const ro = el ? new ResizeObserver(updatePadding) : null;
+    if (el && ro) ro.observe(el);
+
     window.addEventListener("resize", updatePadding);
     window.addEventListener("cookie-consent-layout", updatePadding);
+
+    const layoutTimer = window.requestAnimationFrame(updatePadding);
+
     return () => {
-      ro.disconnect();
+      window.cancelAnimationFrame(layoutTimer);
+      ro?.disconnect();
       window.removeEventListener("resize", updatePadding);
       window.removeEventListener("cookie-consent-layout", updatePadding);
       clearOffsets();
     };
-  }, [viewportPinned, dismissed, expanded]);
+  }, [pinnedToViewport, viewportPinned, dismissed, expanded]);
 
   if (dismissed) {
     return null;
