@@ -87,11 +87,11 @@ export default async function PropertyPage({
   return (
     <>
       <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
-      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row lg:items-stretch">
       <div className="w-full shrink-0 px-4 pt-4 lg:hidden">
         <BackToHomeLink className="mb-4" />
         {propertyAddressHeading}
       </div>
+      <div className="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row lg:items-stretch">
       {/* Left: Property details (below sidebar on mobile) */}
       <div className="order-2 flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:order-1 lg:max-w-[60%]">
         <BackToHomeLink className="mb-6 hidden lg:inline-flex" />

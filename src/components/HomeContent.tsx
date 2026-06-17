@@ -263,6 +263,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                     sizes="(max-width: 1024px) 100vw, 40vw"
                   />
                 </div>
+                <BackToHomeLink className="mb-4 lg:hidden" />
                 <span className={`mb-2 inline-block text-xs ${selectedProperty.status === "open" ? "badge-open" : selectedProperty.status === "closed" ? "badge-closed" : "badge-pending"}`}>
                   {selectedProperty.status === "open" ? "Open for Offers" : selectedProperty.status}
                 </span>
@@ -306,12 +307,13 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                 >
                   View full property page →
                 </Link>
-                <div className="mt-4 border-t border-[var(--border)] pt-4">
+                <div className="mt-4 hidden border-t border-[var(--border)] pt-4 lg:block">
                   <BackToHomeLink variant="button" />
                 </div>
               </>
             ) : addressToShow ? (
               <>
+                <BackToHomeLink className="mb-4 lg:hidden" />
                 <h2 className="mb-4 text-lg font-semibold text-[var(--foreground)]">{addressToShow.address}</h2>
                 <AiAssistant defaultExpandedDesktop={false} className="mb-4" />
                 <ZillowZestimatePanel
@@ -336,7 +338,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
                   </Link>
                 </div>
                 <div className="mt-4 md:hidden">{NOTICE}</div>
-                <div className="mt-4 border-t border-[var(--border)] pt-4">
+                <div className="mt-4 hidden border-t border-[var(--border)] pt-4 lg:block">
                   <BackToHomeLink variant="button" />
                 </div>
               </>
