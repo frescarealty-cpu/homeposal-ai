@@ -80,6 +80,15 @@ body {
   }
 }
 
+/* Home index: sidebar spacing on mobile/tablet (below search divider) */
+@media (max-width: 1023px) {
+  .home-index-sidebar-block {
+    padding-top: 0.75rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
+
 /* Home index (lg+): align search heading with AI assistant header — plain CSS so prod matches local */
 @media (min-width: 1024px) {
   .home-index-search-block {
