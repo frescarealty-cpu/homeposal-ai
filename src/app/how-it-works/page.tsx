@@ -5,7 +5,7 @@ import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
 export default function HowItWorksPage() {
   return (
     <>
-      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
+      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact />
       <div className="mx-auto w-full max-w-4xl px-2 py-10 sm:px-4">
       <div className="mb-8">
         <BackToHomeLink />
