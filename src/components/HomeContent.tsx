@@ -345,7 +345,7 @@ export function HomeContent({ properties, initialSearch = "", countySlug }: Home
             ) : (
               <>
                 <div className="space-y-4">
-                  <AiAssistant homeIndexAlign={isHomeIndex} />
+                  <AiAssistant defaultExpandedDesktop={false} homeIndexAlign={isHomeIndex} />
 
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4">
                     <h2 className="mb-3 text-lg font-semibold text-[var(--foreground)]">What is HomePosal?</h2>

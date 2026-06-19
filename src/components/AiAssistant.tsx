@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
-import { ChevronDown, ChevronUp, Send, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGoogleMaps } from "@/components/GoogleMapsProvider";
 import {
@@ -373,7 +373,7 @@ export function AiAssistant({
     [messages]
   );
 
-  const headingText = "Questions? Ask away";
+  const headingText = "Questions? Let's Talk";
 
   return (
     <div
@@ -400,21 +400,11 @@ export function AiAssistant({
           <div className="min-w-0">
             <h2
               className={[
-                "flex items-center font-semibold text-[var(--foreground)]",
-                detailPageCompact && collapsed
-                  ? "gap-1.5 text-sm lg:gap-2 lg:text-lg"
-                  : "gap-2 text-lg",
+                "font-semibold text-[var(--foreground)]",
+                detailPageCompact && collapsed ? "text-sm lg:text-lg" : "text-lg",
               ].join(" ")}
             >
               {headingText}
-              <Sparkles
-                className={[
-                  "shrink-0 text-amber-400/90",
-                  collapsed ? "hidden lg:inline-flex" : "inline-flex",
-                  detailPageCompact && collapsed ? "lg:h-4 lg:w-4" : "h-4 w-4",
-                ].join(" ")}
-                aria-hidden
-              />
             </h2>
           </div>
           <Button
