@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useZillowZestimate } from "@/hooks/useZillowZestimate";
 import type { ZillowZestimatePayload } from "@/types/zillow";
 
 type Props = {
@@ -10,6 +11,16 @@ type Props = {
   lat?: number;
   lng?: number;
   variant?: "default" | "compact" | "collapsible";
+  /** Collapsible: hide summary row when a market snapshot strip is shown above. */
+  detailsOnly?: boolean;
+  /** Skip internal fetch when parent already loaded Zestimate data. */
+  estimate?: {
+    loading: boolean;
+    error: string | null;
+    data: ZillowZestimatePayload | null;
+    normalizedAddress: string;
+    lookupAddress: string;
+  };
   className?: string;
 };
 
@@ -37,70 +48,20 @@ function getBridgeZillowUrl(raw: unknown): string | null {
   return null;
 }
 
-export function ZillowZestimatePanel({ address, lat, lng, variant = "default", className }: Props) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<ZillowZestimatePayload | null>(null);
+export function ZillowZestimatePanel({
+  address,
+  lat,
+  lng,
+  variant = "default",
+  detailsOnly = false,
+  estimate: estimateProp,
+  className,
+}: Props) {
+  const internalEstimate = useZillowZestimate(address, lat, lng, !estimateProp);
+  const estimate = estimateProp ?? internalEstimate;
+  const { loading, error, data, normalizedAddress } = estimate;
+
   const [open, setOpen] = useState(false);
-
-  const normalizedAddress = useMemo(() => address.trim(), [address]);
-  // Bridge matches better without a trailing country.
-  const lookupAddress = useMemo(
-    () => normalizedAddress.replace(/,\s*(usa|united states)$/i, "").trim(),
-    [normalizedAddress]
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    async function run() {
-      if (!lookupAddress) {
-        setLoading(false);
-        setError("Address is required.");
-        return;
-      }
-      setLoading(true);
-      setError(null);
-      try {
-        const qs = new URLSearchParams();
-        qs.set("address", lookupAddress);
-        if (typeof lat === "number" && Number.isFinite(lat)) qs.set("lat", String(lat));
-        if (typeof lng === "number" && Number.isFinite(lng)) qs.set("lng", String(lng));
-
-        const res = await fetch(`/api/zillow/zestimate?${qs.toString()}`);
-        const json = (await res.json().catch(() => null)) as
-          | { ok: true; data: ZillowZestimatePayload }
-          | { ok?: false; error?: string };
-
-        if (!res.ok || !json || json.ok !== true) {
-          const msg = json && "error" in json && typeof json.error === "string" ? json.error : "Unable to load data.";
-          if (!cancelled) {
-            setData(null);
-            setError(msg);
-            setLoading(false);
-          }
-          return;
-        }
-
-        if (!cancelled) {
-          setData(json.data);
-          setError(null);
-          setLoading(false);
-        }
-      } catch (e) {
-        console.error("Zillow panel fetch failed:", e);
-        if (!cancelled) {
-          setData(null);
-          setError("Unable to load data.");
-          setLoading(false);
-        }
-      }
-    }
-
-    void run();
-    return () => {
-      cancelled = true;
-    };
-  }, [lookupAddress, lat, lng]);
 
   const zillowPropertyLink = getBridgeZillowUrl(data?.raw) ?? zillowHomesUrl(normalizedAddress);
   const isCompact = variant === "compact";
@@ -124,21 +85,23 @@ export function ZillowZestimatePanel({ address, lat, lng, variant = "default", c
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold text-[var(--foreground)]">
-            {isCompact ? "Market snapshot" : "Zestimate"}
+            {detailsOnly ? "Zestimate details" : isCompact ? "Market snapshot" : "Zestimate"}
           </h2>
         </div>
 
         {/* Approved Zillow logo adjacent to Zestimate content */}
-        <div className="flex shrink-0 items-center gap-2">
-          <Image
-            src="/zillow-logo.png"
-            alt="Zillow"
-            width={84}
-            height={20}
-            className={isCompact ? "h-4 w-auto object-contain" : "h-5 w-auto object-contain"}
-            priority={false}
-          />
-        </div>
+        {!detailsOnly ? (
+          <div className="flex shrink-0 items-center gap-2">
+            <Image
+              src="/zillow-logo.png"
+              alt="Zillow"
+              width={84}
+              height={20}
+              className={isCompact ? "h-4 w-auto object-contain" : "h-5 w-auto object-contain"}
+              priority={false}
+            />
+          </div>
+        ) : null}
       </div>
 
       {isCollapsible && (
@@ -148,21 +111,32 @@ export function ZillowZestimatePanel({ address, lat, lng, variant = "default", c
           className="flex w-full items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2 text-left transition-colors hover:bg-[var(--border-subtle)]"
           aria-expanded={open}
         >
-          <div className="min-w-0">
-            <p className="text-[0.7rem] text-[var(--foreground-muted)]">Zestimate</p>
-            <p className="mt-0.5 truncate font-tabular text-sm font-semibold text-[var(--foreground)]">
-              {loading
-                ? "Loading…"
-                : error
-                  ? "Unavailable"
-                  : data?.zestimateUsd != null
-                    ? formatUsd(data.zestimateUsd)
-                    : "—"}
-            </p>
-          </div>
-          <span className="shrink-0 text-xs font-medium text-[var(--foreground-muted)]">
-            {open ? "Hide" : "Details"} <span aria-hidden>{open ? "▴" : "▾"}</span>
-          </span>
+          {detailsOnly ? (
+            <>
+              <span className="text-sm font-medium text-[var(--foreground)]">View rent, range &amp; more</span>
+              <span className="shrink-0 text-xs font-medium text-[var(--foreground-muted)]">
+                {open ? "Hide" : "Details"} <span aria-hidden>{open ? "▴" : "▾"}</span>
+              </span>
+            </>
+          ) : (
+            <>
+              <div className="min-w-0">
+                <p className="text-[0.7rem] text-[var(--foreground-muted)]">Zestimate</p>
+                <p className="mt-0.5 truncate font-tabular text-sm font-semibold text-[var(--foreground)]">
+                  {loading
+                    ? "Loading…"
+                    : error
+                      ? "Unavailable"
+                      : data?.zestimateUsd != null
+                        ? formatUsd(data.zestimateUsd)
+                        : "—"}
+                </p>
+              </div>
+              <span className="shrink-0 text-xs font-medium text-[var(--foreground-muted)]">
+                {open ? "Hide" : "Details"} <span aria-hidden>{open ? "▴" : "▾"}</span>
+              </span>
+            </>
+          )}
         </button>
       )}
 

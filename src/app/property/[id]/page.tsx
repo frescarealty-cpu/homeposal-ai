@@ -6,6 +6,7 @@ import { PlaceOfferForm } from "@/components/PlaceOfferForm";
 import { StreetViewPanel } from "@/components/StreetViewPanel";
 import { StickyDisclosureBanner } from "@/components/StickyDisclosureBanner";
 import { OwnerHelloBannerStack } from "@/components/OwnerHelloBannerStack";
+import { PropertyMobileZestimateSection } from "@/components/PropertyMobileZestimateSection";
 import { ZillowZestimatePanel } from "@/components/ZillowZestimatePanel";
 import { MobileProposalsNudge } from "@/components/MobileProposalsNudge";
 import { AiAssistant } from "@/components/AiAssistant";
@@ -184,14 +185,17 @@ export default async function PropertyPage({
                 longitude={property.longitude}
                 address={`${property.address}, ${property.city}, ${property.state}`}
               />
-              <div id="property-zestimate">{zestimatePanel}</div>
+              <PropertyMobileZestimateSection
+                id="property-zestimate"
+                address={zillowAddress}
+                lat={property.latitude}
+                lng={property.longitude}
+                bestOfferCents={property.bestOfferCents}
+                proposalCount={proposals.length}
+              />
             </div>
           }
-          afterContextBeforeProposals={
-            <div className="mb-4 lg:hidden">
-              <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
-            </div>
-          }
+          hideHighestProposalBanner
         />
         <div className="mt-auto flex flex-col">
           {property.status === "open" && (
@@ -208,6 +212,9 @@ export default async function PropertyPage({
               />
             </div>
           )}
+          <div className="border-t border-[var(--border)] p-4 lg:hidden">
+            <AiAssistant defaultExpandedDesktop={false} detailPageCompact />
+          </div>
           <div className="hidden border-t border-[var(--border)] p-4 lg:block">
             <BackToHomeLink variant="button" />
           </div>

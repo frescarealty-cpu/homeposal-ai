@@ -25,6 +25,8 @@ type ProposalsPublicViewProps = {
   beforeProposalsHeading?: ReactNode;
   /** After context blocks, before the "Proposals" heading (e.g. mobile AI assistant). */
   afterContextBeforeProposals?: ReactNode;
+  /** Hide the "Current Highest Proposal" banner when shown in a market snapshot above. */
+  hideHighestProposalBanner?: boolean;
   /** Anchor id for the proposals heading (scroll targets). */
   proposalsHeadingId?: string;
 };
@@ -108,6 +110,7 @@ export function ProposalsPublicView({
   ownerAlertClassName = "",
   beforeProposalsHeading,
   afterContextBeforeProposals,
+  hideHighestProposalBanner = false,
   proposalsHeadingId = "property-proposals",
 }: ProposalsPublicViewProps) {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
@@ -487,7 +490,14 @@ export function ProposalsPublicView({
       </div>
 
       {(bestOfferCents > 0 || timeLeft) && (
-        <div className="mb-4 flex items-center justify-between rounded-md bg-[var(--background-elevated)] px-4 py-3">
+        <div
+          className={[
+            "mb-4 flex items-center justify-between rounded-md bg-[var(--background-elevated)] px-4 py-3",
+            hideHighestProposalBanner ? "hidden md:flex" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div>
             <p className="text-xs text-[var(--foreground-muted)]">Current Highest Proposal</p>
             <p className="font-tabular text-xl font-semibold text-[var(--success)]">
