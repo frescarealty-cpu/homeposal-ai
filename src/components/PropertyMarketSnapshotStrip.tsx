@@ -82,21 +82,19 @@ export function PropertyMarketSnapshotStrip({
         .join(" ")}
       aria-label="Market snapshot"
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--foreground-muted)]">
-          Market snapshot
-        </p>
-        <Image
-          src="/zillow-logo.png"
-          alt="Zillow"
-          width={72}
-          height={18}
-          className="h-4 w-auto shrink-0 object-contain"
-        />
-      </div>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--foreground-muted)]">
+        Market snapshot
+      </p>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
+          <Image
+            src="/zillow-logo.png"
+            alt="Zillow"
+            width={72}
+            height={18}
+            className="mb-1.5 h-4 w-auto object-contain"
+          />
           <p className="text-[0.6875rem] font-medium text-[var(--foreground-muted)]">Zestimate</p>
           <p className="mt-0.5 truncate font-tabular text-base font-semibold text-[var(--foreground)]">
             {zestimateDisplay}
