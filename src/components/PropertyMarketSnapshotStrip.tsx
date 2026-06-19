@@ -82,19 +82,17 @@ export function PropertyMarketSnapshotStrip({
         .join(" ")}
       aria-label="Market snapshot"
     >
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--foreground-muted)]">
-        Market snapshot
-      </p>
-
       <div className="grid grid-cols-2 gap-3">
         <div className="flex min-w-0 flex-col gap-1.5">
-          <Image
-            src="/zillow-logo.png"
-            alt="Zillow"
-            width={72}
-            height={18}
-            className="h-4 w-auto object-contain"
-          />
+          <div className="flex h-4 items-center">
+            <Image
+              src="/zillow-logo.png"
+              alt="Zillow"
+              width={72}
+              height={18}
+              className="h-4 w-auto object-contain"
+            />
+          </div>
           <div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
             <p className="text-[0.6875rem] font-medium text-[var(--foreground-muted)]">Zestimate</p>
             <p className="mt-0.5 truncate font-tabular text-base font-semibold text-[var(--foreground)]">
@@ -103,7 +101,11 @@ export function PropertyMarketSnapshotStrip({
           </div>
         </div>
         <div className="flex min-w-0 flex-col gap-1.5">
-          <div className="h-4 shrink-0" aria-hidden="true" />
+          <div className="flex h-4 items-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--foreground-muted)]">
+              Market snapshot
+            </p>
+          </div>
           <div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
             <p className="text-[0.6875rem] font-medium text-[var(--foreground-muted)]">
               Highest proposal
