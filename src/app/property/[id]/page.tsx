@@ -87,7 +87,13 @@ export default async function PropertyPage({
 
   return (
     <>
-      <OwnerHelloBannerStack defaultExpandedDesktop={false} compact showAddressCheck={false} />
+      <OwnerHelloBannerStack
+        defaultExpandedDesktop={false}
+        defaultExpandedMobile={false}
+        autoCollapseMs={0}
+        compact
+        showAddressCheck={false}
+      />
       <div className="w-full shrink-0 px-4 pt-4 lg:hidden">
         <BackToHomeLink className="mb-4" />
         {propertyAddressHeading}
@@ -191,7 +197,6 @@ export default async function PropertyPage({
                 lat={property.latitude}
                 lng={property.longitude}
                 bestOfferCents={property.bestOfferCents}
-                proposalCount={proposals.length}
               />
             </div>
           }
@@ -220,7 +225,7 @@ export default async function PropertyPage({
           </div>
         </div>
         <div className="border-t border-[var(--border)] p-4 lg:hidden">
-          <StickyDisclosureBanner inline className="text-xs sm:text-sm" />
+          <StickyDisclosureBanner inline collapsible className="text-xs sm:text-sm" />
         </div>
       </aside>
     </div>

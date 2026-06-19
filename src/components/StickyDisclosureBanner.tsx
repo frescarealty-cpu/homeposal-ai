@@ -25,11 +25,48 @@ function DisclosureContent({ className = "text-sm" }: { className?: string }) {
 type StickyDisclosureBannerProps = {
   /** Always inline in page flow (sidebar); no mobile fixed bottom bar. */
   inline?: boolean;
+  /** Inline: show as expandable control instead of full text block. */
+  collapsible?: boolean;
   className?: string;
 };
 
-export function StickyDisclosureBanner({ inline = false, className = "" }: StickyDisclosureBannerProps) {
+export function StickyDisclosureBanner({
+  inline = false,
+  collapsible = false,
+  className = "",
+}: StickyDisclosureBannerProps) {
   const [open, setOpen] = useState(false);
+
+  if (inline && collapsible) {
+    return (
+      <div
+        className={[
+          "overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] text-[var(--foreground-muted)]",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls="property-disclosure-inline"
+          className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-[var(--foreground)]"
+        >
+          <span>Property status &amp; disclosures</span>
+          <span className="shrink-0 text-xs font-normal text-[var(--foreground-muted)]">
+            {open ? "Hide" : "View"} <span aria-hidden>{open ? "▴" : "▾"}</span>
+          </span>
+        </button>
+        {open ? (
+          <div id="property-disclosure-inline" className="border-t border-[var(--border)] px-4 py-3">
+            <DisclosureContent className="text-xs sm:text-sm" />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   if (inline) {
     return (

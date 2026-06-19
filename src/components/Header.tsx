@@ -45,7 +45,7 @@ export function Header() {
       window.removeEventListener("resize", updateHeaderHeight);
       document.documentElement.style.removeProperty("--site-header-height");
     };
-  }, [user]);
+  }, [user, pathname]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -94,6 +94,9 @@ export function Header() {
     }
   };
 
+  const isDetailPage =
+    pathname.startsWith("/property/") || pathname.startsWith("/place");
+
   const guestNavLinks = (
     <>
       <Link
@@ -138,18 +141,30 @@ export function Header() {
     >
       <div
         className={[
-          "relative mx-auto flex min-h-[80px] max-w-[1920px] py-3 pl-2 pr-2 md:min-h-[120px] md:flex-row md:items-center md:justify-between md:py-2 md:pl-0 md:pr-6",
-          user ? "w-full flex-row items-center justify-between gap-2 md:gap-4" : "flex-col items-center justify-between",
+          "relative mx-auto flex max-w-[1920px] py-2 pl-2 pr-2 md:flex-row md:items-center md:justify-between md:pl-0 md:pr-6",
+          isDetailPage
+            ? "min-h-[56px] flex-row items-center justify-between gap-2 md:min-h-[64px] md:gap-4"
+            : [
+                "min-h-[80px] md:min-h-[120px] md:py-2",
+                user
+                  ? "w-full flex-row items-center justify-between gap-2 md:gap-4"
+                  : "flex-col items-center justify-between py-3",
+              ].join(" "),
         ].join(" ")}
       >
         <Link
           href="/"
           onClick={handleLogoClick}
           className={[
-            "font-semibold text-[var(--foreground)] md:flex-row md:items-center md:gap-4 md:text-left lg:gap-6",
-            user
-              ? "flex min-w-0 flex-1 items-center gap-2 text-left md:flex-initial md:shrink-0 md:gap-4"
-              : "flex min-w-0 shrink flex-col items-center gap-3 text-center md:flex-row md:items-center",
+            "font-semibold text-[var(--foreground)] md:flex-row md:items-center md:text-left",
+            isDetailPage
+              ? "flex min-w-0 flex-1 items-center gap-2 md:flex-initial md:shrink-0 md:gap-3"
+              : [
+                  "md:gap-4 lg:gap-6",
+                  user
+                    ? "flex min-w-0 flex-1 items-center gap-2 text-left md:flex-initial md:shrink-0 md:gap-4"
+                    : "flex min-w-0 shrink flex-col items-center gap-3 text-center md:flex-row md:items-center",
+                ].join(" "),
           ].join(" ")}
         >
           <Image
@@ -159,7 +174,11 @@ export function Header() {
             height={677}
             className={[
               "shrink-0 object-contain",
-              user ? "h-14 w-14 sm:h-16 sm:w-16 md:h-28 md:w-28 lg:h-32 lg:w-32" : "h-20 w-20 md:h-36 md:w-36",
+              isDetailPage
+                ? "h-10 w-10 sm:h-11 sm:w-11 md:h-14 md:w-14"
+                : user
+                  ? "h-14 w-14 sm:h-16 sm:w-16 md:h-28 md:w-28 lg:h-32 lg:w-32"
+                  : "h-20 w-20 md:h-36 md:w-36",
             ].join(" ")}
             priority
             unoptimized
@@ -173,13 +192,16 @@ export function Header() {
             <span
               className={[
                 "font-bold tracking-tight text-[var(--foreground)]",
-                user
-                  ? "text-sm leading-snug sm:text-base md:whitespace-nowrap md:text-lg lg:text-xl"
-                  : "text-lg break-words sm:text-xl md:whitespace-nowrap lg:text-2xl",
+                isDetailPage
+                  ? "text-sm leading-snug md:text-base"
+                  : user
+                    ? "text-sm leading-snug sm:text-base md:whitespace-nowrap md:text-lg lg:text-xl"
+                    : "text-lg break-words sm:text-xl md:whitespace-nowrap lg:text-2xl",
               ].join(" ")}
             >
-              SoCal’s Home Proposal Platform
+              {isDetailPage ? "HomePosal" : "SoCal’s Home Proposal Platform"}
             </span>
+            {!isDetailPage ? (
             <span
               className={[
                 "mt-1 hidden font-medium leading-snug text-[var(--foreground-muted)]",
@@ -195,6 +217,7 @@ export function Header() {
               and{" "}
               <span className="font-semibold" style={{ color: "#2C56A3" }}>owners choose</span> when to say yes.
             </span>
+            ) : null}
           </div>
         </Link>
 
