@@ -199,7 +199,7 @@ export function Header() {
                     : "text-lg break-words sm:text-xl md:whitespace-nowrap lg:text-2xl",
               ].join(" ")}
             >
-              {isDetailPage ? "HomePosal" : "SoCal’s Home Proposal Platform"}
+              SoCal’s Home Proposal Platform
             </span>
             {!isDetailPage ? (
             <span
