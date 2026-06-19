@@ -87,26 +87,31 @@ export function PropertyMarketSnapshotStrip({
       </p>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
+        <div className="flex min-w-0 flex-col gap-1.5">
           <Image
             src="/zillow-logo.png"
             alt="Zillow"
             width={72}
             height={18}
-            className="mb-1.5 h-4 w-auto object-contain"
+            className="h-4 w-auto object-contain"
           />
-          <p className="text-[0.6875rem] font-medium text-[var(--foreground-muted)]">Zestimate</p>
-          <p className="mt-0.5 truncate font-tabular text-base font-semibold text-[var(--foreground)]">
-            {zestimateDisplay}
-          </p>
+          <div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
+            <p className="text-[0.6875rem] font-medium text-[var(--foreground-muted)]">Zestimate</p>
+            <p className="mt-0.5 truncate font-tabular text-base font-semibold text-[var(--foreground)]">
+              {zestimateDisplay}
+            </p>
+          </div>
         </div>
-        <div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
-          <p className="text-[0.6875rem] font-medium text-[var(--foreground-muted)]">
-            Highest proposal
-          </p>
-          <p className="mt-0.5 truncate font-tabular text-base font-semibold text-[var(--success)]">
-            {highestDisplay}
-          </p>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <div className="h-4 shrink-0" aria-hidden="true" />
+          <div className="min-w-0 rounded-lg border border-[var(--border)] bg-[var(--background-elevated)] px-3 py-2.5">
+            <p className="text-[0.6875rem] font-medium text-[var(--foreground-muted)]">
+              Highest proposal
+            </p>
+            <p className="mt-0.5 truncate font-tabular text-base font-semibold text-[var(--success)]">
+              {highestDisplay}
+            </p>
+          </div>
         </div>
       </div>
 
