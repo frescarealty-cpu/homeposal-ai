@@ -131,6 +131,7 @@ export function PlaceOwnerHelloBanner({
   );
   const [isMobileLayout, setIsMobileLayout] = useState(false);
   const [addressFocusToken, setAddressFocusToken] = useState(0);
+  const [addressEngaged, setAddressEngaged] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const contentId = "place-owner-hello-content";
 
@@ -162,10 +163,15 @@ export function PlaceOwnerHelloBanner({
   }, []);
 
   useEffect(() => {
+    if (!expanded) setAddressEngaged(false);
+  }, [expanded]);
+
+  useEffect(() => {
     if (!autoCollapseMs || autoCollapseMs <= 0) return;
+    if (!expanded || addressEngaged) return;
     const timer = window.setTimeout(() => setExpanded(false), autoCollapseMs);
     return () => window.clearTimeout(timer);
-  }, [autoCollapseMs]);
+  }, [autoCollapseMs, expanded, addressEngaged]);
 
   useEffect(() => {
     const clearOffsets = () => {
@@ -488,7 +494,11 @@ export function PlaceOwnerHelloBanner({
             </p>
           ) : null}
           {showAddressCheck ? (
-            <OwnerAddressCheckPanel focusToken={addressFocusToken} className={hideBannerLogo ? "" : "mt-1"} />
+            <OwnerAddressCheckPanel
+              focusToken={addressFocusToken}
+              onEngagedChange={setAddressEngaged}
+              className={hideBannerLogo ? "" : "mt-1"}
+            />
           ) : null}
         </div>
       );
@@ -615,7 +625,11 @@ export function PlaceOwnerHelloBanner({
               </p>
             ) : null}
             {showAddressCheck ? (
-              <OwnerAddressCheckPanel focusToken={addressFocusToken} className="mt-3" />
+              <OwnerAddressCheckPanel
+                focusToken={addressFocusToken}
+                onEngagedChange={setAddressEngaged}
+                className="mt-3"
+              />
             ) : null}
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <ContactInviteLink contactType="owner-proposal" className={t.primaryBtnClass}>

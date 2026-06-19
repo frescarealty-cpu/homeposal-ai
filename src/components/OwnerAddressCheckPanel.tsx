@@ -15,11 +15,14 @@ import {
 type OwnerAddressCheckPanelProps = {
   /** Increment to request focus on the input (e.g. after "Check my address"). */
   focusToken?: number;
+  /** True while the user is focused on or has entered text in the address field. */
+  onEngagedChange?: (engaged: boolean) => void;
   className?: string;
 };
 
 export function OwnerAddressCheckPanel({
   focusToken = 0,
+  onEngagedChange,
   className = "",
 }: OwnerAddressCheckPanelProps) {
   const router = useRouter();
@@ -91,6 +94,12 @@ export function OwnerAddressCheckPanel({
     };
   }, [isLoaded, handleResolvedAddress]);
 
+  const syncEngaged = useCallback(() => {
+    const value = inputRef.current?.value?.trim() ?? "";
+    const focused = document.activeElement === inputRef.current;
+    onEngagedChange?.(focused || value.length > 0);
+  }, [onEngagedChange]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const value = inputRef.current?.value?.trim() ?? "";
@@ -125,6 +134,11 @@ export function OwnerAddressCheckPanel({
             placeholder="Enter your address..."
             autoComplete="off"
             disabled={loading}
+            onFocus={() => onEngagedChange?.(true)}
+            onBlur={() => {
+              window.setTimeout(syncEngaged, 150);
+            }}
+            onInput={syncEngaged}
             className="w-full min-h-[40px] rounded-md border border-[var(--border)] bg-[var(--background-elevated)] py-2 pl-8 pr-2 text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
             aria-label="Your home address"
           />
