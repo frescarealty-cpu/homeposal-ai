@@ -147,6 +147,8 @@ export function Header() {
         ? "md:block md:whitespace-nowrap md:text-sm lg:text-base"
         : "sm:block sm:whitespace-nowrap md:text-base",
   ].join(" ");
+
+  const guestNavLinks = (
     <>
       <Link
         href="/login"
