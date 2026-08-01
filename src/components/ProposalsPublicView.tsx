@@ -113,12 +113,12 @@ export function ProposalsPublicView({
   hideHighestProposalBanner = false,
   proposalsHeadingId = "property-proposals",
 }: ProposalsPublicViewProps) {
-  const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
+  const [dateSort, setDateSort] = useState<"none" | "newest" | "oldest">("none");
   const [priceSort, setPriceSort] = useState<"none" | "high" | "low">("high");
   const [financingFilter, setFinancingFilter] = useState<
     "all" | "cash" | "conventional" | "fha" | "va" | "other"
   >("all");
-  const [daysSort, setDaysSort] = useState<"none" | "high" | "low">("high");
+  const [daysSort, setDaysSort] = useState<"none" | "high" | "low">("none");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -201,13 +201,14 @@ export function ProposalsPublicView({
       return daysSort === "high" ? bDays - aDays : aDays - bDays;
     }
 
-    // 3) Fallback to proposal date
-    if (bTime !== aTime) {
+    // 3) Proposal date (if explicitly set)
+    if (dateSort !== "none" && bTime !== aTime) {
       return dateSort === "newest" ? bTime - aTime : aTime - bTime;
     }
 
-    // Stable fallback
-    return 0;
+    // Stable fallback: newest first, then higher price
+    if (bTime !== aTime) return bTime - aTime;
+    return b.priceCents - a.priceCents;
   });
 
   const inquiryTargetLabel = inquiryAddressLabel ?? "this property";
@@ -414,6 +415,7 @@ export function ProposalsPublicView({
                     onChange={(e) => setDateSort(e.target.value as typeof dateSort)}
                     className="min-h-[32px] rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)]"
                   >
+                    <option value="none">No date sort</option>
                     <option value="newest">Newest → Oldest</option>
                     <option value="oldest">Oldest → Newest</option>
                   </select>
@@ -466,10 +468,10 @@ export function ProposalsPublicView({
                   <button
                     type="button"
                     onClick={() => {
-                      setDateSort("newest");
+                      setDateSort("none");
                       setPriceSort("high");
                       setFinancingFilter("all");
-                      setDaysSort("high");
+                      setDaysSort("none");
                     }}
                     className="rounded-md px-2 py-1 text-xs text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]"
                   >
