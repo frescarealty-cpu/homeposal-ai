@@ -113,6 +113,7 @@ export function ProposalsPublicView({
   hideHighestProposalBanner = false,
   proposalsHeadingId = "property-proposals",
 }: ProposalsPublicViewProps) {
+  // Exactly one sort category is active at a time (financing is a filter, not a sort).
   const [dateSort, setDateSort] = useState<"none" | "newest" | "oldest">("none");
   const [priceSort, setPriceSort] = useState<"none" | "high" | "low">("high");
   const [financingFilter, setFinancingFilter] = useState<
@@ -121,6 +122,42 @@ export function ProposalsPublicView({
   const [daysSort, setDaysSort] = useState<"none" | "high" | "low">("none");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  const resetSortDefaults = () => {
+    setDateSort("none");
+    setPriceSort("high");
+    setDaysSort("none");
+  };
+
+  const selectDateSort = (value: "none" | "newest" | "oldest") => {
+    if (value === "none") {
+      resetSortDefaults();
+      return;
+    }
+    setDateSort(value);
+    setPriceSort("none");
+    setDaysSort("none");
+  };
+
+  const selectPriceSort = (value: "none" | "high" | "low") => {
+    if (value === "none") {
+      resetSortDefaults();
+      return;
+    }
+    setPriceSort(value);
+    setDateSort("none");
+    setDaysSort("none");
+  };
+
+  const selectDaysSort = (value: "none" | "high" | "low") => {
+    if (value === "none") {
+      resetSortDefaults();
+      return;
+    }
+    setDaysSort(value);
+    setDateSort("none");
+    setPriceSort("none");
+  };
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("");
@@ -190,25 +227,32 @@ export function ProposalsPublicView({
         ? b.desiredDaysToClose
         : desiredDaysToClose(b.offerDate, b.closingDate);
 
-    // Determine primary sort based on which control is active:
-    // 1) Price (if explicitly set)
-    if (priceSort !== "none" && a.priceCents !== b.priceCents) {
-      return priceSort === "high" ? b.priceCents - a.priceCents : a.priceCents - b.priceCents;
+    // Only one sort category applies at a time.
+    if (priceSort !== "none") {
+      if (a.priceCents !== b.priceCents) {
+        return priceSort === "high" ? b.priceCents - a.priceCents : a.priceCents - b.priceCents;
+      }
+      // Ties: newer proposals first
+      return bTime - aTime;
     }
 
-    // 2) Days to close (if explicitly set)
-    if (daysSort !== "none" && aDays !== bDays) {
-      return daysSort === "high" ? bDays - aDays : aDays - bDays;
+    if (daysSort !== "none") {
+      if (aDays !== bDays) {
+        return daysSort === "high" ? bDays - aDays : aDays - bDays;
+      }
+      return bTime - aTime;
     }
 
-    // 3) Proposal date (if explicitly set)
-    if (dateSort !== "none" && bTime !== aTime) {
-      return dateSort === "newest" ? bTime - aTime : aTime - bTime;
+    if (dateSort !== "none") {
+      if (bTime !== aTime) {
+        return dateSort === "newest" ? bTime - aTime : aTime - bTime;
+      }
+      return b.priceCents - a.priceCents;
     }
 
-    // Stable fallback: newest first, then higher price
-    if (bTime !== aTime) return bTime - aTime;
-    return b.priceCents - a.priceCents;
+    // Default / fallback: highest price first
+    if (a.priceCents !== b.priceCents) return b.priceCents - a.priceCents;
+    return bTime - aTime;
   });
 
   const inquiryTargetLabel = inquiryAddressLabel ?? "this property";
@@ -412,8 +456,9 @@ export function ProposalsPublicView({
                   <span className="font-medium text-[var(--foreground)]">Proposal Date</span>
                   <select
                     value={dateSort}
-                    onChange={(e) => setDateSort(e.target.value as typeof dateSort)}
+                    onChange={(e) => selectDateSort(e.target.value as typeof dateSort)}
                     className="min-h-[32px] rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)]"
+                    aria-label="Sort by proposal date"
                   >
                     <option value="none">No date sort</option>
                     <option value="newest">Newest → Oldest</option>
@@ -425,8 +470,9 @@ export function ProposalsPublicView({
                   <span className="font-medium text-[var(--foreground)]">Price</span>
                   <select
                     value={priceSort}
-                    onChange={(e) => setPriceSort(e.target.value as typeof priceSort)}
+                    onChange={(e) => selectPriceSort(e.target.value as typeof priceSort)}
                     className="min-h-[32px] rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)]"
+                    aria-label="Sort by price"
                   >
                     <option value="high">High → Low</option>
                     <option value="low">Low → High</option>
@@ -455,8 +501,9 @@ export function ProposalsPublicView({
                   <span className="font-medium text-[var(--foreground)]">Days to close</span>
                   <select
                     value={daysSort}
-                    onChange={(e) => setDaysSort(e.target.value as typeof daysSort)}
+                    onChange={(e) => selectDaysSort(e.target.value as typeof daysSort)}
                     className="min-h-[32px] rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)]"
+                    aria-label="Sort by days to close"
                   >
                     <option value="high">High → Low</option>
                     <option value="low">Low → High</option>
@@ -468,10 +515,8 @@ export function ProposalsPublicView({
                   <button
                     type="button"
                     onClick={() => {
-                      setDateSort("none");
-                      setPriceSort("high");
+                      resetSortDefaults();
                       setFinancingFilter("all");
-                      setDaysSort("none");
                     }}
                     className="rounded-md px-2 py-1 text-xs text-[var(--foreground-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--foreground)]"
                   >
