@@ -399,7 +399,7 @@ export function AiAssistant({
           <div className="flex min-w-0 items-center gap-3">
             <Image
               src="/chris-ai-assistant.png"
-              alt="Chris, HomePosal AI Assistant"
+              alt="Chris, HomePosal Specialist"
               width={detailPageCompact && collapsed ? 36 : 48}
               height={detailPageCompact && collapsed ? 36 : 48}
               className={[
@@ -423,7 +423,7 @@ export function AiAssistant({
                   detailPageCompact && collapsed ? "text-xs lg:text-sm" : "text-sm",
                 ].join(" ")}
               >
-                Chris · AI Assistant
+                Chris · HomePosal Specialist
               </p>
             </div>
           </div>
