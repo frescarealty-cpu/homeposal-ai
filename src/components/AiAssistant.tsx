@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import Image from "next/image";
 import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
 import { ChevronDown, ChevronUp, Send } from "lucide-react";
@@ -373,8 +374,6 @@ export function AiAssistant({
     [messages]
   );
 
-  const headingText = "Questions? Let's Talk";
-
   return (
     <div
       className={[
@@ -397,15 +396,36 @@ export function AiAssistant({
     >
       <div className={collapsed ? "" : "mb-3"}>
         <div className="flex items-center justify-between gap-2 lg:items-start lg:gap-3">
-          <div className="min-w-0">
-            <h2
+          <div className="flex min-w-0 items-center gap-3">
+            <Image
+              src="/chris-ai-assistant.png"
+              alt="Chris, HomePosal AI Assistant"
+              width={detailPageCompact && collapsed ? 36 : 48}
+              height={detailPageCompact && collapsed ? 36 : 48}
               className={[
-                "font-semibold text-[var(--foreground)]",
-                detailPageCompact && collapsed ? "text-sm lg:text-lg" : "text-lg",
+                "shrink-0 rounded-full object-cover ring-2 ring-[var(--border)]",
+                detailPageCompact && collapsed ? "h-9 w-9 lg:h-12 lg:w-12" : "h-12 w-12",
               ].join(" ")}
-            >
-              {headingText}
-            </h2>
+              priority
+            />
+            <div className="min-w-0">
+              <h2
+                className={[
+                  "font-semibold text-[var(--foreground)]",
+                  detailPageCompact && collapsed ? "text-sm lg:text-lg" : "text-lg",
+                ].join(" ")}
+              >
+                Questions? Let&apos;s Talk
+              </h2>
+              <p
+                className={[
+                  "text-[var(--foreground-muted)]",
+                  detailPageCompact && collapsed ? "text-xs lg:text-sm" : "text-sm",
+                ].join(" ")}
+              >
+                Chris · AI Assistant
+              </p>
+            </div>
           </div>
           <Button
             type="button"
